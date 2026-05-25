@@ -28,7 +28,7 @@ jobs:
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 #v4
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: the-ccsn
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve image tags
@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          image="ghcr.io/isning/k8s-gitops/tf-runner"
+          image="ghcr.io/the-ccsn/k8s-gitops/tf-runner"
           date_tag="$(date -u +%Y%m%d%H%M)"
           dated_tag="v0.16.3-custom-${date_tag}"
 

@@ -20,26 +20,6 @@
     ];
   }
   {
-    imageName = "b3log/siyuan";
-    imageDigest = "sha256:1a316554bfbf0c951ddabc7d3cb0292620152b44c087b6979d5d9b6bae065b1b";
-    finalImageName = "b3log/siyuan";
-    finalImageTag = "v3.6.5";
-    archiveHash = "sha256-XXpGj91bih0Nzr3E9dCR66KbtQUfc7NK12D9aIcqALM=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "siyuan"; }
-    ];
-  }
-  {
     imageName = "bitnami/kubectl";
     imageDigest = "sha256:e2b97dde9666986c61c56d49aae85a714b89b69392baa531438e74ec34096fb4";
     finalImageName = "bitnami/kubectl";
@@ -62,30 +42,10 @@
   }
   {
     imageName = "busybox";
-    imageDigest = "sha256:b6762ddf4a50aabb5f4d21aa6f447d05d5633fb09f09c08b33f22356a2f98be0";
-    finalImageName = "busybox";
-    finalImageTag = "1.38.0";
-    archiveHash = "sha256-qNInGrIGVVzC6laDaEle3aboHAL/qX+elLPFv9YMVaY=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "napcat"; }
-    ];
-  }
-  {
-    imageName = "busybox";
-    imageDigest = "sha256:32015ee641bfecc97161986c9d24957068175444f66fbcbe08a664b6cf5c1c2e";
+    imageDigest = "sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d";
     finalImageName = "busybox";
     finalImageTag = "latest";
-    archiveHash = "sha256-8rNboqeytGrAamWikc0rOzA1k4bM7IsL5ZZq7GC4e18=";
+    archiveHash = "sha256-9DvvHCHyDfRTkn58IbNOZODsjIcbmFvRPwpC0uYofzQ=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -269,6 +229,73 @@
     ];
   }
   {
+    imageName = "docker.io/longhornio/longhorn-manager";
+    imageDigest = "sha256:0f80ca11ac4eb7522f4e6e801a7afc9909ea8d3041575f3d029964c46590f096";
+    finalImageName = "docker.io/longhornio/longhorn-manager";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-91T1bF2mfPbVh+s62HTiFI5o7VKraze51HoXcdjBQv8=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "DaemonSet"; namespace = "longhorn-system"; name = "longhorn-manager"; }
+      { kind = "Deployment"; namespace = "longhorn-system"; name = "longhorn-driver-deployer"; }
+      { kind = "Job"; namespace = "longhorn-system"; name = "longhorn-post-upgrade"; }
+      { kind = "Job"; namespace = "longhorn-system"; name = "longhorn-pre-upgrade"; }
+      { kind = "Job"; namespace = "longhorn-system"; name = "longhorn-uninstall"; }
+    ];
+  }
+  {
+    imageName = "docker.io/longhornio/longhorn-share-manager";
+    imageDigest = "sha256:c11559e998ea982e6bac1637d66cc2aaab662a6b546709f2e54e2bfa50ffb0c3";
+    finalImageName = "docker.io/longhornio/longhorn-share-manager";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-aI3HfqoRbpqIxa+0O5KkzJx3aHrr8iyhFiy4EJPBksE=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "DaemonSet"; namespace = "longhorn-system"; name = "longhorn-manager"; }
+    ];
+  }
+  {
+    imageName = "docker.io/longhornio/longhorn-ui";
+    imageDigest = "sha256:885bc78f99f31da0d9b0fd8f533a53558a3aa81f9719c62e0d3c69ed8456d5b7";
+    finalImageName = "docker.io/longhornio/longhorn-ui";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-xboFUEX0vuI6Z+pNQqLfg8X0EbB0lZoswRoC/ReTVq4=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "longhorn-system"; name = "longhorn-ui"; }
+    ];
+  }
+  {
     imageName = "docker.io/rancher/local-path-provisioner";
     imageDigest = "sha256:1eba82e9c386038b4af6d69cca7519fac738c28c42735ed48ce70c882ad0d80f";
     finalImageName = "docker.io/rancher/local-path-provisioner";
@@ -308,46 +335,6 @@
     ];
     targets = [
       { kind = "Deployment"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden"; }
-    ];
-  }
-  {
-    imageName = "ghcr.io/astrbotdevs/shipyard-neo-bay";
-    imageDigest = "sha256:84518bf66f59d7eeb9afb760f79bb149ea6dce87d19d0478e24ce296c725f380";
-    finalImageName = "ghcr.io/astrbotdevs/shipyard-neo-bay";
-    finalImageTag = "0.3.1";
-    archiveHash = "sha256-8vqHqtCJ2w1bMJsH8n63A23//BvADHCnkrJu9/eDFmY=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "bay"; }
-    ];
-  }
-  {
-    imageName = "ghcr.io/cita-777/metapi";
-    imageDigest = "sha256:46cada1a8a7e55d6d40752c9e2e6b61c38de4edf0dde85e0f398b79994cc16e8";
-    finalImageName = "ghcr.io/cita-777/metapi";
-    finalImageTag = "v1.3.0";
-    archiveHash = "sha256-bNFHxgkIsRAFt1pdbZq3i0SDJiN5f3Q9w04Hr1sPlGU=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "StatefulSet"; namespace = "prod"; name = "metapi"; }
     ];
   }
   {
@@ -597,26 +584,6 @@
     ];
   }
   {
-    imageName = "ghcr.io/speaches-ai/speaches";
-    imageDigest = "sha256:21e3df06d842fb7802ab470dd77c25f0e8c0d22950e8d8c6ae886e851af53ef8";
-    finalImageName = "ghcr.io/speaches-ai/speaches";
-    finalImageTag = "0.8.3-cpu";
-    archiveHash = "sha256-ft/OzpuyXj6FkI7KuVUkc8nTx0qC2ZziyueRZ7oBDcc=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "speaches"; }
-    ];
-  }
-  {
     imageName = "mendhak/http-https-echo";
     imageDigest = "sha256:d072446da821a767d05dc19fa5ab6a27b1150bfb5c6ecfaecf3a2e5f9812794c";
     finalImageName = "mendhak/http-https-echo";
@@ -634,46 +601,6 @@
     ];
     targets = [
       { kind = "Deployment"; namespace = "staging"; name = "echo"; }
-    ];
-  }
-  {
-    imageName = "mikefarah/yq";
-    imageDigest = "sha256:0cb4a78491b6e62ee8a9bf4fbeacbd15b5013d19bc420591b05383a696315e60";
-    finalImageName = "mikefarah/yq";
-    finalImageTag = "4";
-    archiveHash = "sha256-75gHfj3UfR/sCKxautjAkGLXe8EBi+x+8jlV//L0zLw=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "napcat"; }
-    ];
-  }
-  {
-    imageName = "mlikiowa/napcat-docker";
-    imageDigest = "sha256:2acfef8952da052ec66d8608e69db555c02e5ccc6e27e2609d641a2bee99be23";
-    finalImageName = "mlikiowa/napcat-docker";
-    finalImageTag = "v4.18.4";
-    archiveHash = "sha256-x/WdKPVf5g/xLK7kxcBOkwkb0UPLxhM+ufKYiElzRNk=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "napcat"; }
     ];
   }
   {
@@ -1214,26 +1141,6 @@
     ];
     targets = [
       { kind = "Job"; namespace = "monitoring"; name = "victoria-metrics-k8s-stack-victoria-metrics-operator-cleanup-hook"; }
-    ];
-  }
-  {
-    imageName = "soulter/astrbot";
-    imageDigest = "sha256:d26eacf8aba492ae09ef781038ceea08a7c6f3bffbe222dbd8679ce642ed5c5f";
-    finalImageName = "soulter/astrbot";
-    finalImageTag = "v4.25.1";
-    archiveHash = "sha256-llrK0OfBUhR9yraCQu3eVPrzR3Nc4w9moYzZ4N0FgSk=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "astrbot"; }
     ];
   }
   {

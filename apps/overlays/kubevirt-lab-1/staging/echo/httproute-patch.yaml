@@ -1,6 +1,0 @@
-kind: will-be-ignored
-metadata:
-  name: will-be-ignored
-spec:
-  hostnames:
-    - echo.staging.isning.moe

@@ -15,12 +15,12 @@ spec:
   values:
     web:
       config:
-        baseURL: https://flux.isning.moe
+        baseURL: https://flux.ccsn.dev
         authentication:
           type: OAuth2
           oauth2:
             provider: OIDC
-            issuerURL: https://logto.isning.moe/oidc
+            issuerURL: https://login.ccsn.dev/oidc
             scopes:
               - openid
               - profile

@@ -33,4 +33,4 @@ spec:
           # volumeName: ''
         source:
           http:
-            url: http://kubevirt-file.isning.moe/vms/kubevirt-k3s-prod-1-master-1.qcow2
+            url: http://kubevirt-file.ccsn.dev/vms/kubevirt-k3s-prod-1-master-1.qcow2

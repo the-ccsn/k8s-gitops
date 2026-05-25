@@ -7,7 +7,7 @@ spec:
   parentRefs:
     - name: infra-gateway
       namespace: kube-system
-  hostnames: ["test1-vmagent.isning.moe"]
+  hostnames: ["test1-vmagent.ccsn.dev"]
   rules:
     - matches:
         - path:

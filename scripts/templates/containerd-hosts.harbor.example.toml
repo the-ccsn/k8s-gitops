@@ -18,7 +18,7 @@
 #
 # Replace placeholders before use:
 # - __SERVER__
-# - harbor.isning.moe (already set in this template)
+# - harbor.ccsn.dev (already set in this template)
 # - __HARBOR_PROJECT__      (dockerhub or ghcr)
 # - __HARBOR_USERNAME__
 # - __HARBOR_PASSWORD__
@@ -28,12 +28,12 @@
 
 server = "__SERVER__"
 
-[host."https://harbor.isning.moe/v2/__HARBOR_PROJECT__"]
+[host."https://harbor.ccsn.dev/v2/__HARBOR_PROJECT__"]
   capabilities = ["pull", "resolve"]
   override_path = true
   skip_verify = false
 
-  [host."https://harbor.isning.moe/v2/__HARBOR_PROJECT__".header]
+  [host."https://harbor.ccsn.dev/v2/__HARBOR_PROJECT__".header]
     authorization = "Basic __BASE64_HARBOR_CREDENTIALS__"
 
 # Optional fallback to upstream if Harbor cache is unavailable.

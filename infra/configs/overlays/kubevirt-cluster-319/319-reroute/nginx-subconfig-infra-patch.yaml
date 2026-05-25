@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 319-reroute-nginx-subconfig
+  namespace: 319-reroute
+data:
+  02-infra.conf: |
+    # Define Upstreams
+    upstream upstream_infra_http_backend {
+        server infra-gateway-istio.kube-system.svc.cluster.local:80;
+        keepalive 128;
+    }
+
+    upstream upstream_infra_https_backend {
+        server infra-gateway-istio.kube-system.svc.cluster.local:8080;
+        keepalive 128;
+    }
+
+    # HTTP Server
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name ~^(?<subdomain>[^.]+)\.i\.kubevirt-cluster-319\.isning\.moe$;
+
+        location / {
+            proxy_set_header Host $subdomain.ccsn.dev;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto http;
+            proxy_set_header X-Forwarded-Port 80;
+
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_request_buffering off;
+            
+            proxy_pass http://upstream_infra_http_backend;
+        }
+    }
+
+    # HTTPS Server (QUIC/H3)
+    server {
+        listen 443 quic;
+        listen 443 ssl;
+        listen [::]:443 quic;
+        listen [::]:443 ssl;
+        http2 on;
+        server_name ~^(?<subdomain>[^.]+)\.i\.kubevirt-cluster-319\.isning\.moe$;
+
+        ssl_certificate /etc/nginx/certs/tls.crt;
+        ssl_certificate_key /etc/nginx/certs/tls.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 1d;
+        ssl_session_tickets off;
+
+        add_header Alt-Svc 'h3=":443"; ma=86400';
+        quic_retry on;
+        ssl_early_data on;
+
+        location / {
+            proxy_set_header Host $subdomain.kubevirt-cluster-319.ccsn.dev;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Forwarded-Port 443;
+
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_request_buffering off;
+            
+            proxy_pass http://upstream_infra_https_backend;
+        }
+    }

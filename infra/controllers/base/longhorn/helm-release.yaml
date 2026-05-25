@@ -10,30 +10,18 @@ spec:
   chartRef:
     kind: OCIRepository
     name: helm-chart-longhorn
-    namespace: controllers
+    namespace: longhorn-system
   values:
-    image:
-      longhorn:
-        tag: v1.7.1
-    enablePSP: false
     defaultSettings:
-      taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule"
-      dataEngine: "v1"
+      v1DataEngine: "true"
       upgradeChecker: "false"
+      defaultDataPath: "/var/lib/longhorn"
     persistence:
-      longhornStorageClass: "longhorn"
-    resources:
-      manager:
-        requests:
-          cpu: 10m
-          memory: 64Mi
-      driver:
-        requests:
-          cpu: 10m
-          memory: 64Mi
-    priorityClass:
-      systemPriorityClass: system-node-critical
-    telemetry:
-      enabled: false
+      createStorageClass: true
+      dataEngine: "v1"
+      defaultClass: true
+      defaultReplicaCount: 3
+      defaultDataLocality: "best-effort"
+      defaultFsType: "ext4"
     openshift:
       enabled: false

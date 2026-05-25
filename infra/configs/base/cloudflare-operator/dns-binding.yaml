@@ -6,21 +6,21 @@ metadata:
 spec:
   endpoints:
     # MUST be patched
-  - dnsName: "clustername.ingress.cfd.isning.moe"
+  - dnsName: "clustername.ingress.cfd.ccsn.dev"
     recordType: CNAME
     targets:
     - 84bf09ad-68e3-4445-ae54-264d0088090a.cfargotunnel.com
     providerSpecific:
       - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
         value: "false"
-  - dnsName: "prod.ingress.cfd.isning.moe"
+  - dnsName: "prod.ingress.cfd.ccsn.dev"
     recordType: CNAME
     targets:
     - 84bf09ad-68e3-4445-ae54-264d0088090a.cfargotunnel.com
     providerSpecific:
       - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
         value: "false"
-  - dnsName: "staging.ingress.cfd.isning.moe"
+  - dnsName: "staging.ingress.cfd.ccsn.dev"
     recordType: CNAME
     targets:
     - 84bf09ad-68e3-4445-ae54-264d0088090a.cfargotunnel.com

@@ -1,0 +1,7 @@
+kind: will-be-ignored
+metadata:
+  name: will-be-ignored
+spec:
+  existingTunnel:
+    id: 84bf09ad-68e3-4445-ae54-264d0088090a
+    name: kubevirt-cluster-319-tunnel

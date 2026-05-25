@@ -6,7 +6,7 @@ metadata:
 spec:
   cloudflare:
     email: isning_sf@outlook.com
-    domain: isning.moe
+    domain: ccsn.dev
     secret: default-tunnel-secret
     accountId: 0fa2f8672cf2637118d8cfee9fe6b95f
   deployPatch: |

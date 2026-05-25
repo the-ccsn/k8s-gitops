@@ -10,7 +10,7 @@ spec:
     kind: Gateway
     name: infra-gateway
   jwtRules:
-    - issuer: https://logto.isning.moe/oidc
+    - issuer: https://login.ccsn.dev/oidc
       audiences:
         - m8rwqva1rsy9p2b3tbsad
       forwardOriginalToken: false
@@ -28,7 +28,7 @@ spec:
     kind: Gateway
     name: default-gateway
   jwtRules:
-    - issuer: https://logto.isning.moe/oidc
+    - issuer: https://login.ccsn.dev/oidc
       audiences:
         - m8rwqva1rsy9p2b3tbsad
       forwardOriginalToken: false
@@ -46,7 +46,7 @@ spec:
     kind: Gateway
     name: default-gateway
   jwtRules:
-    - issuer: https://logto.isning.moe/oidc
+    - issuer: https://login.ccsn.dev/oidc
       audiences:
         - m8rwqva1rsy9p2b3tbsad
       forwardOriginalToken: false

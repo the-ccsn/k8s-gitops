@@ -6,7 +6,7 @@ spec:
   parentRefs:
     - name: default-gateway
   hostnames:
-    - echo.isning.moe
+    - echo.ccsn.dev
   rules:
     - backendRefs:
       - name: echo

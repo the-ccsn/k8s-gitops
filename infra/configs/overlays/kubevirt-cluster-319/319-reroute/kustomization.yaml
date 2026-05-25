@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../base/319-reroute/
+
+patches:
+  - target:
+      kind: Certificate
+      name: 319-reroute-tls
+      namespace: 319-reroute
+    patch: |-
+      - op: replace
+        path: /spec/dnsNames/0
+        value: "*.kubevirt-cluster-319.ccsn.dev"
+
+  - target:
+      kind: Service
+      name: 319-reroute
+      namespace: 319-reroute
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/external-dns.alpha.kubernetes.io~1hostname
+        value: "*.kubevirt-cluster-319.319.ccsn.dev,*.319.ccsn.dev,*.319.staging.ccsn.dev"
+
+  - path: ./nginx-subconfig-infra-patch.yaml
+    target:
+      kind: ConfigMap
+      name: 319-reroute-nginx-subconfig
+      namespace: 319-reroute

@@ -1,0 +1,6 @@
+kind: will-be-ignored
+metadata:
+  name: will-be-ignored
+spec:
+  hostnames:
+    - echo.staging.ccsn.dev

@@ -15,7 +15,7 @@ data:
           "external_ui_download_url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
           "external_ui_download_detour": "AllNodes",
           "access_control_allow_origin": [
-            "https://proxy-engine.isning.moe"
+            "https://proxy-engine.ccsn.dev"
           ]
         }
       },

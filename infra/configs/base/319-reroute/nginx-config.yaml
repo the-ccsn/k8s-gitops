@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 319-reroute-nginx-config
+data:
+  nginx.conf: |
+    # Enable PCRE JIT for maximum regex performance
+    pcre_jit on;
+    worker_processes auto;
+
+    events {
+        # Set max worker connections
+        worker_connections 10240;
+        multi_accept on;
+    }
+
+    http {
+        # Disable access log for gigabit throughput
+        access_log off;
+        error_log /var/log/nginx/error.log warn;
+
+        # Basic Settings
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        include /etc/nginx/conf.d/*.conf;
+    }

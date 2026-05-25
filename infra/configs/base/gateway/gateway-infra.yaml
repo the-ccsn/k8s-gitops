@@ -10,14 +10,14 @@ spec:
     annotations:
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "false" # Disable Cloudflare proxy for this service
       # MUST be patched
-      external-dns.alpha.kubernetes.io/hostname: "clustername.ingress.internal.isning.moe" # Set the desired hostnames for External DNS
+      external-dns.alpha.kubernetes.io/hostname: "clustername.ingress.internal.ccsn.dev" # Set the desired hostnames for External DNS
   gatewayClassName: istio
   listeners:
     # Used for internal reroute
     - name: http
       protocol: HTTP
       port: 8080
-      hostname: "*.clustername.isning.moe"
+      hostname: "*.clustername.ccsn.dev"
       allowedRoutes:
         kinds:
           - kind: HTTPRoute
@@ -33,7 +33,7 @@ spec:
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: "*.clustername.isning.moe"
+      hostname: "*.clustername.ccsn.dev"
       tls:
         mode: Terminate
         certificateRefs:
@@ -74,7 +74,7 @@ spec:
     - name: http-raw
       protocol: HTTP
       port: 80
-      hostname: "*.clustername.isning.moe"
+      hostname: "*.clustername.ccsn.dev"
       allowedRoutes:
         kinds:
           - kind: HTTPRoute
@@ -101,7 +101,7 @@ spec:
       name: http-listener-set
       sectionName: http-raw
   hostnames:
-  - "*.clustername.isning.moe"
+  - "*.clustername.ccsn.dev"
   rules:
   - filters:
     - type: RequestRedirect

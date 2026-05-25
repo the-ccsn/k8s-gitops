@@ -7,7 +7,7 @@ spec:
   parentRefs:
     - name: infra-gateway
       namespace: kube-system
-  hostnames: ["loki-gateway.isning.moe"]
+  hostnames: ["loki-gateway.ccsn.dev"]
   rules:
     - matches:
         - path:

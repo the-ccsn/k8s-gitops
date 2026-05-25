@@ -9,7 +9,7 @@
 #   parentRefs:
 #     - name: infra-gateway
 #       namespace: kube-system
-#   hostnames: ["kiali.isning.moe"]
+#   hostnames: ["kial319.ccsn.dev"]
 #   rules:
 #     - matches:
 #         - path:
@@ -28,7 +28,7 @@ spec:
   parentRefs:
     - name: default-gateway
       namespace: prod
-  hostnames: ["kiali.isning.moe"]
+  hostnames: ["kial319.ccsn.dev"]
   rules:
     - matches:
         - path:

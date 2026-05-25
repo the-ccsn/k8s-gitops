@@ -16,7 +16,7 @@ spec:
     - to:
         - operation:
             hosts:
-              - proxy-engine.isning.moe
+              - proxy-engine.ccsn.dev
 ---
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
@@ -33,7 +33,7 @@ spec:
     - to:
         - operation:
             hosts:
-              - proxy-engine.isning.moe
+              - proxy-engine.ccsn.dev
       when:
         - key: request.auth.claims[roles]
           notValues:

@@ -92,7 +92,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: i-reroute
+  name: 319-reroute
 ---
 apiVersion: v1
 kind: Namespace

@@ -33,7 +33,7 @@ sudo crictl pull docker.io/library/busybox:latest
 ```
 
 These pulls should be rewritten by the node runtime to Harbor automatically.
-If you pull `harbor.i.isning.moe/ghcr/...` directly, you are bypassing the mirror
+If you pull `harbor.319.ccsn.dev/ghcr/...` directly, you are bypassing the mirror
 rewrite path and testing Harbor project resolution instead.
 
 ## Initialize Proxy Cache Projects

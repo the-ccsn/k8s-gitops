@@ -26,7 +26,7 @@ spec:
       parentRefs:
         - name: default-gateway
       hostnames:
-        - headlamp.isning.moe
+        - headlamp.ccsn.dev
       # Optional: custom routing rules. If omitted, chart defaults to path prefix '/'
       # rules:
       #   - matches:
@@ -35,15 +35,15 @@ spec:
       #           value: "/"
 
     config:
-      # baseURL: https://headlamp.isning.moe
+      # baseURL: https://headlamp.ccsn.dev
       watchPlugins: true
       oidc:
         clientID: "xktx7x81fvdwvx3a0ly62"
-        issuerURL: "https://logto.isning.moe/oidc"
+        issuerURL: "https://login.ccsn.dev/oidc"
         scopes: "openid email profile offline_access roles"
         usePKCE: true
         useCookie: false
-        meUserInfoURL: "https://logto.isning.moe/oidc/me"
+        meUserInfoURL: "https://login.ccsn.dev/oidc/me"
 
     # Resource requests and limits for Headlamp pod
     resources:

@@ -1,8 +1,0 @@
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: bay
-  labels:
-    app.kubernetes.io/name: bay
-    app.kubernetes.io/part-of: shipyard-neo

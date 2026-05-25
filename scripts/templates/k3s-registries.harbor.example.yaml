@@ -10,7 +10,7 @@
 # - mcr.microsoft.com -> harbor project "mcr"
 #
 # Replace placeholders before use:
-# - harbor.isning.moe (already set in this template)
+# - harbor.ccsn.dev (already set in this template)
 # - __HARBOR_USERNAME__
 # - __HARBOR_PASSWORD__
 #
@@ -20,48 +20,48 @@
 mirrors:
   docker.io:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "dockerhub/$1"
 
   ghcr.io:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "ghcr/$1"
 
   quay.io:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "quay/$1"
 
   registry.k8s.io:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "registry-k8s/$1"
 
   gcr.io:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "gcr/$1"
 
   k8s.gcr.io:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "gcr/$1"
 
   mcr.microsoft.com:
     endpoint:
-      - "https://harbor.isning.moe"
+      - "https://harbor.ccsn.dev"
     rewrite:
       "^(.*)$": "mcr/$1"
 
 configs:
-  "harbor.isning.moe":
+  "harbor.ccsn.dev":
     auth:
       username: "__HARBOR_USERNAME__"
       password: "__HARBOR_PASSWORD__"

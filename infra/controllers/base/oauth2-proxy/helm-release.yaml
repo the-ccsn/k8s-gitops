@@ -36,9 +36,9 @@ spec:
             additionalClaims:
               - roles
             oidcConfig:
-              issuerURL: https://logto.isning.moe/oidc
+              issuerURL: https://login.ccsn.dev/oidc
               groupsClaim: roles
-            profileURL: https://logto.isning.moe/oidc/me
+            profileURL: https://login.ccsn.dev/oidc/me
         injectResponseHeaders:
           - name: X-OAuth2-Gateway-User
             values:
@@ -61,15 +61,15 @@ spec:
               - claimSource:
                   claim: access_token
     extraArgs:
-      redirect-url: "https://oauth2-gateway.isning.moe/oauth2/callback"
+      redirect-url: "https://oauth2-gateway.ccsn.dev/oauth2/callback"
       reverse-proxy: "true"
       skip-provider-button: "true"
       cookie-secure: "true"
       cookie-expire: "168h" # 7 days, no support for 'd' suffix
       cookie-refresh: "15m"
       cookie-samesite: "lax"
-      cookie-domain: ".isning.moe"
-      whitelist-domain: ".isning.moe"
+      cookie-domain: ".ccsn.dev"
+      whitelist-domain: ".ccsn.dev"
     gatewayApi:
       enabled: true
       gatewayRef:
@@ -77,7 +77,7 @@ spec:
         name: default-gateway
         namespace: prod
       hostnames:
-        - oauth2-gateway.isning.moe
+        - oauth2-gateway.ccsn.dev
     resources:
       requests:
         cpu: "10m"

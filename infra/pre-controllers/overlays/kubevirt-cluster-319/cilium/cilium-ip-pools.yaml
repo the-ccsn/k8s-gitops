@@ -1,0 +1,19 @@
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "default-internal-ipv4-pool"
+spec:
+  allowFirstLastIPs: No
+  blocks:
+  - cidr: "172.30.0.0/24"
+
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "default-public-ipv6-pool"
+spec:
+  allowFirstLastIPs: No
+  blocks:
+  - cidr: "2001:da8:237:951:319::0/112"

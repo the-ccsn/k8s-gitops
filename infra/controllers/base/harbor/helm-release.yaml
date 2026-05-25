@@ -24,7 +24,7 @@ spec:
       type: route
       route:
         hosts:
-        - harbor.isning.moe
+        - harbor.ccsn.dev
         parentRefs:
         - group: gateway.networking.k8s.io
           kind: Gateway
@@ -32,7 +32,7 @@ spec:
           namespace: prod
       tls:
         enabled: false
-    externalURL: https://harbor.isning.moe
+    externalURL: https://harbor.ccsn.dev
 
     # Route Harbor's outbound requests through the cluster egress proxy.
     proxy:

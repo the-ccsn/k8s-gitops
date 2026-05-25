@@ -12,7 +12,7 @@ spec:
     namespace: prod
   values:
     # HTTPS required for Passkey support
-    domain: 'https://vault.isning.moe'
+    domain: 'https://vault.ccsn.dev'
 
     vaultwarden:
       signupsAllowed: false
@@ -31,10 +31,10 @@ spec:
       enabled: true
       host: smtp.office365.com
       port: 587
-      from: noreply@isning.moe
+      from: noreply@ccsn.dev
       fromName: Vaultwarden
       security: starttls
-      username: noreply@isning.moe
+      username: noreply@ccsn.dev
       existingSecret: vaultwarden-smtp
       existingSecretPasswordKey: password
 
@@ -61,7 +61,7 @@ spec:
       - name: SSO_ALLOW_UNKNOWN_EMAIL_VERIFICATION # Allow unknown email verification status (default false). Allowing this with SSO_SIGNUPS_MATCH_EMAIL open potential account takeover.
         value: "false"
       - name: SSO_AUTHORITY
-        value: "https://logto.isning.moe/oidc"
+        value: "https://login.ccsn.dev/oidc"
       - name: SSO_SCOPES
         value: "openid email profile offline_access"
       - name: SSO_CLIENT_ID

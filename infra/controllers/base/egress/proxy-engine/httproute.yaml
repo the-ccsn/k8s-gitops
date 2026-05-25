@@ -11,7 +11,7 @@ spec:
       name: default-gateway
       namespace: prod
   hostnames:
-    - proxy-engine.isning.moe
+    - proxy-engine.ccsn.dev
   rules:
     - matches:
         - path:

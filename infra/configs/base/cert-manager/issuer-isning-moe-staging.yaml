@@ -28,4 +28,4 @@ spec:
             key: api-token
       selector:
         dnsZones:
-        - 'staging.isning.moe'
+        - 'staging.ccsn.dev'

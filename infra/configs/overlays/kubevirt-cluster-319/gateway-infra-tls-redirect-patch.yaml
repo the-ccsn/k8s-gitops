@@ -1,0 +1,6 @@
+kind: will-be-ignored
+metadata:
+  name: will-be-ignored
+spec:
+  hostnames:
+  - "*.kubevirt-cluster-319.ccsn.dev"

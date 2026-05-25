@@ -19,22 +19,22 @@ spec:
         secretKeyRef:
           name: logto-pg-cluster-app
           key: uri
-    endpoint: "https://logto.isning.moe"
+    endpoint: "https://login.ccsn.dev"
 
     httpRoute:
       enabled: true
       parentRefs:
         - name: default-gateway
       hostnames:
-        - logto.isning.moe
+        - login.ccsn.dev
     console:
-      endpoint: "https://logto-dash.isning.moe"
+      endpoint: "https://logto-dash.ccsn.dev"
       httpRoute:
         enabled: true
         parentRefs:
           - name: default-gateway
         hostnames:
-          - logto-dash.isning.moe
+          - logto-dash.ccsn.dev
     resources:
       limits:
         cpu: 1500m

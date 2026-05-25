@@ -27,4 +27,4 @@ spec:
             key: api-token
       selector:
         dnsZones:
-        - 'isning.moe'
+        - 'ccsn.dev'

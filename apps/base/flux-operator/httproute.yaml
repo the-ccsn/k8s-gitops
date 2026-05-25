@@ -9,7 +9,7 @@ spec:
       kind: Gateway
       name: default-gateway
   hostnames:
-    - "flux.isning.moe"
+    - "flux.ccsn.dev"
   rules:
     - matches:
         - path:

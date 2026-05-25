@@ -1,0 +1,27 @@
+---
+kind: will-be-ignored
+metadata:
+  name: will-be-ignored
+spec:
+  values:
+    # https://github.com/cilium/cilium/pull/37601
+    k8s:
+      # Space separated
+      apiServerURLs: https://192.168.1.181:6443
+
+    # TODO: Add services CIDR after Cilium supports multiple CIDRs: https://github.com/cilium/cilium/issues/21945
+    ipv4NativeRoutingCIDR: 172.16.0.0/16
+    ipv6NativeRoutingCIDR: fdfd:cafe:00:0001::/64
+
+    operator:
+      replicas: 1 # For now that I have only 1 node
+
+    bpf:
+      # Use l2 insead l3 for KubeVirt compatability https://github.com/cilium/cilium/issues/37265#issuecomment-2626483413
+      datapathMode: netkit-l2
+
+    # ============================  L2 Announcements  ============================
+    # https://docs.cilium.io/en/stable/network/l2-announcements/
+    k8sClientRateLimit:
+      qps: 100
+      burst: 200

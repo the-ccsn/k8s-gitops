@@ -9,14 +9,14 @@ spec:
   infrastructure:
     annotations:
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "false" # Disable Cloudflare proxy for this service
-      external-dns.alpha.kubernetes.io/hostname: "prod.ingress.internal.isning.moe" # Set the desired hostnames for External DNS
+      external-dns.alpha.kubernetes.io/hostname: "prod.ingress.internal.ccsn.dev" # Set the desired hostnames for External DNS
   gatewayClassName: istio
   listeners:
     # Used for internal reroute
     - name: http
       protocol: HTTP
       port: 8080
-      hostname: "*.isning.moe"
+      hostname: "*.ccsn.dev"
       allowedRoutes:
         kinds:
           - kind: HTTPRoute
@@ -31,7 +31,7 @@ spec:
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: "*.isning.moe"
+      hostname: "*.ccsn.dev"
       tls:
         mode: Terminate
         certificateRefs:
@@ -64,7 +64,7 @@ spec:
     - name: http-raw
       protocol: HTTP
       port: 80
-      hostname: "*.isning.moe"
+      hostname: "*.ccsn.dev"
       allowedRoutes:
         kinds:
           - kind: HTTPRoute
@@ -84,7 +84,7 @@ spec:
       name: http-listener-set
       sectionName: http-raw
   hostnames:
-  - "*.isning.moe"
+  - "*.ccsn.dev"
   rules:
   - filters:
     - type: RequestRedirect

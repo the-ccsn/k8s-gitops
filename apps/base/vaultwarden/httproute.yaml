@@ -7,7 +7,7 @@ spec:
   parentRefs:
     - name: default-gateway
   hostnames:
-    - vault.isning.moe
+    - vault.ccsn.dev
   rules:
     - matches:
         - path:

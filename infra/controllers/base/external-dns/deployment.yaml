@@ -63,7 +63,7 @@ spec:
             # https://kubernetes-sigs.github.io/external-dns/latest/docs/flags/
             - --source=crd # ingress is also possible
             - --source=service # ingress is also possible
-            - --domain-filter=isning.moe # (optional) limit to only example.com domains; change to match the zone created above.
+            - --domain-filter=ccsn.dev # (optional) limit to only example.com domains; change to match the zone created above.
             - --zone-id-filter=d312fc3ca1ba63f694bd0c127fdb441e # (optional) limit to a specific zone.
             - --provider=cloudflare
             - --cloudflare-dns-records-per-page=5000 # (optional) configure how many DNS records to fetch per request

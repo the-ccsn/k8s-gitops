@@ -26,7 +26,7 @@ spec:
           strategy: openid
           openid:
             client_id: "xktx7x81fvdwvx3a0ly62"
-            issuer_uri: "https://logto.isning.moe/oidc"
+            issuer_uri: "https://login.ccsn.dev/oidc"
             scopes:
               - "openid"
               - "profile"
@@ -56,7 +56,7 @@ spec:
               memory: "1Gi"
           view_only_mode: false
         
-        installation_tag: "Kiali@kubevirt-lab-1"
+        installation_tag: "Kiali@kubevirt-cluster-319"
 
         external_services:
           # [Required] Kiali requires Prometheus to generate the topology graph,
@@ -71,8 +71,8 @@ spec:
             health_check_url: ""
             is_core: true
             query_scope:
-              cluster: "kubevirt-lab-1"
-            url: "http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428" # "https://prometheus.isning.moe"
+              cluster: "kubevirt-cluster-319"
+            url: "http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428" # "https://prometheus.ccsn.dev"
           # [Optional] Kiali will query Grafana and try to fetch the configured Istio dashboards.
           # For this reason Kiali must be able to reach Grafana, authenticate, and find the Istio dashboards.
           # https://kiali.io/docs/configuration/p8s-jaeger-grafana/grafana/
@@ -85,7 +85,7 @@ spec:
             # Grafana service name is "grafana" and is in the "telemetry" namespace.
             internal_url: 'http://grafana-service.prod.svc.cluster.local:3000/'
             # Public facing URL of Grafana
-            external_url: 'https://grafana.isning.moe'
+            external_url: 'https://grafana.ccsn.dev'
           # [Optional] Jaeger is a highly recommended service because Kiali uses distributed tracing data for
           # several features, providing an enhanced experience.
           tracing:

@@ -6,7 +6,7 @@ This is a **GitOps repository** for personal Kubernetes clusters managed by
 [FluxCD](https://fluxcd.io/). All cluster state is declared here as YAML; FluxCD
 continuously reconciles the cluster to match what is committed.
 
-The active cluster is **`kubevirt-lab-1`** (a KubeVirt-based homelab). Clusters are
+The active cluster is **`kubevirt-cluster-319`** (a KubeVirt-based homelab). Clusters are
 provisioned separately via
 [isning/nix-config](https://github.com/isning/nix-config/tree/main/hosts/k8s).
 
@@ -17,7 +17,7 @@ provisioned separately via
 ```
 .
 ├── clusters/               # Per-cluster FluxCD entry points
-│   └── kubevirt-lab-1/     # Kustomizations that wire infra → apps → vms together
+│   └── kubevirt-cluster-319/     # Kustomizations that wire infra → apps → vms together
 ├── infra/                  # Cluster-wide infrastructure
 │   ├── namespaces/         # Namespace definitions (prune: false — never auto-delete)
 │   ├── pre-controllers/    # Bootstrap-level controllers (Cilium CNI, Flux itself, storage)
@@ -193,7 +193,7 @@ flux suspend ks vms && flux resume ks vms
 
 1. Create `apps/base/<app-name>/` with manifests + `kustomization.yaml`.
 2. Reference it from the appropriate overlay:
-   `apps/overlays/kubevirt-lab-1/{prod,staging}/kustomization.yaml`.
+   `apps/overlays/kubevirt-cluster-319/{prod,staging}/kustomization.yaml`.
 3. If the app needs its own namespace, declare it in `infra/namespaces/apps.yaml`.
 4. If the app requires secrets, encrypt them with `sops` before committing.
 5. Run `./scripts/validate.sh` locally before opening a PR.
@@ -202,6 +202,6 @@ flux suspend ks vms && flux resume ks vms
 
 1. Create `infra/controllers/base/<name>/` with `helm-repo.yaml`, `helm-release.yaml`,
    `kustomization.yaml`.
-2. Add it to `infra/controllers/overlays/kubevirt-lab-1/kustomization.yaml`.
+2. Add it to `infra/controllers/overlays/kubevirt-cluster-319/kustomization.yaml`.
 3. If the operator provides CRDs, place the corresponding CRs in `infra/configs/` (not
    `infra/controllers/`) so `dependsOn` ordering is respected.

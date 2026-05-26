@@ -5,10 +5,10 @@ metadata:
   namespace: cloudflare-operator-system
 spec:
   cloudflare:
-    email: isning_sf@outlook.com
+    email: sysops@ccsn.dev
     domain: ccsn.dev
     secret: default-tunnel-secret
-    accountId: 0fa2f8672cf2637118d8cfee9fe6b95f
+    accountId: 579df294982535e588d6ab45d1971da2
   deployPatch: |
     spec:
       replicas: 1

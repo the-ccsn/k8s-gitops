@@ -9,7 +9,7 @@ spec:
         externalLabels:
           # For multi-cluster setups it is useful to use "cluster" label to identify the metrics source.
           cluster: kubevirt-cluster-319
-          env: kubevirtt
+          env: kubevirt
       ingress:
         hosts:
           - kubevirt-vmagent.ccsn.dev

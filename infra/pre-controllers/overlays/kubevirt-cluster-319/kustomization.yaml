@@ -5,7 +5,8 @@ resources:
   - ../../base/local-path-provisioner/
   - ../../base/cilium/
   - ../../base/secrets/
-  - ./cilium
+  - ./cilium/
+  - ./kubevip/
   - ../../base/flux/
   - ../../base/tofu-controller/
 

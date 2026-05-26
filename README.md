@@ -197,7 +197,7 @@ To encrypt specific values in a yaml file using age's putlic key:
 
 ```bash
 # This is the age recipient public key, it's printed when you generate the age key
-export AGE_RECIPIENT=age167wn2qepdh87r0fqks69s0em09fkve4nrpuuxdrvgdr0dfmqpf2q08uzxn
+export AGE_RECIPIENT=age1td0htsklm8xpsvcync3ulwxs82w5a9a03eeq9wwg8pm2mx3t99fqtgyhhs
 
 # Encrypting only specific values in a yaml file
 sops --encrypt --age=${AGE_RECIPIENT} \

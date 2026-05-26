@@ -1,0 +1,64 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPPeerConfig
+metadata:
+  name: cilium-bgp-peer
+spec:
+  authSecretRef: cilium-bgp-auth
+  transport:
+    sourceInterface: ovsbr1
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: bgp
+    - afi: ipv6
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: bgp
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement
+metadata:
+  name: cilium-bgp-advertisements
+  labels:
+    advertise: bgp
+spec:
+  advertisements:
+    - advertisementType: Service
+      service:
+        addresses:
+          - LoadBalancerIP
+          - ExternalIP
+      selector:
+        matchExpressions:
+          - key: somekey
+            operator: NotIn
+            values:
+              - never-used-value
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPClusterConfig
+metadata:
+  name: cilium-bgp
+spec:
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/lb-gateway
+        operator: Exists
+  bgpInstances:
+    - name: instance-65001
+      localASN: 65001
+      peers:
+        - name: peer-main-router-v4
+          peerASN: 65000
+          peerAddress: 192.168.1.1
+          peerConfigRef:
+            name: cilium-bgp-peer
+        - name: peer-main-router-v6-ula
+          peerASN: 65000
+          peerAddress: fd30:28b2:b835::1
+          peerConfigRef:
+            name: cilium-bgp-peer

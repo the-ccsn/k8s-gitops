@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cilium-bgp-auth
+type: Opaque
+stringData:
+  password: ENC[AES256_GCM,data:evCgeSFUYBVUgRQcgRJChw==,iv:1T8F/5ZGI3zwwTcpisSIgumSqK0Um8gaeMzLa3vPNR8=,tag:qfmhJuc3oB1Ty6XmrnK8Qw==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBSY3Z6cjhSVmVkVFhnRWhW
+        MmZQbm0xY1hZdm1OcldTZnJVQVVqa3dhcWxZCnFqb1BXVUI3V1ZweUlvUmQvMmQ0
+        b3ovaGdUMjZEc2MzRkZlZ2hIcUdnUkEKLS0tIGozQkhyS0FrcWFoQmUybU81YkUw
+        cFVqWm0vLytkK0NzMHhtM2pXMXRYaXcKXdNsmqeF9PeOB+9zU3pJQL+l6AqSwwYd
+        wDcd/VCSM4zncHQAyr08Mamn/1c9X6nameM7IM6U+H8rG+EfVzyrLg==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1td0htsklm8xpsvcync3ulwxs82w5a9a03eeq9wwg8pm2mx3t99fqtgyhhs
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-05-26T13:43:42Z"
+  mac: ENC[AES256_GCM,data:h6YBttuzrjYFHU87HY4IjENhVplYq1GJ3BXdiUeTc4oBGphQdBuMqBrLyeFOmnsysml/Bf6iNn1R/IBe4Sji0wlLr2uZ+TIUY4heUb8IJRXyZeJz8QPZoYrcblIffL3wXbRs1V6DV4Q0Ipv/pMfaTfjn3ibKywDlUu+6Eav09a4=,iv:RPUxiIyvmm+knPHhZ6H7IpU9FsYQnuMzprsXPElSGXk=,tag:ivhLExk+Hyl4vUmfCFyi7A==,type:str]
+  version: 3.13.1

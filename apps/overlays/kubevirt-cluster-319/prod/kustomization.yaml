@@ -4,9 +4,9 @@ kind: Kustomization
 namespace: prod
 commonLabels:
   app.kubernetes.io/env: prod
-resources:
-  - ./../../../base/grafana/
-  - ./../../../base/logto/
-  - ./../../../base/headlamp/
-  - ./../../../base/flux-operator/
-  - ./../../../base/vaultwarden/
+resources: []
+  # - ./../../../base/grafana/
+  # - ./../../../base/logto/
+  # - ./../../../base/headlamp/
+  # - ./../../../base/flux-operator/
+  # - ./../../../base/vaultwarden/

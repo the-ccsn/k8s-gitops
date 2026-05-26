@@ -5,7 +5,7 @@ metadata:
   namespace: prod
 spec:
   acme:
-    email: isning_sf@outlook.com
+    email: sysops@ccsn.dev
     # If the ACME server supports profiles, you can specify the profile name here.
     # See #acme-certificate-profiles below.
     profile: tlsserver

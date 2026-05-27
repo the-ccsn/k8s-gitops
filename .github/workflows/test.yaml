@@ -183,7 +183,6 @@ jobs:
         env:
           CLUSTER: ${{ matrix.cluster }}
           RESOURCE: ${{ matrix.resource }}
-          DIFF_OUTPUT: ${{ steps.diff.outputs.diff }}
           DIFF_OUTCOME: ${{ steps.diff.outcome }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
         run: |
@@ -196,7 +195,7 @@ jobs:
             "cluster": os.environ["CLUSTER"],
             "resource": os.environ["RESOURCE"],
             "outcome": os.environ["DIFF_OUTCOME"],
-            "diff": os.environ.get("DIFF_OUTPUT", ""),
+            "diff": json.loads(r'''${{ toJSON(steps.diff.outputs.diff) }}'''),
             "run_url": os.environ["RUN_URL"],
           }
 

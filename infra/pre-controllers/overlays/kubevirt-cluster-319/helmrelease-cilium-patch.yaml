@@ -7,7 +7,7 @@ spec:
     # https://github.com/cilium/cilium/pull/37601
     k8s:
       # Space separated
-      apiServerURLs: https://192.168.1.181:6443
+      apiServerURLs: https://192.168.1.163:6443
 
     # TODO: Add services CIDR after Cilium supports multiple CIDRs: https://github.com/cilium/cilium/issues/21945
     ipv4NativeRoutingCIDR: 172.16.0.0/16

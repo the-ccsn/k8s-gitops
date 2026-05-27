@@ -20,48 +20,6 @@
     ];
   }
   {
-    imageName = "bitnami/kubectl";
-    imageDigest = "sha256:e2b97dde9666986c61c56d49aae85a714b89b69392baa531438e74ec34096fb4";
-    finalImageName = "bitnami/kubectl";
-    finalImageTag = "latest";
-    archiveHash = "sha256-bbVcSSHFMn3yp859lDqkljtnngyAkzCFKtKkXHPOEI8=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "unknown ns"; name = "logto"; }
-    ];
-  }
-  {
-    imageName = "busybox";
-    imageDigest = "sha256:fd8d9aa63ba2f0982b5304e1ee8d3b90a210bc1ffb5314d980eb6962f1a9715d";
-    finalImageName = "busybox";
-    finalImageTag = "latest";
-    archiveHash = "sha256-9DvvHCHyDfRTkn58IbNOZODsjIcbmFvRPwpC0uYofzQ=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Job"; namespace = "unknown ns"; name = "logto-pre-app-1"; }
-    ];
-  }
-  {
     imageName = "cloudflare/cloudflared";
     imageDigest = "sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9";
     finalImageName = "cloudflare/cloudflared";
@@ -187,45 +145,23 @@
     ];
   }
   {
-    imageName = "docker.io/helmforge/mc";
-    imageDigest = "sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727";
-    finalImageName = "docker.io/helmforge/mc";
-    finalImageTag = "1.0.0";
-    archiveHash = "sha256-8xPttbm6vhgjwnRXIxocms9wrClLTETa8bU31hrsC2s=";
+    imageName = "docker.io/library/python";
+    imageDigest = "sha256:dd4d2bd5b53d9b25a51da13addf2be586beebd5387e289e798e4083d94ca837a";
+    finalImageName = "docker.io/library/python";
+    finalImageTag = "3.14-alpine";
+    archiveHash = "sha256-oXI5nXZgQsPL29gXKudeiMC1LBelnSdIiXRxzW2F2T4=";
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
     ];
     sourceChains = [
       [
-        { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
     targets = [
-      { kind = "CronJob"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden-backup"; }
-    ];
-  }
-  {
-    imageName = "docker.io/library/alpine";
-    imageDigest = "sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601";
-    finalImageName = "docker.io/library/alpine";
-    finalImageTag = "3.22";
-    archiveHash = "sha256-VHY3iJVzBNemI5WJ1BRfsfjOUDv6N/UZSJJYmoikFXI=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "CronJob"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden-backup"; }
+      { kind = "Deployment"; namespace = "egress-system"; name = "proxy-engine"; }
     ];
   }
   {
@@ -314,27 +250,6 @@
     ];
     targets = [
       { kind = "Deployment"; namespace = "kube-system"; name = "local-path-provisioner"; }
-    ];
-  }
-  {
-    imageName = "docker.io/vaultwarden/server";
-    imageDigest = "sha256:d626d04934cd1192ad8ced1adb975099fca78cec33ab467d2d3c923cde7f3b0c";
-    finalImageName = "docker.io/vaultwarden/server";
-    finalImageTag = "1.36.0";
-    archiveHash = "sha256-0nfPTInWIYZGyPwRRC1aYKAKC7jVQeRlIWe3HmyNzrE=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden"; }
     ];
   }
   {
@@ -443,65 +358,6 @@
     ];
   }
   {
-    imageName = "ghcr.io/headlamp-k8s/headlamp-plugin-cert-manager";
-    imageDigest = "sha256:d7d0321a90c0347e2e4f9f7e362ecaa10a36592cc5ac8fd1514df11c476b43fe";
-    finalImageName = "ghcr.io/headlamp-k8s/headlamp-plugin-cert-manager";
-    finalImageTag = "v0.1.0";
-    archiveHash = "sha256-K8fgubGpDrmeagg3nqTUnP9PN0SW77TLN2CcRTyc+m8=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [];
-  }
-  {
-    imageName = "ghcr.io/headlamp-k8s/headlamp-plugin-flux";
-    imageDigest = "sha256:055377b9011dcc73235e8969c488ecd92af5cb70aa5d5df0f66c1cea667fdccb";
-    finalImageName = "ghcr.io/headlamp-k8s/headlamp-plugin-flux";
-    finalImageTag = "v0.6.0";
-    archiveHash = "sha256-4ADArqRNWx9gzmhBa9rpEYTJZJ14rY6N78bAi6wqZ8Y=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [];
-  }
-  {
-    imageName = "ghcr.io/headlamp-k8s/headlamp";
-    imageDigest = "sha256:c9754bae1d799220da0547e51ceee234f6e66ebadc138518ca73e33ecd331e59";
-    finalImageName = "ghcr.io/headlamp-k8s/headlamp";
-    finalImageTag = "v0.42.0";
-    archiveHash = "sha256-NX0uuwxxZMwBHuJCWDhVvxgV8CO69j5y6ODttDP0vPg=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "prod"; name = "headlamp"; }
-    ];
-  }
-  {
     imageName = "ghcr.io/isning/redroid-operator";
     imageDigest = "sha256:f5e367011b405a3b5c594a6821d8806b4990d09cdc91eae9e4983a106dc9142e";
     finalImageName = "ghcr.io/isning/redroid-operator";
@@ -523,45 +379,24 @@
     ];
   }
   {
-    imageName = "ghcr.io/logto-io/logto";
-    imageDigest = "sha256:9dc15595766961d0d81d1026fc38294eacf3ce32d6dab2e9dbeb6d9b10e7a031";
-    finalImageName = "ghcr.io/logto-io/logto";
-    finalImageTag = "1.39.0";
-    archiveHash = "sha256-9nCGTsOFAYarcXbjAP88GYu+LzUM9S6xCmKOJ0KuyiY=";
+    imageName = "ghcr.io/kube-vip/kube-vip";
+    imageDigest = "sha256:840305b94ef2a89abb3b7fd2b09edfbde690d90052020da4dff90679fe892da2";
+    finalImageName = "ghcr.io/kube-vip/kube-vip";
+    finalImageTag = "v1.1.2";
+    archiveHash = "sha256-qnsQ6zq4wrll/Jj3hpQFOv7D1s0vVN0LJcZYUGJAIew=";
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-pre-controllers"; }
     ];
     sourceChains = [
       [
-        { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-pre-controllers"; }
       ]
     ];
     targets = [
-      { kind = "Deployment"; namespace = "unknown ns"; name = "logto"; }
-      { kind = "Job"; namespace = "unknown ns"; name = "logto-pre-app-1"; }
+      { kind = "DaemonSet"; namespace = "kube-system"; name = "kube-vip-ds"; }
     ];
-  }
-  {
-    imageName = "ghcr.io/naval-group/headlamp-kubevirt";
-    imageDigest = "sha256:7cdff58fdda4f3ad7b7a208b83744ec82648795056cf726f0ce5df2501ee3d14";
-    finalImageName = "ghcr.io/naval-group/headlamp-kubevirt";
-    finalImageTag = "0.2.2";
-    archiveHash = "sha256-kF1hnipCHJmyujf3G8o1q/LtogrPKMDMW5jD1976rKk=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "headlamp"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [];
   }
   {
     imageName = "ghcr.io/sagernet/sing-box";
@@ -621,48 +456,6 @@
     ];
     targets = [
       { kind = "Deployment"; namespace = "319-reroute"; name = "319-reroute-proxy"; }
-    ];
-  }
-  {
-    imageName = "postgres";
-    imageDigest = "sha256:df7bca0066e6f60cc3dd32faa70caddec20e2c22b58932f79498e5704b23854a";
-    finalImageName = "postgres";
-    finalImageTag = "15-alpine";
-    archiveHash = "sha256-kFJJTWPAw4k+xerrB8pUMFn9rxn6o9UaYdxEejGNzmw=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "logto"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "unknown ns"; name = "logto"; }
-      { kind = "Job"; namespace = "unknown ns"; name = "logto-pre-app-1"; }
-    ];
-  }
-  {
-    imageName = "python";
-    imageDigest = "sha256:dd4d2bd5b53d9b25a51da13addf2be586beebd5387e289e798e4083d94ca837a";
-    finalImageName = "python";
-    finalImageTag = "3.14-alpine";
-    archiveHash = "sha256-aG7L6i/2ZKsHBcrRKVZADgBWF2sfUDbqL2fXYUHbL6E=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "egress-system"; name = "proxy-engine"; }
     ];
   }
   {

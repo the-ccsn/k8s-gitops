@@ -57,6 +57,8 @@ spec:
         command: 
         - "sing-box"
         - "run"
+        - "-D"
+        - "/var/lib/sing-box"
         - "-c"
         - "/etc/sing-box/main/main.json"
         - "-c"
@@ -104,8 +106,10 @@ spec:
         - name: config-temp
           mountPath: /etc/sing-box/temp
           readOnly: true
-        - name: rule-set-cache
-          mountPath: /var/cache/sing-box/rule-set
+        # This should be considered non-persistent and can be cleared on each restart,
+        # as it's mainly used for caching geoip and geosite data.
+        - name: work-cache
+          mountPath: /var/lib/sing-box
         - name: tmp
           mountPath: /tmp
       volumes:
@@ -121,6 +125,6 @@ spec:
       - name: tmp
         emptyDir:
           sizeLimit: 50Mi
-      - name: rule-set-cache
+      - name: work-cache
         persistentVolumeClaim:
-          claimName: rule-set-cache
+          claimName: proxy-engine-work-cache

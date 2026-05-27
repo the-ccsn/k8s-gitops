@@ -11,7 +11,7 @@ data:
       "experimental": {
         "clash_api": {
           "external_controller": "0.0.0.0:9090",
-          "external_ui": "dashboard",
+          "external_ui": "metacubexd",
           "external_ui_download_url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
           "external_ui_download_detour": "AllNodes",
           "access_control_allow_origin": [

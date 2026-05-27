@@ -18,43 +18,39 @@ My personal container images:
 
 ## Bootstrap
 
-Steps to bootstrap a new cluster:
+Bootstrap is now driven by Terraform in the `bootstrap/` directory.
 
 1. Add a new folder in `clusters/` with the name of the cluster.
-1. Add the bootstrap configs into the new folder.
-1. Run the bootstrap script(via `ssh-agent`) to bootstrap or update the cluster:
-   ```bash
-   flux bootstrap git \
-   --components-extra image-reflector-controller,image-automation-controller \
-   --url=ssh://git@github.com/the-ccsn/k8s-gitops \
-   --branch=main \
-   --path=clusters/k3s-test-1
-   ```
-1. Add the printed public key to the git repository, as a deploy key with write access.
+1. Add the Flux entrypoint files into the new cluster folder.
+1. Prepare `bootstrap/terraform.tfvars` from `bootstrap/terraform.tfvars.example`.
+1. Run Terraform to install Flux and the initial cluster resources.
+
+See [bootstrap/README.md](bootstrap/README.md) for the current end-to-end flow.
 
 ### Bootstrap Flow (Recommended)
 
-Use a phased flow and keep dependency breakers in the flow itself (no hard cut-over
-until dependencies are healthy):
+Use the staged Terraform bootstrap flow and keep dependency breakers in the flow
+itself (no hard cut-over until dependencies are healthy):
 
-1. Bootstrap Flux itself (`flux-system`) and verify source/controller health.
-2. Reconcile `infra-namespaces` first.
-3. Reconcile `infra-pre-controllers` (networking/storage foundations).
-4. Reconcile `infra-controllers` (operators and Harbor HelmRelease).
-5. Reconcile `infra-configs`, but apply in this order:
-   - 5.1 Networking and ingress routes first (Gateway/HTTPRoute/DNS paths).
-   - 5.2 Harbor runtime mirror configs only in non-enforcing mode first.
-   - 5.3 Logto/OIDC providers and clients after ingress is confirmed reachable.
-6. Validate service readiness before hard dependencies:
+1. Bootstrap Flux and the initial cluster resources from `bootstrap/`.
+2. Verify Flux source/controller health and the `sops-age` secret.
+3. Reconcile `infra-namespaces` first.
+4. Reconcile `infra-pre-controllers` (networking/storage foundations).
+5. Reconcile `infra-controllers` (operators and Harbor HelmRelease).
+6. Reconcile `infra-configs`, but apply in this order:
+   - 6.1 Networking and ingress routes first (Gateway/HTTPRoute/DNS paths).
+   - 6.2 Harbor runtime mirror configs only in non-enforcing mode first.
+   - 6.3 Logto/OIDC providers and clients after ingress is confirmed reachable.
+7. Validate service readiness before hard dependencies:
    - Harbor core/registry healthy and serving API.
    - Logto issuer URL reachable from cluster and admin workstation.
-7. Initialize Harbor proxy-cache projects (`tofu-controller` + Terraform at `infra/configs/base/harbor/tf`).
-8. Switch node mirror config to Harbor-first only after step 6-7 pass, and keep
+8. Initialize Harbor proxy-cache projects (`tofu-controller` + Terraform at `infra/configs/base/harbor/tf`).
+9. Switch node mirror config to Harbor-first only after step 7-8 pass, and keep
    a break-glass upstream fallback during first rollout.
-9. Enable OIDC-dependent login paths (API server OIDC login flow and related client
-   settings) only after Logto is healthy and reachable.
-10. Reconcile `apps` and `vms`.
-11. Perform all items listed in the Manual Steps Index.
+10. Enable OIDC-dependent login paths (API server OIDC login flow and related client
+    settings) only after Logto is healthy and reachable.
+11. Reconcile `apps` and `vms`.
+12. Perform all items listed in the Manual Steps Index.
 
 Suggested verification commands:
 

@@ -13,68 +13,7 @@ spec:
     kind: OCIRepository
     name: helm-chart-cilium
     namespace: kube-system
-  # https://github.com/cilium/cilium/tree/v1.19.0/install/kubernetes/cilium
-  values:
-    enableIPv4Masquerade: true
-    
-    # ======================== Tuning Cilium ========================
-    # https://docs.cilium.io/en/stable/operations/performance/tuning/
-    # https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/
-    kubeProxyReplacement: true
-    # https://github.com/cilium/cilium/pull/37601
-    apiServerURLs: []
-
-    devices: ovsbr+
-
-    bpf:
-      datapathMode: netkit
-      # Disable for Istio compatability
-      masquerade: false
-      distributedLRU:
-        enabled: true
-      mapDynamicSizeRatio: 0.08
-
-    routingMode: native
-    autoDirectNodeRoutes: true
-    # ipv4NativeRoutingCIDR: 172.16.0.0/12
-    # ipv6NativeRoutingCIDR: fd00::/48
-
-    bandwidthManager:
-      enabled: true
-      bbr: true
-
-    loadBalancer:
-      mode: dsr
-      acceleration: best-effort # XDP acceleration
-
-    bpfClockProbe: true
-
-    # ======================== Work with Istio ========================
-    # https://docs.cilium.io/en/latest/network/servicemesh/istio/
-    cni:
-      exclusive: false
-    socketLB:
-      hostNamespaceOnly: true
-    # disable L7 Proxy
-    l7Proxy: false
-
-    # ============================  Dual Stack  ============================
-    ipv6:
-      enabled: true
-    # -- Enables masquerading of IPv6 traffic leaving the node from endpoints.
-    enableIPv6Masquerade: true
-
-    # ============================  L2 Announcements  ============================
-    # https://docs.cilium.io/en/stable/network/l2-announcements/
-    l2announcements:
-      enabled: true
-    k8sClientRateLimit:
-      qps: 100
-      burst: 200
-
-    hubble:
-      enabled: true
-      relay:
-        enabled: true
-      ui:
-        enabled: true
+  valuesFrom:
+    - kind: ConfigMap
+      name: cilium-values
+      valuesKey: values.yaml

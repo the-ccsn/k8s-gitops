@@ -47,7 +47,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infra-controllers
+  name: infra-controllers-foundation
   namespace: flux-system
 spec:
   dependsOn:
@@ -59,7 +59,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/controllers/overlays/kubevirt-cluster-319
+  path: ./infra/controllers/foundation/overlays/kubevirt-cluster-319
   prune: true
   wait: true
   # https://fluxcd.io/flux/components/kustomize/kustomizations/#decryption
@@ -67,6 +67,105 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-controllers-networking
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-namespaces
+    - name: infra-pre-controllers
+    - name: infra-controllers-foundation
+  interval: 1h
+  retryInterval: 10s
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/controllers/networking/overlays/kubevirt-cluster-319
+  prune: true
+  wait: true
+  # https://fluxcd.io/flux/components/kustomize/kustomizations/#decryption
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-controllers-monitoring
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-namespaces
+    - name: infra-pre-controllers
+    - name: infra-controllers-foundation
+  interval: 1h
+  retryInterval: 10s
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/controllers/monitoring/overlays/kubevirt-cluster-319
+  prune: true
+  wait: true
+  # https://fluxcd.io/flux/components/kustomize/kustomizations/#decryption
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-controllers-general
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-namespaces
+    - name: infra-pre-controllers
+    - name: infra-controllers-foundation
+  interval: 1h
+  retryInterval: 10s
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/controllers/general/overlays/kubevirt-cluster-319
+  prune: true
+  wait: true
+  # https://fluxcd.io/flux/components/kustomize/kustomizations/#decryption
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+# Dummy kustomization gate for aggregating all controllers dependencies.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-controllers
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-namespaces
+    - name: infra-pre-controllers
+    - name: infra-controllers-foundation
+    - name: infra-controllers-networking
+    - name: infra-controllers-monitoring
+    - name: infra-controllers-general
+  interval: 1h
+  retryInterval: 10s
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/controllers
+  prune: true
+  wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

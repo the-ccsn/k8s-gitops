@@ -128,6 +128,8 @@ spec:
     - name: infra-namespaces
     - name: infra-pre-controllers
     - name: infra-controllers-foundation
+    - name: infra-controllers-networking
+    - name: infra-controllers-monitoring
   interval: 1h
   retryInterval: 10s
   timeout: 5m

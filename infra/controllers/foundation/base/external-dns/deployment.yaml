@@ -64,7 +64,7 @@ spec:
             - --source=crd # ingress is also possible
             - --source=service # ingress is also possible
             - --domain-filter=ccsn.dev # (optional) limit to only example.com domains; change to match the zone created above.
-            - --zone-id-filter=d312fc3ca1ba63f694bd0c127fdb441e # (optional) limit to a specific zone.
+            - --zone-id-filter=d3ad7a4e9b3d7286206b316d469dc2a7 # (optional) limit to a specific zone.
             - --provider=cloudflare
             - --cloudflare-dns-records-per-page=5000 # (optional) configure how many DNS records to fetch per request
             - --cloudflare-record-comment=Managed by external-dns # (optional) configure comments for provisioned records; <=100 chars for free zones; <=500 chars for paid zones

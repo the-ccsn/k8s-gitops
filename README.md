@@ -26,7 +26,7 @@ Steps to bootstrap a new cluster:
    ```bash
    flux bootstrap git \
    --components-extra image-reflector-controller,image-automation-controller \
-   --url=ssh://git@github.com/isning/k8s-gitops \
+   --url=ssh://git@github.com/the-ccsn/k8s-gitops \
    --branch=main \
    --path=clusters/k3s-test-1
    ```

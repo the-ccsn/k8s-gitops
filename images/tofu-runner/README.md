@@ -23,7 +23,7 @@ Use GitHub Actions workflow:
 
 Target image:
 
-- `ghcr.io/isning/k8s-gitops/tf-runner`
+- `ghcr.io/the-ccsn/k8s-gitops/tf-runner`
 
 Published tags:
 

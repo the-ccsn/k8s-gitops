@@ -6,6 +6,6 @@ metadata:
   namespace: harbor
 spec:
   interval: 1m
-  url: https://github.com/isning/k8s-gitops
+  url: https://github.com/the-ccsn/k8s-gitops
   ref:
     branch: main

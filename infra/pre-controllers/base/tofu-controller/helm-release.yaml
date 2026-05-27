@@ -22,8 +22,8 @@ spec:
   values:
     runner:
       image:
-        repository: ghcr.io/isning/k8s-gitops/tf-runner
-        tag: v0.16.3-custom-202605171200@sha256:5c41d8a6c32df582bd61363febc10aef677042ad0497cdfca61db32c6459738e
+        repository: ghcr.io/the-ccsn/k8s-gitops/tf-runner
+        tag: v0.16.3-custom-202605251544@sha256:8600a5292bb1773b55486e093289258f2dc3f16112856a11f8a523f018472d28
       serviceAccount:
         allowedNamespaces:
           - flux-system

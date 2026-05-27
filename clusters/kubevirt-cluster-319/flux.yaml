@@ -13,7 +13,7 @@ spec:
     registry: "ghcr.io/fluxcd"
   sync:
     kind: GitRepository
-    url: "https://github.com/isning/k8s-gitops"
+    url: "https://github.com/the-ccsn/k8s-gitops"
     ref: "refs/heads/main"
     path: "clusters/kubevirt-cluster-319"
   components:

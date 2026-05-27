@@ -32,7 +32,7 @@
     },
     {
       "description": "Bump tofu runner tags",
-      "matchPackageNames": ["ghcr.io/isning/k8s-gitops/tf-runner"],
+      "matchPackageNames": ["ghcr.io/the-ccsn/k8s-gitops/tf-runner"],
       "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+-custom-\\d{12}$/",
       "versioning": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-custom-(?<build>\\d{12})$"
     }

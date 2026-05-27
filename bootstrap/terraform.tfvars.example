@@ -1,0 +1,14 @@
+# Example terraform variables for bootstrap/kubevirt-cluster-319
+# Fill these values or pass them via environment variables (TF_VAR_<name>)
+
+kubeconfig = "/home/you/.kube/config"
+bootstrap_revision = "main"
+cluster_name = "kubevirt-cluster-319"
+
+# Provide your SOPS age private key contents here. This is sensitive.
+# You can also set it via environment: export TF_VAR_sops_age_key="$(cat k8s-gitops.agekey)"
+sops_age_key = <<EOF
+# created: 2026-05-20T00:00:00+08:00
+# public key: age1td0htsklm8xpsvcync3ulwxs82w5a9a03eeq9wwg8pm2mx3t99fqtgyhhs
+AGE-SECRET-KEY-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+EOF

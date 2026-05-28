@@ -97,6 +97,12 @@ def map_image_sources(image_name, registry_mirrors):
             unique_sources.append(source)
     return unique_sources
 
+def canonical_image_name(image_name):
+    registry, repo = split_image_name(image_name)
+    if registry == "docker.io" and "/" not in repo:
+        repo = f"library/{repo}"
+    return f"{registry}/{repo}"
+
 def parse_nix_blocks(content):
     """Extract complete block text for exact metadata diffing"""
     blocks = {}
@@ -518,7 +524,7 @@ class ImageLockGenerator:
                 f"  {{\n"
                 f"    imageName = \"{image_name}\";\n"
                 f"    imageDigest = \"{digest}\";\n"
-                f"    finalImageName = \"{image_name}\";\n"
+                f"    finalImageName = \"{canonical_image_name(image_name)}\";\n"
                 f"    finalImageTag = \"{tag}\";\n"
                 f"    archiveHash = \"{hash_val}\";\n"
                 f"    os = \"{self.args.os}\";\n"

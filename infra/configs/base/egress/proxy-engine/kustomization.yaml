@@ -1,6 +1,6 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-  - ./proxy-engine-alerts.yaml
-  - ./proxy-engine-loki-rules.yaml
+resources: []
+  # - ./proxy-engine-alerts.yaml
+  # - ./proxy-engine-loki-rules.yaml

@@ -5,3 +5,5 @@ resources:
   - ./helm-oci-repo.yaml
   - ./helm-release.yaml
   - ./oauth2-proxy-secrets.yaml
+  - ./oauth2-proxy-reference-grant.yaml
+  - ./envoyfilter-redirect.yaml

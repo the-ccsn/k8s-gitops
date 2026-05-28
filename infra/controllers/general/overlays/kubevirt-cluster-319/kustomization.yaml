@@ -4,6 +4,5 @@ kind: Kustomization
 resources:
   - ../../base/cloudnative-pg/
   - ../../base/egress/
-  - ../../base/harbor/
   - ../../base/kubevirt/
   - ../../base/redroid-operator/

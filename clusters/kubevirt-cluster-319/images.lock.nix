@@ -8,10 +8,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -41,10 +42,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-core";
-    imageDigest = "sha256:32a13f6693a278261e9c9cb7eb606c5e2aa021308ae44fdc73225755048500a8";
+    imageDigest = "sha256:887a85b8ea98b76bfc9f715f1a0785bb99f9a1034241513902dd6e95be922a83";
     finalImageName = "docker.io/goharbor/harbor-core";
-    finalImageTag = "v2.15.0";
-    archiveHash = "sha256-mFIV+IJThxf2FozA32fRJlHTgEuYO41EhJQef1/x3CE=";
+    finalImageTag = "v2.15.1";
+    archiveHash = "sha256-i5Pz+Wo1eSSb7xxI0qWLvt9nY3x9DQ42BR2DaHj3t+g=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -53,6 +54,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -62,10 +64,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-jobservice";
-    imageDigest = "sha256:a22c7cccba4673b26ffb96f5c37971d85d879dd837bc82448e01c0170b68cf28";
+    imageDigest = "sha256:0de4fd2ce3a02d3e6591b439e4674ea085885ddf43652b44004cc67eb19dba12";
     finalImageName = "docker.io/goharbor/harbor-jobservice";
-    finalImageTag = "v2.15.0";
-    archiveHash = "sha256-on4jWaFqryMmUjv0H0bhJzHb7Z0a+ZzdZB49Z0J1dro=";
+    finalImageTag = "v2.15.1";
+    archiveHash = "sha256-IOMWTPioMzuWYY7mOpQIWE1sDjJLplN6K4XPJl/JYBM=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -74,6 +76,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -83,10 +86,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-portal";
-    imageDigest = "sha256:541d5fa95bf77240d46a438f86245cdfd6afa6dd7fdd0cf4dd4c905af6a980b1";
+    imageDigest = "sha256:ac55161c57a8351807adf8f8def264bdd52667c371d0436beefebdac4341c9e2";
     finalImageName = "docker.io/goharbor/harbor-portal";
-    finalImageTag = "v2.15.0";
-    archiveHash = "sha256-qfBWzTA4uxYz5VaO/ybMeaRw/InJn8nGQyY1MLF4IN0=";
+    finalImageTag = "v2.15.1";
+    archiveHash = "sha256-6giFWh8hvKI8dv2kQFhPfgA1e3IwNmy7tqnuy8R48VQ=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -95,6 +98,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -104,10 +108,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-registryctl";
-    imageDigest = "sha256:463172f71d3a1e8d4f9e3b4e687a447f41fbc3126316d8c150dba04a903bbc47";
+    imageDigest = "sha256:554147a956989175f63f8d41573d716c6ddf6052acd1749c88c0f99ce6ee2bff";
     finalImageName = "docker.io/goharbor/harbor-registryctl";
-    finalImageTag = "v2.15.0";
-    archiveHash = "sha256-/Wa/r2d+2STvKetx6eb1Ky5rYI8tQutgVtmAJBN5pPs=";
+    finalImageTag = "v2.15.1";
+    archiveHash = "sha256-0nar7lmPwn7aKXnL0vMbFHQGFERs6aYqfZgMRujw9Os=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -116,6 +120,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -125,10 +130,10 @@
   }
   {
     imageName = "docker.io/goharbor/registry-photon";
-    imageDigest = "sha256:beb49fd16cf0906c04a2bf51a22f7210289e7cc2ae43a733e2a0364380aceae6";
+    imageDigest = "sha256:ebf0325c2661729dbb317cbf839608eb8b15cfa158911a94976f2c21563c466e";
     finalImageName = "docker.io/goharbor/registry-photon";
-    finalImageTag = "v2.15.0";
-    archiveHash = "sha256-tzXvd6xJECembGu1kaCLTwzDQjVt5MQUreGfsukmWNc=";
+    finalImageTag = "v2.15.1";
+    archiveHash = "sha256-VRXhI0dtdtmQgK1+gLLkY32dvoJLLZKVm93AhzgxuiQ=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -137,6 +142,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -153,10 +159,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -178,6 +185,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -203,6 +211,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -224,6 +233,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -266,6 +276,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "cnpg-system"; name = "cnpg"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -287,6 +298,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "cnpg-system"; name = "cnpg-plugin-barman-cloud"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -337,27 +349,6 @@
     ];
   }
   {
-    imageName = "ghcr.io/grafana/grafana-operator";
-    imageDigest = "sha256:3abeaccdf54e9e02c2f4b6215be594c8f78b94a866961ada7f92b677bf33c9b4";
-    finalImageName = "ghcr.io/grafana/grafana-operator";
-    finalImageTag = "v5.23.0";
-    archiveHash = "sha256-lJeZ0Xv3Sg3UUWJsniCgpU1r+kPmMmsf5dzpNdjiuMM=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "grafana-operator"; name = "grafana-operator"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "grafana-operator"; name = "grafana-operator"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "grafana-operator"; name = "grafana-operator"; }
-    ];
-  }
-  {
     imageName = "ghcr.io/isning/redroid-operator";
     imageDigest = "sha256:f5e367011b405a3b5c594a6821d8806b4990d09cdc91eae9e4983a106dc9142e";
     finalImageName = "ghcr.io/isning/redroid-operator";
@@ -371,6 +362,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "redroid-operator"; name = "redroid-operator"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -407,10 +399,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -577,6 +570,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "cert-manager"; name = "cert-manager"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -598,6 +592,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "cert-manager"; name = "cert-manager"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -619,6 +614,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "cert-manager"; name = "cert-manager"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -640,6 +636,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "cert-manager"; name = "cert-manager"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -661,6 +658,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "kiali-operator"; name = "kiali"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -677,10 +675,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -697,10 +696,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -717,10 +717,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -742,6 +743,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "oauth2-proxy"; name = "oauth2-proxy"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -758,10 +760,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -783,6 +786,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -804,6 +808,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -825,6 +830,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "istio-system"; name = "istio-cni"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -846,6 +852,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "istio-system"; name = "istiod"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -867,6 +874,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "istio-system"; name = "ztunnel"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -883,10 +891,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -908,6 +917,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "monitoring"; name = "victoria-metrics-k8s-stack"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-monitoring"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -929,6 +939,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "monitoring"; name = "victoria-metrics-k8s-stack"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-monitoring"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -945,10 +956,11 @@
     os = "linux";
     arch = "amd64";
     sources = [
-      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
     ];
     sourceChains = [
       [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];
@@ -970,6 +982,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "monitoring"; name = "victoria-metrics-k8s-stack"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-monitoring"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
       ]
     ];

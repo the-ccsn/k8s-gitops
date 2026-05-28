@@ -54,8 +54,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [
@@ -76,8 +75,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [
@@ -98,8 +96,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [
@@ -120,8 +117,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [
@@ -142,8 +138,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [
@@ -431,6 +426,272 @@
     targets = [
       { kind = "Deployment"; namespace = "egress-system"; name = "proxy-engine"; }
     ];
+  }
+  {
+    imageName = "longhornio/backing-image-manager";
+    imageDigest = "sha256:fc7b656501e59896326de6d228319d883ae55591c1a2c90292043eab66c33e7b";
+    finalImageName = "docker.io/longhornio/backing-image-manager";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-ecKBIWRd9e25WBpRpsOqpocqXWoyhCfZNwIBJq3anvo=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/csi-attacher";
+    imageDigest = "sha256:fe417c28a6b86f8e7e5d49fc223e22e9ab457f894d2c4a321932d136dc2c2530";
+    finalImageName = "docker.io/longhornio/csi-attacher";
+    finalImageTag = "v4.11.0-20260428";
+    archiveHash = "sha256-oN/9s+EEruDQzisLOAxbOg5x5Ix5zC5EmvPNV5KD484=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/csi-node-driver-registrar";
+    imageDigest = "sha256:e82a8c8f800d7fbb3c1edf3f90b557768091821a44d52280093394f7918ccb68";
+    finalImageName = "docker.io/longhornio/csi-node-driver-registrar";
+    finalImageTag = "v2.16.0-20260428";
+    archiveHash = "sha256-Z5K2gzKEtYcSR39rNzb+GuAlZ2q1umY+jN/hl6nChj4=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/csi-provisioner";
+    imageDigest = "sha256:9e519a21a77c060104716e1f98222bb46ab617778a3bfcd861c87119a8256764";
+    finalImageName = "docker.io/longhornio/csi-provisioner";
+    finalImageTag = "v5.3.0-20260428";
+    archiveHash = "sha256-ZWkVkZFGslWvLBNSg9sKMydin28CewVXH7KvF3F1qmw=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/csi-resizer";
+    imageDigest = "sha256:41cb674d1154e798aa2c20f53f72ee2a5597f1369bcad5878d1708aee47f6663";
+    finalImageName = "docker.io/longhornio/csi-resizer";
+    finalImageTag = "v2.1.0-20260428";
+    archiveHash = "sha256-x4tmWHuO4q9MRomDBR9nLsWsr0U1jrFFHC/Un+OeheA=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/csi-snapshotter";
+    imageDigest = "sha256:1975fac3890f4e08b98792881cb597502112ce0eeeaaef383e52458c96db94c5";
+    finalImageName = "docker.io/longhornio/csi-snapshotter";
+    finalImageTag = "v8.5.0-20260428";
+    archiveHash = "sha256-LFVR0dmW/5CvheVeVWNIjHoWYFR+9XmIYTgSWCxdQXE=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/livenessprobe";
+    imageDigest = "sha256:eae162f7e70fb981f90d9206f299dddaf590c0c896cfb67acceca12cef526a44";
+    finalImageName = "docker.io/longhornio/livenessprobe";
+    finalImageTag = "v2.18.0-20260428";
+    archiveHash = "sha256-eTQFv1UehSQohij3wSAhnxXuBGAVAjtl3dsVkQQioxY=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/longhorn-cli";
+    imageDigest = "sha256:c2e57e131cc001418f8ad329eb8d25f9fb69fa0eb0e546e1b6ee94aa22916381";
+    finalImageName = "docker.io/longhornio/longhorn-cli";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-TLjDx0rsjuZyuE1zwJQYcOCpuIDae/N/Z4wOEQdCxgQ=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/longhorn-engine";
+    imageDigest = "sha256:7482e0437fbf475e1e32696fab22f47bf99b1ef8d067ffce9e34028347722628";
+    finalImageName = "docker.io/longhornio/longhorn-engine";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-ALMQer+0umoi3n5KgvtRWvXsgvO/I8poJAGglf5onJg=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/longhorn-instance-manager";
+    imageDigest = "sha256:16dac125ef30bd3a375bc8ff7d10636ea0302d22d208c0cfb1be37ebb93ca30b";
+    finalImageName = "docker.io/longhornio/longhorn-instance-manager";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-xBLes/g67kW0fpCKheoo5BkGbdeCglalXh/99AZPlng=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/longhorn-manager";
+    imageDigest = "sha256:0f80ca11ac4eb7522f4e6e801a7afc9909ea8d3041575f3d029964c46590f096";
+    finalImageName = "docker.io/longhornio/longhorn-manager";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-91T1bF2mfPbVh+s62HTiFI5o7VKraze51HoXcdjBQv8=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/longhorn-share-manager";
+    imageDigest = "sha256:c11559e998ea982e6bac1637d66cc2aaab662a6b546709f2e54e2bfa50ffb0c3";
+    finalImageName = "docker.io/longhornio/longhorn-share-manager";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-aI3HfqoRbpqIxa+0O5KkzJx3aHrr8iyhFiy4EJPBksE=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/longhorn-ui";
+    imageDigest = "sha256:885bc78f99f31da0d9b0fd8f533a53558a3aa81f9719c62e0d3c69ed8456d5b7";
+    finalImageName = "docker.io/longhornio/longhorn-ui";
+    finalImageTag = "v1.11.2";
+    archiveHash = "sha256-xboFUEX0vuI6Z+pNQqLfg8X0EbB0lZoswRoC/ReTVq4=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
+    imageName = "longhornio/support-bundle-kit";
+    imageDigest = "sha256:cf2a89ed18a73e32b3fe657aefb8f819a1c6734df888821b3dff056b360fe222";
+    finalImageName = "docker.io/longhornio/support-bundle-kit";
+    finalImageTag = "v0.0.84";
+    archiveHash = "sha256-Tsj80hXjlW6jWw3kYx21ZwoL0F+OuzY8PlXb6qKmnnM=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "longhorn-system"; name = "longhorn"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-foundation"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
   }
   {
     imageName = "mendhak/http-https-echo";
@@ -751,28 +1012,6 @@
     ];
   }
   {
-    imageName = "quay.io/oauth2-proxy/oauth2-proxy";
-    imageDigest = "sha256:aa0bd8dd5ab0c78e4c91c92755ad573a5f92241f88138b4141b8ec803463b4fd";
-    finalImageName = "quay.io/oauth2-proxy/oauth2-proxy";
-    finalImageTag = "v7.15.2";
-    archiveHash = "sha256-oMGYyqPjF5RyzlQ+x1+8VaFaC59YWBkuii79QtBpPOs=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "oauth2-proxy"; name = "oauth2-proxy"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "oauth2-proxy"; name = "oauth2-proxy"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "oauth2-proxy"; name = "oauth2-proxy"; }
-    ];
-  }
-  {
     imageName = "rancher/kubectl";
     imageDigest = "sha256:05d2b313e2f397e0ade252136aed47abd72d56ead11d1b027ac70f66362c8495";
     finalImageName = "docker.io/rancher/kubectl";
@@ -807,8 +1046,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [
@@ -829,8 +1067,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
     ];
     targets = [

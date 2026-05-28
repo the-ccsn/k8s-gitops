@@ -47,7 +47,6 @@ spec:
         enabled: true
         size: 512Mi
         sizeLimit: 10Gi
-        storageClass: "local-path-nocow"
     
     commonConfiguration: |
       appendonly yes

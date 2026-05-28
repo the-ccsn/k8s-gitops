@@ -4,7 +4,7 @@
     imageDigest = "sha256:6b168dc237d50e3d36cc5df86bf2be7981700a49d7a4ae02548f4762ec0d7aaa";
     finalImageName = "docker.io/adyanth/cloudflare-operator";
     finalImageTag = "0.13.1";
-    archiveHash = "sha256-vkwQS4n598On1JgF86sbk0gLNuSvK+EmnMqCI4u3enA=";
+    archiveHash = "sha256-UFLHLGTyi5CBy8SCcQyvLAJlPIiMLQKKog0DDIhKfno=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -25,7 +25,7 @@
     imageDigest = "sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9";
     finalImageName = "docker.io/cloudflare/cloudflared";
     finalImageTag = "2026.5.0";
-    archiveHash = "sha256-FpaPCgFbDip5MAOAfgzRQJUg0SlFvYb4ZsCijIt2n4I=";
+    archiveHash = "sha256-IVT8IUv20gFrdIeBLJop6qszY7vaXN5diNR1RJ7Xnds=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -437,7 +437,7 @@
     imageDigest = "sha256:d072446da821a767d05dc19fa5ab6a27b1150bfb5c6ecfaecf3a2e5f9812794c";
     finalImageName = "docker.io/mendhak/http-https-echo";
     finalImageTag = "40";
-    archiveHash = "sha256-3ZPysAQ70H9HRe+PB9J0AxTaVKZAsMKUO5qbStf+amc=";
+    archiveHash = "sha256-CgGyghmEZGpr4kDXsIdxcSCi73/dQxPRX88gg8aN8Io=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -457,7 +457,7 @@
     imageDigest = "sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de";
     finalImageName = "docker.io/library/nginx";
     finalImageTag = "mainline-alpine";
-    archiveHash = "sha256-NaFxZCvwKOt2OyV8B7znm4kmjhXBqZPq70PT/7REscU=";
+    archiveHash = "sha256-IuU35fXh3ReyujqgasRzaL2WnSifc0kOQWBXNGSMv60=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -777,7 +777,7 @@
     imageDigest = "sha256:05d2b313e2f397e0ade252136aed47abd72d56ead11d1b027ac70f66362c8495";
     finalImageName = "docker.io/rancher/kubectl";
     finalImageTag = "v1.36.0";
-    archiveHash = "sha256-O5J+4flgyvDqE2mvAJoV9nSO3S1PhXW3ud8mKPjRpoc=";
+    archiveHash = "sha256-YpOd+xnsiOtSjzvNPDQEfQ0G6Vq1scg4udg3rQaTc0o=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -973,7 +973,7 @@
     imageDigest = "sha256:fb5ebef9cba3746d73ee0dee1bb9e4bc80539687518fd1e2e6ab7776b438048a";
     finalImageName = "docker.io/victoriametrics/operator";
     finalImageTag = "v0.70.1";
-    archiveHash = "sha256-/p8F8uFvV55QDnspaGTsiFYmSSQQrdKHf2Zvv5m0Kpc=";
+    archiveHash = "sha256-rb277HtbVnGZMfd9U4tITUCPNzEo1Txwy4aRmSglDIY=";
     os = "linux";
     arch = "amd64";
     sources = [

@@ -115,8 +115,6 @@ spec:
         resources:
           requests:
             storage: 20Gi
-        # This has no effect due to bug in the chart
-        storageClassName: local-path-nocow
 
     vmalert:
       # vmalert is a Prometheus-compatible alertmanager

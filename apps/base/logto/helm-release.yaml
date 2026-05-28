@@ -44,4 +44,14 @@ spec:
         memory: 128Mi
 
     persistence:
-      storageClass: local-path-nocow
+      # Whether to automatically create the PersistentVolumeClaims exists in the volumes
+      enabled: true
+      storageClass: ""
+      claims:
+      - name: connectors-claim
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 15Mi
+          limits:
+            storage: 500Mi

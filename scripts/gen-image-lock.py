@@ -104,6 +104,61 @@ def canonical_image_name(image_name):
         repo = f"library/{repo}"
     return f"{registry}/{repo}"
 
+def parse_extra_images_arg(value):
+    if not value:
+        return []
+    parts = re.split(r"[\s,]+", value.strip())
+    return [p for p in parts if p]
+
+def load_extra_images_file(path):
+    if not path:
+        return []
+    path = Path(path)
+    if not path.exists():
+        log(f"Extra images file not found: {path}")
+        sys.exit(1)
+
+    content = path.read_text(encoding="utf-8")
+    if not content.strip():
+        return []
+
+    suffix = path.suffix.lower()
+    if suffix in {".json", ".yaml", ".yml"}:
+        try:
+            if suffix == ".json":
+                data = json.loads(content)
+            else:
+                data = yaml.safe_load(content)
+        except Exception as exc:
+            log(f"Failed to parse extra images file {path}: {exc}")
+            sys.exit(1)
+
+        if isinstance(data, dict) and "images" in data:
+            data = data["images"]
+        if isinstance(data, str) and data.strip():
+            return [data.strip()]
+        if isinstance(data, list):
+            return [item.strip() for item in data if isinstance(item, str) and item.strip()]
+        return []
+
+    images = []
+    for line in content.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        images.append(line)
+    return images
+
+def dedupe_preserve_order(items):
+    seen = set()
+    result = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        result.append(item)
+    return result
+
 def parse_nix_blocks(content):
     """Extract complete block text for exact metadata diffing"""
     blocks = {}
@@ -224,6 +279,8 @@ class ImageLockGenerator:
         self.registry_mirrors = json.loads(args.registry_mirror_map) if args.registry_mirror_map else {}
         self.mirror_retries = max(args.mirror_retries, 1)
         self.repo_root = Path(args.root).resolve()
+        self.kustomization_chain_map = {}
+        self.helmrelease_chain_map = {}
 
     def vlog(self, msg):
         if self.args.verbose:
@@ -241,7 +298,9 @@ class ImageLockGenerator:
         
         self.process_cluster_sources(cluster_meta)
         self.process_manifest_targets(manifests)
+        self.process_annotation_images(manifests)
         self.filter_by_namespace()
+        self.process_extra_images()
         self.sort_and_deduplicate()
         
         if not self.image_map:
@@ -365,8 +424,11 @@ class ImageLockGenerator:
                 parents_with_path.sort(key=lambda x: len(x.get("path", "")), reverse=True)
                 parents = [{"kind": p["kind"], "namespace": p["namespace"], "name": p["name"]} for p in parents_with_path]
 
-                k_source = {"kind": "Kustomization", "namespace": k_ns, "name": k.get("name", "")}
+                k_name = k.get("name", "")
+                k_source = {"kind": "Kustomization", "namespace": k_ns, "name": k_name}
                 k_chain = [k_source] + parents
+                if k_name:
+                    self.kustomization_chain_map[(k_ns, k_name)] = k_chain
 
                 for img in k.get("images", []):
                     self.add_to_map(img, "sources", k_source)
@@ -379,8 +441,11 @@ class ImageLockGenerator:
                         if not hr.get("namespace"):
                             log(f"Warning: Namespace missing for HelmRelease {hr.get('name', '')}, marking as 'unknown ns'")
                             
-                    hr_source = {"kind": "HelmRelease", "namespace": hr_ns, "name": hr.get("name", "")}
+                    hr_name = hr.get("name", "")
+                    hr_source = {"kind": "HelmRelease", "namespace": hr_ns, "name": hr_name}
                     hr_chain = [hr_source] + k_chain
+                    if hr_name:
+                        self.helmrelease_chain_map[(hr_ns, hr_name)] = hr_chain
                     for img in hr.get("images", []):
                         self.add_to_map(img, "sources", hr_source)
                         self.add_to_map(img, "sourceChains", hr_chain)
@@ -441,6 +506,93 @@ class ImageLockGenerator:
             if in_allowed_ns:
                 filtered_image_map[img_ref] = data
         self.image_map = filtered_image_map
+
+    def process_annotation_images(self, manifests):
+        keys = parse_extra_images_arg(self.args.extra_images_annotation)
+        if not keys:
+            return
+
+        images_added = []
+        for obj in manifests:
+            if not obj or not isinstance(obj, dict):
+                continue
+            meta = obj.get("metadata", {})
+            if not isinstance(meta, dict):
+                continue
+            labels = meta.get("labels", {})
+            if not isinstance(labels, dict):
+                labels = {}
+            annotations = meta.get("annotations", {})
+            if not isinstance(annotations, dict):
+                continue
+
+            image_values = []
+            for key in keys:
+                value = annotations.get(key)
+                if isinstance(value, str) and value.strip():
+                    image_values.extend(parse_extra_images_arg(value))
+
+            if not image_values:
+                continue
+
+            kind = obj.get("kind") or "Unknown"
+            name = meta.get("name", "")
+            ns = meta.get("namespace")
+            if not ns:
+                log(f"Warning: Namespace missing for Annotation {kind}/{name}, marking as 'unknown ns'")
+                ns = "unknown ns"
+
+            source = {"kind": kind, "namespace": ns, "name": name}
+            def get_meta_value(key):
+                value = labels.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+                value = annotations.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+                return ""
+
+            chain = None
+            hr_name = get_meta_value("helm.toolkit.fluxcd.io/name")
+            hr_ns = get_meta_value("helm.toolkit.fluxcd.io/namespace")
+            if hr_name and hr_ns:
+                chain = self.helmrelease_chain_map.get((hr_ns, hr_name))
+
+            if not chain:
+                k_name = get_meta_value("kustomize.toolkit.fluxcd.io/name")
+                k_ns = get_meta_value("kustomize.toolkit.fluxcd.io/namespace")
+                if k_name and k_ns:
+                    chain = self.kustomization_chain_map.get((k_ns, k_name))
+
+            if not chain:
+                chain = [source]
+            for img in image_values:
+                img = img.strip()
+                if not img:
+                    continue
+                self.add_to_map(img, "sources", source)
+                self.add_to_map(img, "sourceChains", chain)
+                images_added.append(img)
+
+        if images_added:
+            unique_images = dedupe_preserve_order(images_added)
+            log(f"[gen-image-lock] added {len(unique_images)} image(s) from annotations")
+
+    def process_extra_images(self):
+        images = []
+        images.extend(parse_extra_images_arg(self.args.extra_images))
+        images.extend(load_extra_images_file(self.args.extra_images_file))
+        images = dedupe_preserve_order([img.strip() for img in images if isinstance(img, str) and img.strip()])
+        if not images:
+            return
+
+        source = {"kind": "ExtraImage", "namespace": "manual", "name": "extra-images"}
+        chain = [source]
+        for img in images:
+            self.add_to_map(img, "sources", source)
+            self.add_to_map(img, "sourceChains", chain)
+
+        log(f"[gen-image-lock] added {len(images)} extra image(s)")
 
     def sort_and_deduplicate(self):
         def get_sort_key(item):
@@ -685,6 +837,9 @@ def main():
     parser.add_argument("--ignore-cache", action="store_true", help="Ignore local cache and force rebuild archive hashes")
     
     parser.add_argument("--namespaces", default="", help="Space separated namespaces to filter")
+    parser.add_argument("--extra-images-annotation", default="image-lock/extra-images", help="Annotation key(s) for extra images (comma/space separated)")
+    parser.add_argument("--extra-images", default="", help="Extra image list (comma/space separated)")
+    parser.add_argument("--extra-images-file", default="", help="Extra image file (json/yaml list or one per line)")
     
     args = parser.parse_args()
     

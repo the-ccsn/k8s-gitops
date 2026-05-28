@@ -127,6 +127,64 @@ flux suspend ks vms
 flux resume ks vms
 ```
 
+## Image Lock
+
+This repo uses `gen-image-lock` to generate `clusters/<name>/images.lock.nix` for
+airgapped/archived images.
+
+How it works:
+
+- `flux-local get cluster` extracts image sources from Kustomizations/HelmReleases.
+- `flux-local build all` renders manifests to discover image targets.
+- The script resolves image digests and builds archive hashes via Nix.
+- The Nix archive builder uses `skopeo` to copy by digest, preserve digests, and
+  handle multi-arch manifest lists based on detected media types.
+
+Rationale (why `skopeo` and mediaType branching): these constraints are the reason
+the script looks strict about digests and schema types.
+
+- `skopeo` can copy by digest (`name@sha256:...`) while preserving the original
+  manifest digest. Docker/OCI tooling often rewrites manifests during conversion,
+  which breaks digest pinning.
+- Registries return different schema/media types (OCI index, Docker manifest list,
+  v2/v1 manifests). The script inspects the mediaType first and picks a compatible
+  output format to avoid accidental conversion and keep multi-arch manifests intact.
+- The copy uses `--multi-arch all` so the OCI archive contains the full manifest
+  list, not just the local platform. This is required for true airgapped imports.
+- `--preserve-digests` keeps the descriptor digests stable; without it, the copied
+  manifest can be re-signed or re-encoded and no longer match the pinned digest.
+- Format selection is intentional and follows mediaType to minimize schema churn:
+  OCI index/manifest -> `oci` then `v2s2` then `v2s1`; Docker manifest list/v2
+  -> `v2s2` then `oci` then `v2s1`; Docker v1 -> `v2s1` to avoid silent upgrades.
+- The script inspects mediaType with `skopeo inspect --raw` and only falls back to
+  `skopeo inspect` if needed, because some registries omit mediaType in the
+  standard output.
+
+```bash
+# single cluster
+nix run .#gen-image-lock -- --cluster kubevirt-cluster-319
+
+# all clusters
+nix run .#gen-image-lock-all
+```
+
+### Extra images via annotation
+
+When an image is not referenced in manifests, attach it to the owning
+HelmRelease/Kustomization with a comma-separated annotation:
+
+```yaml
+metadata:
+   annotations:
+      image-lock/extra-images: "longhornio/longhorn-manager:v1.11.2, longhornio/longhorn-ui:v1.11.2"
+```
+
+Optional alternatives:
+
+- Use `--extra-images` for ad-hoc comma/space separated images.
+- Use `--extra-images-file` for a file list (json/yaml array or one per line).
+- Override the annotation key with `--extra-images-annotation`.
+
 ## Secrets Management
 
 > https://fluxcd.io/flux/guides/mozilla-sops/#encrypting-secrets-using-age

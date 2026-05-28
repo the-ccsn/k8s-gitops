@@ -41,7 +41,9 @@
             bash
           ];
           text = ''
-            exec uv run ${./scripts/gen-image-lock.py} "$@"
+            exec uv run ${./scripts/gen-image-lock.py} \
+              --extra-images-annotation image-lock/extra-images \
+              "$@"
           '';
         };
       }
@@ -58,7 +60,10 @@
               name = wrappedName;
               runtimeInputs = [ self.packages.${system}.gen-image-lock ];
               text = ''
-                exec gen-image-lock --cluster ${pkgs.lib.escapeShellArg cluster} "$@"
+                exec gen-image-lock \
+                  --cluster ${pkgs.lib.escapeShellArg cluster} \
+                  --extra-images-annotation image-lock/extra-images \
+                  "$@"
               '';
             };
           }
@@ -85,7 +90,9 @@
             clusters=(${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg clusterNames)})
             for cluster in "''${clusters[@]}"; do
               echo "Processing $cluster..."
-              gen-image-lock --cluster "$cluster" "''${args[@]}" \
+              gen-image-lock --cluster "$cluster" \
+                --extra-images-annotation image-lock/extra-images \
+                "''${args[@]}" \
                 --commit-msg-file "msg_$cluster.txt" \
                 --report-file "rep_$cluster.md"
               

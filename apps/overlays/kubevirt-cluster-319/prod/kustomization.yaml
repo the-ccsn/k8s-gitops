@@ -7,6 +7,7 @@ commonLabels:
 resources: []
   # - ./../../../base/grafana/
   # - ./../../../base/logto/
+  # - ./../../../base/oauth2-proxy/
   # - ./../../../base/headlamp/
   # - ./../../../base/flux-operator/
   # - ./../../../base/vaultwarden/

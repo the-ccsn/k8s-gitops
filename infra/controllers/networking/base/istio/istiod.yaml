@@ -6,6 +6,8 @@ metadata:
   name: istiod
   namespace: istio-system
 spec:
+  dependsOn:
+    - name: istio-base
   releaseName: istiod
   interval: 30m
   chartRef:

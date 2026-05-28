@@ -6,6 +6,10 @@ metadata:
   name: istio-cni
   namespace: istio-system
 spec:
+  dependsOn:
+    - name: istio-base
+    - name: istiod
+    - name: ztunnel
   releaseName: istio-cni
   interval: 30m
   chartRef:

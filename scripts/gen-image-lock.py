@@ -84,11 +84,12 @@ def normalize_mirror_value(mirror_value):
     return []
 
 def map_image_sources(image_name, registry_mirrors):
-    registry, repo = split_image_name(image_name)
+    canonical_name = canonical_image_name(image_name)
+    registry, repo = split_image_name(canonical_name)
     mirror_value = registry_mirrors.get(registry, [])
     mirror_registries = normalize_mirror_value(mirror_value)
     sources = [f"{mirror_registry}/{repo}" for mirror_registry in mirror_registries]
-    sources.append(image_name)
+    sources.append(canonical_name)
     unique_sources = []
     seen = set()
     for source in sources:
@@ -268,7 +269,7 @@ class ImageLockGenerator:
         ]
         ensure_commands_exist(required_commands)
 
-    def prefetch_archive_hash_via_nix(self, source_images, image_name, tag, digest):
+    def prefetch_archive_hash_via_nix(self, source_images, final_image_name, tag, digest):
         source_images_json = json.dumps(source_images)
         expr = (
             "let\n"
@@ -277,7 +278,7 @@ class ImageLockGenerator:
             "in flake.lib.mkMultiArchImageArchive {\n"
             "  inherit pkgs;\n"
             f"  sourceImages = builtins.fromJSON ''{source_images_json}'';\n"
-            f"  finalImageName = {nix_escape_string(image_name)};\n"
+            f"  finalImageName = {nix_escape_string(final_image_name)};\n"
             f"  finalImageTag = {nix_escape_string(tag)};\n"
             f"  imageDigest = {nix_escape_string(digest)};\n"
             "  archiveHash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\";\n"
@@ -299,7 +300,7 @@ class ImageLockGenerator:
         got_match = re.search(r"got:\s*(sha256-[A-Za-z0-9+/=]+)", output)
         if got_match:
             archive_hash = got_match.group(1)
-            self.nix_build_paths.append(f"prefetch:{image_name}:{tag}@{digest} -> {archive_hash}")
+            self.nix_build_paths.append(f"prefetch:{final_image_name}:{tag}@{digest} -> {archive_hash}")
             return archive_hash
 
         if result.returncode == 0:
@@ -486,9 +487,10 @@ class ImageLockGenerator:
 
             uid = f"{image_name}:{tag}"
             digest = run_cmd(["crane", "digest", img_ref], retries=4).strip()
+            final_image_name = canonical_image_name(image_name)
             
             safe_digest = digest.replace(":", "-")
-            safe_name = re.sub(r'[/:]', '_', image_name)
+            safe_name = re.sub(r'[/:]', '_', final_image_name)
             safe_tag = re.sub(r'[^a-zA-Z0-9._-]', '_', tag)
             cache_file = cache_dir / (
                 f"{safe_name}-{safe_tag}-{safe_digest}-"
@@ -507,7 +509,7 @@ class ImageLockGenerator:
                 self.vlog(f"[gen-image-lock] [{index}/{self.total_images}] cache miss: {cache_file.name}")
                 self.vlog(f"[gen-image-lock] [{index}/{self.total_images}] digest={digest} sources={len(source_images)}")
                 log(f"[gen-image-lock] [{index}/{self.total_images}] prefetching archive hash via nix lib...")
-                hash_val = self.prefetch_archive_hash_via_nix(source_images, image_name, tag, digest)
+                hash_val = self.prefetch_archive_hash_via_nix(source_images, final_image_name, tag, digest)
                 if not hash_val:
                     raise Exception(f"Failed to calculate archive hash for: {img_ref}")
                 tmp_cache_file = cache_file.with_suffix(cache_file.suffix + f".{os.getpid()}.tmp")
@@ -524,7 +526,7 @@ class ImageLockGenerator:
                 f"  {{\n"
                 f"    imageName = \"{image_name}\";\n"
                 f"    imageDigest = \"{digest}\";\n"
-                f"    finalImageName = \"{canonical_image_name(image_name)}\";\n"
+                f"    finalImageName = \"{final_image_name}\";\n"
                 f"    finalImageTag = \"{tag}\";\n"
                 f"    archiveHash = \"{hash_val}\";\n"
                 f"    os = \"{self.args.os}\";\n"

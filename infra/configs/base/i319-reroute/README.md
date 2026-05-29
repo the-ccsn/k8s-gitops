@@ -1,4 +1,4 @@
-# 319-reroute
+# i319-reroute
 
 A lightweight edge routing layer in Kubernetes for host rewriting and TLS termination.
 
@@ -13,10 +13,10 @@ graph LR
     end
 
     subgraph Kubernetes Cluster
-        subgraph 319-reroute
-            LB[Service: 319-reroute-service<br/>Type: LoadBalancer]
+        subgraph i319-reroute
+            LB[Service: i319-reroute-service<br/>Type: LoadBalancer]
             
-            RerouteProxy[Deployment: 319-reroute-proxy]
+            RerouteProxy[Deployment: i319-reroute-proxy]
 
         end
         GatewaySVC[Service: default-gateway]
@@ -54,9 +54,15 @@ The system utilizes Nginx to perform host rewriting before proxying the connecti
 
 * **`cert-manager.io/v1/ClusterIssuer` & `Certificate`**:
 Automates Let's Encrypt Wildcard certificate generation via DNS-01 challenge. Stored in `isning-moe-tls-secret`.
-* **`v1/ConfigMap` (`319-reroute-nginx-config`)**:
+* **`v1/ConfigMap` (`i319-reroute-nginx-config`)**:
 Contains the bare `nginx.conf` handling TLS termination, ALPN (H2/H3), host rewriting, and pass-through routing to the upstream gateway.
-* **`apps/v1/Deployment` (`319-reroute-proxy`)**:
+* **`apps/v1/Deployment` (`i319-reroute-proxy`)**:
 Runs the Nginx proxy pods. Exposes ports 80 (TCP), 443 (TCP), and 443 (UDP).
-* **`v1/Service` (`319-reroute-service`)**:
+* **`v1/Service` (`i319-reroute-service`)**:
 `LoadBalancer` type. Maps external ports 80/TCP, 443/TCP, and 443/UDP to the deployment pods.
+
+## i319-reroute, Why there's a i prefix?
+```txt
+Service/319-reroute/319-reroute dry-run failed (Invalid): Service "319-reroute" is invalid: metadata.name: Invalid value: "319-reroute": a DNS-1035 label must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character (e.g. 'my-name',  or 'abc-123', regex used for validation is '[a-z]([-a-z0-9]*[a-z0-9])?')
+```
+That's all.

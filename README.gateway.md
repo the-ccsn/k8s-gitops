@@ -3,7 +3,7 @@
 This document outlines the ingress routing architecture for the cluster.
 The design targets efficient handling of internal and external traffic,
 using Split DNS for local access, Cloudflare Tunnel for public access, and a
-direct campus/IPv4/IPv6 path via the 319 Router and 319-reroute proxy.
+direct campus/IPv4/IPv6 path via the 319 Router and i319-reroute proxy.
 
 ## Architecture Diagram
 
@@ -18,7 +18,7 @@ graph LR
     CF_Tunnel("Cloudflare Tunnel<br/>(Terminates TLS)")
     319_router[319 Router]
     Domain_319["*.319.ccsn.dev (Campus Network Domain)"]
-    319_reroute("319-reroute Proxy<br/>(Terminates TLS<br/>& Rewrites Host)")
+    319_reroute("i319-reroute Proxy<br/>(Terminates TLS<br/>& Rewrites Host)")
 
     %% Gateway (Rearranged node order to perfectly avoid line crossings)
     subgraph Gateway [Standard Gateway]
@@ -31,7 +31,7 @@ graph LR
     Ext -->|"Slow Path"| CF_Tunnel
     CF_Tunnel -->|"Forward"| GW_8080
 
-    %% --- 2. Middle Path (Includes 319-reroute routing) ---
+    %% --- 2. Middle Path (Includes i319-reroute routing) ---
     Cam -->|"Direct IPv4/6 (Fast Path)"| 319_router
     Int -->|"NAT Hairpin IPv4/6 (Fast Path)"| 319_router
     319_router -->|"Forward"| Domain_319
@@ -39,7 +39,7 @@ graph LR
     %% Domain receives 80 & 443 traffic and passes it to the proxy
     Domain_319 -->|"HTTP & HTTPS"| 319_reroute
     
-    %% 319-reroute routing logic
+    %% i319-reroute routing logic
     319_reroute -->|"Forward 443 (Decrypted)"| GW_8080
     319_reroute -->|"Forward 80"| GW_80
 
@@ -67,8 +67,8 @@ graph LR
 
 ### 2. IPv6 Direct Access (Fast Path)
 
-* **Route:** Client (Campus / Internal) -> `319 Router` -> `*.319.ccsn.dev` (Domain) -> `319-reroute Proxy` -> Gateway (`:80` or `:8080`)
-* **Description:** Campus-network or NAT-hairpin internal clients reach `*.319.ccsn.dev` via the `319 Router`, which forwards requests to the `*.319.ccsn.dev` domain endpoint. That domain accepts both HTTP (80) and HTTPS (443) and hands traffic to the `319-reroute Proxy`. The proxy terminates TLS (for HTTPS), rewrites the Host header to `*.ccsn.dev`, and splits traffic: decrypted HTTPS is forwarded to the Gateway on `:8080`, while plain HTTP is forwarded to `:80`.
+* **Route:** Client (Campus / Internal) -> `319 Router` -> `*.319.ccsn.dev` (Domain) -> `i319-reroute Proxy` -> Gateway (`:80` or `:8080`)
+* **Description:** Campus-network or NAT-hairpin internal clients reach `*.319.ccsn.dev` via the `319 Router`, which forwards requests to the `*.319.ccsn.dev` domain endpoint. That domain accepts both HTTP (80) and HTTPS (443) and hands traffic to the `i319-reroute Proxy`. The proxy terminates TLS (for HTTPS), rewrites the Host header to `*.ccsn.dev`, and splits traffic: decrypted HTTPS is forwarded to the Gateway on `:8080`, while plain HTTP is forwarded to `:80`.
 
 ### 3. Internal Access (Split DNS Fast Path)
 
@@ -78,13 +78,13 @@ graph LR
 ## Core Components
 
 * **Cloudflare Tunnel:** Secures external IPv4/general traffic. Terminates TLS before forwarding to the local network.
-* **319-reroute Proxy:** A custom reverse proxy handling the `*.319.ccsn.dev` domain. Its primary jobs are TLS termination, Host header rewriting, and HTTP/HTTPS traffic splitting.
+* **i319-reroute Proxy:** A custom reverse proxy handling the `*.319.ccsn.dev` domain. Its primary jobs are TLS termination, Host header rewriting, and HTTP/HTTPS traffic splitting.
 * **Standard Gateway:** The core entry point for the backend services.
 
 ## Gateway Port Mapping
 
 | Port | Traffic Source | Description |
 | --- | --- | --- |
-| **80** | Internal Split DNS, `319-reroute` | Standard plain HTTP traffic. |
+| **80** | Internal Split DNS, `i319-reroute` | Standard plain HTTP traffic. |
 | **443** | Internal Split DNS | Standard HTTPS traffic (Gateway handles TLS). |
-| **8080** | Cloudflare Tunnel, `319-reroute` | Decrypted HTTPS traffic forwarded from upstream proxies. |
+| **8080** | Cloudflare Tunnel, `i319-reroute` | Decrypted HTTPS traffic forwarded from upstream proxies. |

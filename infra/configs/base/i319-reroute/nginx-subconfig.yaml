@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: 319-reroute-nginx-subconfig
+  name: i319-reroute-nginx-subconfig
 data:
   00-prod.conf: |
     # Define Upstreams

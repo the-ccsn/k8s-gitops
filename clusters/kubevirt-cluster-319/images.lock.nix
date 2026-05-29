@@ -428,6 +428,24 @@
     ];
   }
   {
+    imageName = "ghcr.io/the-ccsn/k8s-gitops/tf-runner";
+    imageDigest = "sha256:8600a5292bb1773b55486e093289258f2dc3f16112856a11f8a523f018472d28";
+    finalImageName = "ghcr.io/the-ccsn/k8s-gitops/tf-runner";
+    finalImageTag = "v0.16.3-custom-202605251544";
+    archiveHash = "sha256-MLvkJawyPgAhCWkeu7wA+EL5BrUb3CTt6lV4UDuys+w=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "flux-system"; name = "tofu-controller"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-pre-controllers"; }
+      ]
+    ];
+    targets = [];
+  }
+  {
     imageName = "longhornio/backing-image-manager";
     imageDigest = "sha256:fc7b656501e59896326de6d228319d883ae55591c1a2c90292043eab66c33e7b";
     finalImageName = "docker.io/longhornio/backing-image-manager";
@@ -1117,6 +1135,25 @@
     targets = [
       { kind = "Deployment"; namespace = "istio-system"; name = "istiod"; }
     ];
+  }
+  {
+    imageName = "registry.istio.io/release/proxyv2";
+    imageDigest = "sha256:9ac03a22e3cbc83def63242c4609ddf5b3a7bdac9fa06fa815eb72611fd44616";
+    finalImageName = "registry.istio.io/release/proxyv2";
+    finalImageTag = "1.30.0-rc.0-distroless";
+    archiveHash = "sha256-E0fv5Z0dL5eLpG9o57/36U30T2s0B7FqzSbiU0Hr0zQ=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "istio-system"; name = "istio-base"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
   }
   {
     imageName = "registry.istio.io/release/ztunnel";

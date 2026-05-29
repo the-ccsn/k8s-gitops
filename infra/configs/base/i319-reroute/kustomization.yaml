@@ -8,4 +8,4 @@ resources:
   - ./deployment.yaml
   - ./service.yaml
 
-namespace: 319-reroute
+namespace: i319-reroute

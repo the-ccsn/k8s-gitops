@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: 319-reroute-proxy
+  name: i319-reroute-proxy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: 319-reroute-proxy
+      app: i319-reroute-proxy
   template:
     metadata:
       labels:
-        app: 319-reroute-proxy
+        app: i319-reroute-proxy
     spec:
       containers:
       - name: nginx
@@ -47,10 +47,10 @@ spec:
       volumes:
       - name: nginx-config
         configMap:
-          name: 319-reroute-nginx-config
+          name: i319-reroute-nginx-config
       - name: nginx-subconfig
         configMap:
-          name: 319-reroute-nginx-subconfig
+          name: i319-reroute-nginx-subconfig
       - name: tls-certs
         secret:
-          secretName: 319-reroute-tls-secret
+          secretName: i319-reroute-tls-secret

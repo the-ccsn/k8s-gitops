@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: 319-reroute
+  name: i319-reroute
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "false" # Disable Cloudflare proxy for this service
     # MUST be patched
@@ -28,4 +28,4 @@ spec:
     targetPort: 443
     protocol: UDP
   selector:
-    app: 319-reroute-proxy
+    app: i319-reroute-proxy

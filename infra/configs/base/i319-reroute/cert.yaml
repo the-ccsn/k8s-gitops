@@ -2,9 +2,9 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: 319-reroute-tls
+  name: i319-reroute-tls
 spec:
-  secretName: 319-reroute-tls-secret
+  secretName: i319-reroute-tls-secret
   issuerRef:
     name: letsencrypt-infra
     kind: ClusterIssuer

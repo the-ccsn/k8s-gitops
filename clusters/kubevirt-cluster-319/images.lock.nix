@@ -730,7 +730,7 @@
       ]
     ];
     targets = [
-      { kind = "Deployment"; namespace = "319-reroute"; name = "319-reroute-proxy"; }
+      { kind = "Deployment"; namespace = "i319-reroute"; name = "i319-reroute-proxy"; }
     ];
   }
   {

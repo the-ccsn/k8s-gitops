@@ -13,7 +13,7 @@ resources:
   - ../../base/victoria-metrics/
   - ../../base/egress/
   - ./cloudflare-operator/
-  - ./319-reroute/
+  - ./i319-reroute/
 
 patches:
   - target:

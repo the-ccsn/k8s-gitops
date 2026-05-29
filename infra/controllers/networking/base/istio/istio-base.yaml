@@ -3,6 +3,9 @@ kind: HelmRelease
 metadata:
   name: istio-base
   namespace: istio-system
+  annotations:
+    image-lock/extra-images: >-
+      registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless
 spec:
   # The base chart contains the basic CRDs and cluster roles required to set up Istio
   # This should be installed prior to any other Istio component.

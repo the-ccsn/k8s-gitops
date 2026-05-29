@@ -9,21 +9,35 @@ spec:
   - dnsName: "clustername.ingress.cfd.ccsn.dev"
     recordType: CNAME
     targets:
-    - 84bf09ad-68e3-4445-ae54-264d0088090a.cfargotunnel.com
+    - b6db262b-3b33-4400-a381-6d255b81d105.cfargotunnel.com
     providerSpecific:
       - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
         value: "false"
   - dnsName: "prod.ingress.cfd.ccsn.dev"
     recordType: CNAME
     targets:
-    - 84bf09ad-68e3-4445-ae54-264d0088090a.cfargotunnel.com
+    - b6db262b-3b33-4400-a381-6d255b81d105.cfargotunnel.com
     providerSpecific:
       - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
         value: "false"
   - dnsName: "staging.ingress.cfd.ccsn.dev"
     recordType: CNAME
     targets:
-    - 84bf09ad-68e3-4445-ae54-264d0088090a.cfargotunnel.com
+    - b6db262b-3b33-4400-a381-6d255b81d105.cfargotunnel.com
     providerSpecific:
       - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
         value: "false"
+  - dnsName: "prod.ingress.ccsn.dev"
+    recordType: CNAME
+    targets:
+    - prod.ingress.cfd.ccsn.dev
+    providerSpecific:
+      - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+        value: "false"
+  - dnsName: "*.ccsn.dev"
+    recordType: CNAME
+    targets:
+    - prod.ingress.ccsn.dev
+    providerSpecific:
+      - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+        value: "true"

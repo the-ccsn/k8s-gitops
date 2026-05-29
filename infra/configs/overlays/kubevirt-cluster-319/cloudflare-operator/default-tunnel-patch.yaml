@@ -2,5 +2,6 @@ kind: will-be-ignored
 metadata:
   name: will-be-ignored
 spec:
-  newTunnel:
+  existingTunnel:
+    id: b6db262b-3b33-4400-a381-6d255b81d105
     name: kubevirt-cluster-319-tunnel

@@ -1,7 +1,7 @@
 variable "harbor_url" {
   description = "Harbor base URL"
   type        = string
-  default     = "http://harbor.harbor.svc.cluster.local"
+  default     = "http://harbor-core.harbor.svc.cluster.local"
 }
 
 variable "harbor_username" {

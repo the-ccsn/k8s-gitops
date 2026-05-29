@@ -5,7 +5,7 @@ metadata:
 spec:
   configuration:
     destinationPath: s3://logto-pg-backup/
-    endpointURL: https://0fa2f8672cf2637118d8cfee9fe6b95f.r2.cloudflarestorage.com
+    endpointURL: https://579df294982535e588d6ab45d1971da2.r2.cloudflarestorage.com
     s3Credentials:
       accessKeyId:
         name: logto-pg-s3-credentials

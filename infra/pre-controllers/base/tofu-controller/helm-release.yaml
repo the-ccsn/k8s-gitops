@@ -4,6 +4,9 @@ kind: HelmRelease
 metadata:
   name: tofu-controller
   namespace: flux-system
+  annotations:
+    image-lock/extra-images: >-
+      ghcr.io/the-ccsn/k8s-gitops/tf-runner:v0.16.3-custom-202605251544@sha256:8600a5292bb1773b55486e093289258f2dc3f16112856a11f8a523f018472d28
 spec:
   releaseName: tofu-controller
   interval: 30m

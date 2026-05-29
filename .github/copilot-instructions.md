@@ -69,7 +69,7 @@ SOPS-encrypted before committing.
 
 ```bash
 # AGE_RECIPIENT is the public key printed during initial cluster bootstrap
-export AGE_RECIPIENT=age167wn2qepdh87r0fqks69s0em09fkve4nrpuuxdrvgdr0dfmqpf2q08uzxn
+export AGE_RECIPIENT=age1td0htsklm8xpsvcync3ulwxs82w5a9a03eeq9wwg8pm2mx3t99fqtgyhhs
 
 # Encrypt only data/stringData fields in-place
 sops --encrypt --age=${AGE_RECIPIENT} \
@@ -83,7 +83,7 @@ stringData:
   apiToken: ENC[AES256_GCM,data:...,type:str]
 sops:
   age:
-    - recipient: age167wn2qepdh87r0fqks69s0em09fkve4nrpuuxdrvgdr0dfmqpf2q08uzxn
+    - recipient: age1td0htsklm8xpsvcync3ulwxs82w5a9a03eeq9wwg8pm2mx3t99fqtgyhhs
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
         ...

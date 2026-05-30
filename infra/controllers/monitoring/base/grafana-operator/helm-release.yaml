@@ -1,0 +1,31 @@
+# https://fluxcd.io/flux/components/helm/helmreleases/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana-operator
+  namespace: grafana-operator
+spec:
+  releaseName: grafana-operator
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-grafana-operator
+    namespace: grafana-operator
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+  # https://github.com/grafana/grafana-operator/blob/master/deploy/helm/grafana-operator/values.yaml
+  values:
+    crds:
+      # Use flux to manage CRDs installation and upgrade.
+      # -- Immutable CustomResourceDefinitions are installed only once using `crds/` directory
+      # and require manual upgrade by `kubectl apply`.
+      # Mutable CRDs are installed and upgraded together with the Helm chart using `templates/` directory
+      # without manual `kubectl apply` step required.
+      # Use `helm upgrade -i --take-ownership` when switching to mutable CRDs for the first time only.
+      # Both types of CRDs are protected on the Helm chart uninstall to avoid cascading deletion.
+      immutable: true

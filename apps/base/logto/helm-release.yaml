@@ -21,6 +21,13 @@ spec:
           key: uri
     endpoint: "https://login.ccsn.dev"
 
+    # Pre-app job https://github.com/the-ccsn/helm-charts/blob/main/charts/logto/templates/job.yaml
+    autoSeeding:
+      enabled: true
+    autoAlteration:
+      enabled: true
+    deployOfficialConnectors: true
+
     httpRoute:
       enabled: true
       parentRefs:
@@ -28,13 +35,13 @@ spec:
       hostnames:
         - login.ccsn.dev
     console:
-      endpoint: "https://logto-dash.ccsn.dev"
+      endpoint: "https://login-dash.ccsn.dev"
       httpRoute:
         enabled: true
         parentRefs:
           - name: default-gateway
         hostnames:
-          - logto-dash.ccsn.dev
+          - login-dash.ccsn.dev
     resources:
       limits:
         cpu: 1500m

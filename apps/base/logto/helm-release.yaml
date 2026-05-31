@@ -26,7 +26,6 @@ spec:
       enabled: true
     autoAlteration:
       enabled: true
-    deployOfficialConnectors: true
 
     httpRoute:
       enabled: true
@@ -50,15 +49,24 @@ spec:
         cpu: 1m
         memory: 128Mi
 
-    persistence:
-      # Whether to automatically create the PersistentVolumeClaims exists in the volumes
+    ## High availability
+    replicaCount: 2
+
+    redis:
       enabled: true
-      storageClass: ""
-      claims:
-      - name: connectors-claim
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 15Mi
-          limits:
-            storage: 500Mi
+      url:
+        valueFrom:
+          secretKeyRef:
+            name: logto-redis-auth
+            key: REDIS_URL
+
+    pdb:
+      enabled: true
+      minAvailable: 1
+
+    podAntiAffinity:
+      enabled: true
+      type: preferred
+
+    topologySpreadConstraints:
+      enabled: false # Only one AZ in our cluster, so this doesn't make sense to enable

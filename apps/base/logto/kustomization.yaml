@@ -8,3 +8,5 @@ resources:
   - ./scheduled-backup.yaml
   - ./helm-oci-repo.yaml
   - ./helm-release.yaml
+  - ./logto-redis-auth-secret.yaml
+  - ./redis-release.yaml

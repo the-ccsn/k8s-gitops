@@ -38,7 +38,7 @@ spec:
       # baseURL: https://headlamp.ccsn.dev
       watchPlugins: true
       oidc:
-        clientID: "xktx7x81fvdwvx3a0ly62"
+        clientID: "h465htc5ewe0zshhg3ynn"
         issuerURL: "https://login.ccsn.dev/oidc"
         scopes: "openid email profile offline_access roles"
         usePKCE: true

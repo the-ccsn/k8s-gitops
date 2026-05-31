@@ -3,7 +3,7 @@ kind: Cluster
 metadata:
   name: logto-pg-cluster
 spec:
-  instances: 1
+  instances: 2
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io
@@ -22,8 +22,8 @@ spec:
         login: true
 
   bootstrap:
-      initdb:
-        owner: app
+    initdb:
+      owner: app
 
   imageCatalogRef:
     apiGroup: postgresql.cnpg.io

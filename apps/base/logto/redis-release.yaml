@@ -22,12 +22,14 @@ spec:
   chartRef:
     kind: OCIRepository
     name: helm-chart-redis
-    namespace: harbor
   # https://github.com/bitnami/charts/tree/main/bitnami/redis
   values:
     # Used as cache, and won't be single point failure for logto
     # So no HA required, so we can use standalone architecture to save resources.
     architecture: standalone
+
+    networkPolicy:
+      enabled: true
 
     auth:
       enabled: true

@@ -65,7 +65,7 @@ spec:
       - name: SSO_SCOPES
         value: "openid email profile offline_access"
       - name: SSO_CLIENT_ID
-        value: "4ggb667if8rr9gcgk51vq"
+        value: "1a2zc0uue83n20iy87u5a"
       - name: SSO_CLIENT_SECRET
         valueFrom:
           secretKeyRef:

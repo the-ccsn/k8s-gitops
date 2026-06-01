@@ -22,10 +22,10 @@
   }
   {
     imageName = "bitnami/kubectl";
-    imageDigest = "sha256:bc37f11268208ce646cc91aadc482eb9a2b3f291c4576318772f164a13033f9e";
+    imageDigest = "sha256:9c362260ef11ec664c36f34e0cb263b5cacd5b2f64e4c9b93aa3c3dc95549315";
     finalImageName = "docker.io/bitnami/kubectl";
     finalImageTag = "latest";
-    archiveHash = "sha256-GQjqsuZHJ/QXRzYf+lyCdPldsJ0WWMKPL+zZILZ7GCk=";
+    archiveHash = "sha256-VmF3Yyt9kxfMfrH71DNwuuHUrfmBR0D5ldraLvE5qto=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -470,6 +470,28 @@
     ];
   }
   {
+    imageName = "ghcr.io/grafana/grafana-operator";
+    imageDigest = "sha256:3abeaccdf54e9e02c2f4b6215be594c8f78b94a866961ada7f92b677bf33c9b4";
+    finalImageName = "ghcr.io/grafana/grafana-operator";
+    finalImageTag = "v5.23.0";
+    archiveHash = "sha256-lJeZ0Xv3Sg3UUWJsniCgpU1r+kPmMmsf5dzpNdjiuMM=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "grafana-operator"; name = "grafana-operator"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "grafana-operator"; name = "grafana-operator"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-monitoring"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "grafana-operator"; name = "grafana-operator"; }
+    ];
+  }
+  {
     imageName = "ghcr.io/headlamp-k8s/headlamp-plugin-cert-manager";
     imageDigest = "sha256:d7d0321a90c0347e2e4f9f7e362ecaa10a36592cc5ac8fd1514df11c476b43fe";
     finalImageName = "ghcr.io/headlamp-k8s/headlamp-plugin-cert-manager";
@@ -572,10 +594,10 @@
   }
   {
     imageName = "ghcr.io/logto-io/logto";
-    imageDigest = "sha256:9dc15595766961d0d81d1026fc38294eacf3ce32d6dab2e9dbeb6d9b10e7a031";
+    imageDigest = "sha256:dabb2b3d087bb40fed8f33508ca16432ddf5c03f3e0846e36fe1f399a00ab1f3";
     finalImageName = "ghcr.io/logto-io/logto";
-    finalImageTag = "1.39.0";
-    archiveHash = "sha256-9nCGTsOFAYarcXbjAP88GYu+LzUM9S6xCmKOJ0KuyiY=";
+    finalImageTag = "1.40.1";
+    archiveHash = "sha256-oFd5jZ9dNxupuqXmC0z1VXVFgr3bY5x4h1SgrNOQ3qI=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -974,7 +996,6 @@
       ]
     ];
     targets = [
-      { kind = "Deployment"; namespace = "unknown ns"; name = "logto"; }
       { kind = "Job"; namespace = "unknown ns"; name = "logto-pre-app-1"; }
     ];
   }
@@ -1279,23 +1300,29 @@
   }
   {
     imageName = "registry-1.docker.io/bitnami/redis-exporter";
-    imageDigest = "sha256:ac57a310fd6b4fcb9dc59d1d499eb0e47f1a34e5c57225a9dbf65101e50fe19d";
+    imageDigest = "sha256:031b5a1206e057135ddb056efccc889970854fc121b9f2277a260e60bb10c0a6";
     finalImageName = "registry-1.docker.io/bitnami/redis-exporter";
     finalImageTag = "latest";
-    archiveHash = "sha256-7K+4Bs/ZJMXns5wBBxq7BUKCGRIZuxogzHYczDrPkLg=";
+    archiveHash = "sha256-ediQj48IKjycPQSAjzET7REwZkllJPTFdin9/06bKAo=";
     os = "linux";
     arch = "amd64";
     sources = [
       { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
+      { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
     ];
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
+      [
+        { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+      ]
     ];
     targets = [
       { kind = "StatefulSet"; namespace = "harbor"; name = "harbor-redis-master"; }
+      { kind = "StatefulSet"; namespace = "prod"; name = "logto-redis-master"; }
     ];
   }
   {
@@ -1308,15 +1335,21 @@
     arch = "amd64";
     sources = [
       { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
+      { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
     ];
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
       ]
+      [
+        { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+      ]
     ];
     targets = [
       { kind = "StatefulSet"; namespace = "harbor"; name = "harbor-redis-master"; }
+      { kind = "StatefulSet"; namespace = "prod"; name = "logto-redis-master"; }
     ];
   }
   {

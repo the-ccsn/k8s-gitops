@@ -1,0 +1,27 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: vaultwarden-pg-cluster
+spec:
+  instances: 2
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: vaultwarden-pg-objectstore
+        serverName: vaultwarden-pg-cluster
+
+  bootstrap:
+    initdb:
+      owner: app
+
+  imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ClusterImageCatalog
+    name: postgresql-minimal-trixie
+    major: 18 # This shouldn't cause issue: https://github.com/dani-garcia/vaultwarden/discussions/3960
+
+  storage:
+    size: 5Gi
+    storageClass: longhorn

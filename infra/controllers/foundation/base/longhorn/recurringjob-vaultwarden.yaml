@@ -1,0 +1,16 @@
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: longhorn-default-backup
+  namespace: longhorn-system
+spec:
+  name: longhorn-default-backup
+  task: backup
+  cron: "0 2 * * *"
+  retain: 7
+  concurrency: 1
+  groups:
+    - default
+  parameters:
+    full-backup-interval: 14
+  labels: {}

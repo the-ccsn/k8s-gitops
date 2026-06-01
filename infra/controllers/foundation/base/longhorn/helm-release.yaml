@@ -36,9 +36,16 @@ spec:
     persistence:
       createStorageClass: true
       dataEngine: "v1"
-      defaultClass: true
+      defaultClass: false
       defaultReplicaCount: 3
       defaultDataLocality: "best-effort"
       defaultFsType: "ext4"
+      recurringJobSelector:
+        enable: true
+        jobList: '[]'
+    defaultBackupStore:
+      backupTarget: "s3://longhorn-backups@r2/"
+      backupTargetCredentialSecret: longhorn-r2-credentials
+      pollInterval: 3600
     openshift:
       enabled: false

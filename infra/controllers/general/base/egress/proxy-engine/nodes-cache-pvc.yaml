@@ -4,6 +4,7 @@ metadata:
   name: nodes-cache
   namespace: egress-system
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:

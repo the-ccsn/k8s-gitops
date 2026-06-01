@@ -63,6 +63,7 @@ spec:
     persistence:
       enabled: true
       resourcePolicy: keep
+      storageClass: longhorn
       persistentVolumeClaim:
         registry:
           size: 100Gi

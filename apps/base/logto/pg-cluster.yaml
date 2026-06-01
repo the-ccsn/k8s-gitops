@@ -34,5 +34,6 @@ spec:
 
   storage:
     size: 10Gi
+    storageClass: longhorn
 
   enableSuperuserAccess: true

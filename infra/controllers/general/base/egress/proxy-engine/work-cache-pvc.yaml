@@ -4,6 +4,7 @@ metadata:
   name: proxy-engine-work-cache
   namespace: egress-system
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:

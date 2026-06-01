@@ -45,6 +45,7 @@ spec:
 
       persistence:
         enabled: true
+        storageClass: longhorn
         size: 512Mi
         sizeLimit: 10Gi
     

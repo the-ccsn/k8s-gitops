@@ -4,6 +4,15 @@ kind: HelmRelease
 metadata:
   name: vaultwarden
 spec:
+
+  # Why isn't this HA?
+  # Vaultwarden isn't designed for HA.
+  # Although there's some workaround to run multiple instances, we'd rather endure
+  # short downtime during redeploy than risk data loss or corruption.
+  # See also: https://github.com/dani-garcia/vaultwarden/discussions/2691
+
+  # The pg database supports HA, so we enable it for shorter downtime in case one of pg instances goes down.
+
   releaseName: vaultwarden
   interval: 30m
   chartRef:
@@ -39,7 +48,11 @@ spec:
       existingSecretPasswordKey: password
 
     database:
-      mode: sqlite
+      mode: external
+      external:
+        vendor: postgres
+        existingSecret: vaultwarden-pg-cluster-app
+        existingSecretUrlKey: uri
 
     extraEnv:
       - name: PUSH_ENABLED
@@ -71,16 +84,6 @@ spec:
           secretKeyRef:
             name: vaultwarden-oidc
             key: SSO_CLIENT_SECRET
-
-    backup:
-      enabled: true
-      schedule: '0 3 * * *'
-      s3:
-        endpoint: https://0fa2f8672cf2637118d8cfee9fe6b95f.r2.cloudflarestorage.com
-        bucket: vaultwarden-backup
-        prefix: prod
-        createBucketIfNotExists: false # The token has no CreateBucket permission
-        existingSecret: vaultwarden-r2-credentials
 
     resources:
       requests:

@@ -1,0 +1,19 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: vaultwarden-pg-objectstore
+spec:
+  configuration:
+    destinationPath: s3://vaultwarden-pg-backup/
+    endpointURL: https://579df294982535e588d6ab45d1971da2.r2.cloudflarestorage.com
+    s3Credentials:
+      accessKeyId:
+        name: vaultwarden-r2-credentials
+        key: access-key
+      secretAccessKey:
+        name: vaultwarden-r2-credentials
+        key: secret-key
+    wal:
+      compression: bzip2
+    data:
+      compression: bzip2

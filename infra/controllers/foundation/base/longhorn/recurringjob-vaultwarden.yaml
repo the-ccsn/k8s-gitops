@@ -12,5 +12,5 @@ spec:
   groups:
     - default
   parameters:
-    full-backup-interval: 14
+    full-backup-interval: "14"
   labels: {}

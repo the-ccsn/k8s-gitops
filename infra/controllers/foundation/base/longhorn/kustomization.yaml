@@ -7,3 +7,4 @@ resources:
   - ./longhorn-r2-credentials.yaml
   - ./recurringjob-vaultwarden.yaml
   - ./longhorn-storageclass.yaml
+  - ./backuptarget-r2.yaml

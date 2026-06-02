@@ -1,0 +1,9 @@
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: r2-backup
+  namespace: longhorn-system
+spec:
+  backupTargetURL: "s3://longhorn-backups@auto/"
+  credentialSecret: longhorn-r2-credentials
+  pollInterval: "24h"

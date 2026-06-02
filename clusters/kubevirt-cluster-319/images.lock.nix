@@ -188,11 +188,11 @@
     ];
   }
   {
-    imageName = "docker.io/helmforge/mc";
-    imageDigest = "sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727";
-    finalImageName = "docker.io/helmforge/mc";
-    finalImageTag = "1.0.0";
-    archiveHash = "sha256-8xPttbm6vhgjwnRXIxocms9wrClLTETa8bU31hrsC2s=";
+    imageName = "docker.io/library/busybox";
+    imageDigest = "sha256:9532d8c39891ca2ecde4d30d7710e01fb739c87a8b9299685c63704296b16028";
+    finalImageName = "docker.io/library/busybox";
+    finalImageTag = "1.37";
+    archiveHash = "sha256-UaNeBTNG0HRJl+LJlmhCFBA+7qnvy7wuXm8ZIM4tmEQ=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -205,28 +205,7 @@
       ]
     ];
     targets = [
-      { kind = "CronJob"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden-backup"; }
-    ];
-  }
-  {
-    imageName = "docker.io/library/alpine";
-    imageDigest = "sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601";
-    finalImageName = "docker.io/library/alpine";
-    finalImageTag = "3.22";
-    archiveHash = "sha256-VHY3iJVzBNemI5WJ1BRfsfjOUDv6N/UZSJJYmoikFXI=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "vaultwarden"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "CronJob"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden-backup"; }
+      { kind = "Deployment"; namespace = "unknown ns"; name = "vaultwarden-vaultwarden"; }
     ];
   }
   {

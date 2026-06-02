@@ -11,7 +11,7 @@ volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
   backupTargetName: "r2-backup"
-  recurringJobSelector: '[{"name":"r2-backup","isGroup":true}]'
+  recurringJobSelector: "[{\"name\":\"r2-backup\",\"isGroup\":true}]"
   numberOfReplicas: "3"
   staleReplicaTimeout: "30"
   fsType: "ext4"

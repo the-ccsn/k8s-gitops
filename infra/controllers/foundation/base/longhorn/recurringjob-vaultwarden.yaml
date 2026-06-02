@@ -10,7 +10,7 @@ spec:
   retain: 7
   concurrency: 1
   groups:
-    - default
+    - r2-backup
   parameters:
     full-backup-interval: "14"
   labels: {}

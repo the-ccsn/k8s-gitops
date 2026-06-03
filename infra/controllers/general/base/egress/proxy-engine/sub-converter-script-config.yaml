@@ -252,9 +252,14 @@ data:
                 selector_outbounds += normal
 
             if region_high:
-                region_high_tag = f'{group_name} HighRate'
-                custom_outbounds.append({'type': 'urltest', 'tag': region_high_tag, 'outbounds': region_high})
-                selector_outbounds.append(region_high_tag)
+                rate_urltest_tag = f'{group_name} HighRate URLTest'
+                custom_outbounds.append({'type': 'urltest', 'tag': rate_urltest_tag, 'outbounds': region_high})
+                rate_selector_tag = f'{group_name} HighRate'
+                custom_outbounds.append({
+                    'type': 'selector', 'tag': rate_selector_tag,
+                    'outbounds': [rate_urltest_tag] + region_high
+                })
+                selector_outbounds.append(rate_selector_tag)
                 selector_outbounds += region_high
 
             for item in group_selections.get(group_name, []):
@@ -278,8 +283,8 @@ data:
         if not high_rate_nodes:
             print('Warning: No high-rate nodes found. Skipping HighRateNodes group.')
         else:
-            custom_outbounds.append({'type': 'urltest', 'tag': 'HighRateNodes', 'outbounds': high_rate_nodes})
-            custom_outbounds.append({'type': 'selector', 'tag': 'HighRateNodes', 'outbounds': ['HighRateNodes'] + high_rate_nodes})
+            custom_outbounds.append({'type': 'urltest', 'tag': 'HighRateNodes URLTest', 'outbounds': high_rate_nodes})
+            custom_outbounds.append({'type': 'selector', 'tag': 'HighRateNodes', 'outbounds': ['HighRateNodes URLTest'] + high_rate_nodes})
 
         # 5. Global AllNodes urltest group (excluding high-rate nodes).
         all_node_tags = [n['tag'] for n in all_nodes if n['tag'] not in high_rate_tag_set]

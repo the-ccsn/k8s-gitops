@@ -12,7 +12,7 @@ spec:
   jwtRules:
     - issuer: https://login.ccsn.dev/oidc
       audiences:
-        - m8rwqva1rsy9p2b3tbsad
+        - 29kwglhfpy0j2b4y6cjmw
       forwardOriginalToken: false
       fromHeaders:
         - name: X-OAuth2-Gateway-Id-Token
@@ -30,7 +30,7 @@ spec:
   jwtRules:
     - issuer: https://login.ccsn.dev/oidc
       audiences:
-        - m8rwqva1rsy9p2b3tbsad
+        - 29kwglhfpy0j2b4y6cjmw
       forwardOriginalToken: false
       fromHeaders:
         - name: X-OAuth2-Gateway-Id-Token
@@ -48,7 +48,7 @@ spec:
   jwtRules:
     - issuer: https://login.ccsn.dev/oidc
       audiences:
-        - m8rwqva1rsy9p2b3tbsad
+        - 29kwglhfpy0j2b4y6cjmw
       forwardOriginalToken: false
       fromHeaders:
         - name: X-OAuth2-Gateway-Id-Token

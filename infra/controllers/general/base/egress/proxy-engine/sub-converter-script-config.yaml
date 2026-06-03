@@ -125,6 +125,10 @@ data:
                     data = json.loads(content)
                     if not isinstance(data, dict):
                         raise FetchNodesError('subscription data is not a JSON object')
+                    nodes = data.get('outbounds', [])
+                    valid = [n for n in nodes if 'server' in n and 'tag' in n]
+                    if not valid:
+                        raise FetchNodesError('no valid outbounds (missing server/tag)')
                     return data, attempt - 1
             except Exception as error:
                 last_error = error
@@ -218,18 +222,41 @@ data:
         custom_outbounds.extend(all_nodes)
 
         # 2. Per-region urltest + selector groups.
+        high_rate_tag_set = set(n['tag'] for n in all_nodes if n.get('multiplier', 1.0) >= 2.0)
         for group_name, pattern in groups.items():
-            nodes = filter_nodes(pattern)
-            if not nodes:
+            all_region_nodes = filter_nodes(pattern)
+            if not all_region_nodes:
                 if group_name in strict_groups:
                     raise FetchNodesError(f'missing_strict_group={group_name}')
                 print(f"Warning: No nodes found for group '{group_name}'. Skipping.")
                 continue
 
-            urltest_tag = f'{group_name} URLTest'
-            custom_outbounds.append({'type': 'urltest', 'tag': urltest_tag, 'outbounds': nodes})
+            normal = [t for t in all_region_nodes if t not in high_rate_tag_set]
+            region_high = [t for t in all_region_nodes if t in high_rate_tag_set]
 
-            selector_outbounds = [urltest_tag]
+            selector_outbounds = []
+            if normal:
+                urltest_tag = f'{group_name} URLTest'
+                custom_outbounds.append({'type': 'urltest', 'tag': urltest_tag, 'outbounds': normal})
+                selector_outbounds.append(urltest_tag)
+
+                sub_groups = {}
+                for tag in normal:
+                    m = re.match(r'^\[([^\]]+)\]', tag)
+                    if m:
+                        sub_groups.setdefault(m.group(1), []).append(tag)
+                for sub_tag, sub_nodes in sorted(sub_groups.items()):
+                    sub_group_tag = f'{group_name} [{sub_tag}]'
+                    custom_outbounds.append({'type': 'urltest', 'tag': sub_group_tag, 'outbounds': sub_nodes})
+                    selector_outbounds.append(sub_group_tag)
+                selector_outbounds += normal
+
+            if region_high:
+                region_high_tag = f'{group_name} HighRate'
+                custom_outbounds.append({'type': 'urltest', 'tag': region_high_tag, 'outbounds': region_high})
+                selector_outbounds.append(region_high_tag)
+                selector_outbounds += region_high
+
             for item in group_selections.get(group_name, []):
                 resolved_tag = resolve_tag(item)
                 if resolved_tag is None:
@@ -246,8 +273,16 @@ data:
         else:
             custom_outbounds.append({'type': 'urltest', 'tag': 'LowRateNodes', 'outbounds': low_rate_nodes})
 
-        # 4. Global AllNodes urltest group.
-        all_node_tags = [n['tag'] for n in all_nodes]
+        # 4. High-Rate group (Multiplier >= 2.0x), e.g. home broadband nodes.
+        high_rate_nodes = [n['tag'] for n in all_nodes if n.get('multiplier', 1.0) >= 2.0]
+        if not high_rate_nodes:
+            print('Warning: No high-rate nodes found. Skipping HighRateNodes group.')
+        else:
+            custom_outbounds.append({'type': 'urltest', 'tag': 'HighRateNodes', 'outbounds': high_rate_nodes})
+            custom_outbounds.append({'type': 'selector', 'tag': 'HighRateNodes', 'outbounds': ['HighRateNodes'] + high_rate_nodes})
+
+        # 5. Global AllNodes urltest group (excluding high-rate nodes).
+        all_node_tags = [n['tag'] for n in all_nodes if n['tag'] not in high_rate_tag_set]
         custom_outbounds.append({'type': 'urltest', 'tag': 'AllNodes', 'outbounds': all_node_tags})
 
         final_outbounds = []

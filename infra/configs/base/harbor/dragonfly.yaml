@@ -1,0 +1,22 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: harbor-dragonfly
+  namespace: harbor
+spec:
+  replicas: 1
+  args:
+    - --maxmemory=1600mb
+    - --cache_mode=true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 2Gi
+    requests:
+      cpu: 10m
+      memory: 10Mi
+  authentication:
+    passwordFromSecret:
+      name: harbor-redis-auth
+      key: REDIS_PASSWORD

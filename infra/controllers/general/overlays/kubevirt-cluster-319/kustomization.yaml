@@ -6,3 +6,4 @@ resources:
   - ../../base/egress/
   - ../../base/kubevirt/
   - ../../base/redroid-operator/
+  - ../../base/dragonfly-operator/

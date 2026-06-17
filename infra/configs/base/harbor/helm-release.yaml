@@ -51,9 +51,9 @@ spec:
     redis:
       type: external
       external:
-        addr: harbor-redis-master:6379
+        addr: harbor-dragonfly:6379
         username: default
-        # Use an existing secret to connect to redis. The key must be REDIS_PASSWORD.
+        # Use an existing secret to connect to Dragonfly. The key must be REDIS_PASSWORD.
         existingSecret: harbor-redis-auth
 
     # Disable scanners to reduce footprint; can be enabled later.

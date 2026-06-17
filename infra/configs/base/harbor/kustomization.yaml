@@ -8,7 +8,7 @@ resources:
   - ./harbor-oidc-secret.yaml
   - ./harbor-redis-auth-secret.yaml
   - ./pg-cluster.yaml
-  - ./redis-release.yaml
+  - ./dragonfly.yaml
 
   - ./git-repository.yaml
   - ./tofu-terraform.yaml

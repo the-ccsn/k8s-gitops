@@ -1,0 +1,56 @@
+# https://artifacthub.io/packages/helm/dragonfly-operator/dragonfly-operator
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dragonfly-operator
+  namespace: dragonfly-operator-system
+  annotations:
+    image-lock/extra-images: ghcr.io/dragonflydb/dragonfly:v1.39.0
+spec:
+  releaseName: dragonfly-operator
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-dragonfly-operator
+    namespace: dragonfly-operator-system
+  values:
+    # Default Dragonfly runtime image for all instances; can be overridden per-CR via spec.image.
+    dragonflyImage: ghcr.io/dragonflydb/dragonfly:v1.39.0
+    crds:
+      create: true
+      keep: true
+    manager:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 10m
+          memory: 64Mi
+    rbacProxy:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 10m
+          memory: 64Mi
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      path: /metrics
+      labels: {}
+      timeout: 10s
+
+    grafanaDashboard:
+      enabled: true
+      folder: database
+      labels:
+        name: grafana_dashboard
+      grafanaOperator:
+        enabled: true
+        allowCrossNamespaceImport: true
+        matchLabels:
+          dashboards: grafana

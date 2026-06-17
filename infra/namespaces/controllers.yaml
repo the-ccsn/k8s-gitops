@@ -107,6 +107,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: dragonfly-operator-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: egress-system
   labels:
     istio.io/dataplane-mode: ambient

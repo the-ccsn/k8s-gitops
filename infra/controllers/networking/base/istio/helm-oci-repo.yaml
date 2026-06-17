@@ -1,3 +1,5 @@
+# FIXME: gcr.io/istio-release is retiring
+# should be replaced with registry.istio.io/release mirror/equivalent
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -9,7 +11,7 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.dockerproxy.net/istio-release/charts/base
+  url: oci://gcr.nju.edu.cn/istio-release/charts/base
   ref:
     tag: "1.30.0-rc.0"
 ---
@@ -23,7 +25,7 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.dockerproxy.net/istio-release/charts/cni
+  url: oci://gcr.nju.edu.cn/istio-release/charts/cni
   ref:
     tag: "1.30.0-rc.0"
 ---
@@ -37,7 +39,7 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.dockerproxy.net/istio-release/charts/ztunnel
+  url: oci://gcr.nju.edu.cn/istio-release/charts/ztunnel
   ref:
     tag: "1.30.0-rc.0"
 ---
@@ -51,6 +53,6 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.dockerproxy.net/istio-release/charts/istiod
+  url: oci://gcr.nju.edu.cn/istio-release/charts/istiod
   ref:
     tag: "1.30.0-rc.0"

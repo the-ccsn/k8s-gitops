@@ -83,6 +83,28 @@
     ];
   }
   {
+    imageName = "docker.dragonflydb.io/dragonflydb/operator";
+    imageDigest = "sha256:b11411142935f92ed0ec30a5ddeb31680e09ab66beecb827cb0224f1c4238638";
+    finalImageName = "docker.dragonflydb.io/dragonflydb/operator";
+    finalImageTag = "v1.6.1";
+    archiveHash = "sha256-d4VjIAjgxAylnFnRP42WMKLZMNYa/ViiapofUJ/Tq8M=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+    ];
+  }
+  {
     imageName = "docker.io/goharbor/harbor-core";
     imageDigest = "sha256:887a85b8ea98b76bfc9f715f1a0785bb99f9a1034241513902dd6e95be922a83";
     finalImageName = "docker.io/goharbor/harbor-core";
@@ -426,6 +448,25 @@
     targets = [
       { kind = "Deployment"; namespace = "flux-system"; name = "flux-operator"; }
     ];
+  }
+  {
+    imageName = "ghcr.io/dragonflydb/dragonfly";
+    imageDigest = "sha256:0fa01a2b929e704c7a9300d23e7f52002ebd39e90996fb8bb63826aed92fa06f";
+    finalImageName = "ghcr.io/dragonflydb/dragonfly";
+    finalImageTag = "v1.39.0";
+    archiveHash = "sha256-iIDGqc3+JjQzLRviDZH4secv7tolk/CvSgA1BC/KNiI=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
   }
   {
     imageName = "ghcr.io/flux-iac/tofu-controller";
@@ -959,10 +1000,10 @@
   }
   {
     imageName = "postgres";
-    imageDigest = "sha256:df7bca0066e6f60cc3dd32faa70caddec20e2c22b58932f79498e5704b23854a";
+    imageDigest = "sha256:0a58464f336f8fcd62def41d7b1649dcb0a728ea78e7894f507be58c3d550091";
     finalImageName = "docker.io/library/postgres";
     finalImageTag = "15-alpine";
-    archiveHash = "sha256-l6C/PkHvMOxA1omKfh6i4Le/7Wbcdx4xqLxBAU/6gUE=";
+    archiveHash = "sha256-LrbNVCZH3uvKMkx2DpBmELJDrrmTWuCVfWOvNETP18k=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -976,6 +1017,28 @@
     ];
     targets = [
       { kind = "Job"; namespace = "unknown ns"; name = "logto-pre-app-1"; }
+    ];
+  }
+  {
+    imageName = "quay.io/brancz/kube-rbac-proxy";
+    imageDigest = "sha256:ad0fa9f0adc928b557663297bd22c610533960d77acdec289ce8a636f0ea2114";
+    finalImageName = "quay.io/brancz/kube-rbac-proxy";
+    finalImageTag = "v0.20.2";
+    archiveHash = "sha256-5iI3n2Y1tiZVcNANWOsZ35+Vg1+CbOZUDTEmZrjqeKo=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
     ];
   }
   {
@@ -1275,60 +1338,6 @@
     ];
     targets = [
       { kind = "CronJob"; namespace = "egress-system"; name = "proxy-engine-daily-restarter"; }
-    ];
-  }
-  {
-    imageName = "registry-1.docker.io/bitnami/redis-exporter";
-    imageDigest = "sha256:ebd0b87cf0f67d01888f215ebff892d2a77fbc5a6627955ed4cfb3753b5218d8";
-    finalImageName = "registry-1.docker.io/bitnami/redis-exporter";
-    finalImageTag = "latest";
-    archiveHash = "sha256-FnN/Vyurwa1BOVkaC1GmbA2NU+PCwJ/japP/gYQOfME=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
-      { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
-      ]
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "StatefulSet"; namespace = "harbor"; name = "harbor-redis-master"; }
-      { kind = "StatefulSet"; namespace = "prod"; name = "logto-redis-master"; }
-    ];
-  }
-  {
-    imageName = "registry-1.docker.io/bitnami/redis";
-    imageDigest = "sha256:d842c434ff617b84f954700b60fd99ac8b567ce16292daccb18cfc214cdcc2ec";
-    finalImageName = "registry-1.docker.io/bitnami/redis";
-    finalImageTag = "latest";
-    archiveHash = "sha256-PEZWbtAeSpDBcKiZ+VcUQEXOH+ezqXfwwvV8qvxR4WE=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
-      { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "harbor"; name = "harbor-redis"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
-      ]
-      [
-        { kind = "HelmRelease"; namespace = "prod"; name = "logto-redis"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
-      ]
-    ];
-    targets = [
-      { kind = "StatefulSet"; namespace = "harbor"; name = "harbor-redis-master"; }
-      { kind = "StatefulSet"; namespace = "prod"; name = "logto-redis-master"; }
     ];
   }
   {

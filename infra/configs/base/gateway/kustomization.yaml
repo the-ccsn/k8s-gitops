@@ -5,3 +5,4 @@ resources:
   - ./gateway-infra.yaml
   - ./gateway-prod.yaml
   - ./gateway-staging.yaml
+  - ./request-authentication.yaml

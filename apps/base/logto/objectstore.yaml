@@ -17,4 +17,8 @@ spec:
       compression: bzip2
     data:
       compression: bzip2
-  # retentionPolicy: 30d
+  # retention triggers maintenance ops that cannot be disabled; CNPG plugin requires it.
+  # Removing retention policy provides no benefit.
+  retentionPolicy: 14d
+  instanceSidecarConfiguration:
+    retentionPolicyIntervalSeconds: 86400 # 24h

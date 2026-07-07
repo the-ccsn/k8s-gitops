@@ -22,10 +22,10 @@
   }
   {
     imageName = "bitnami/kubectl";
-    imageDigest = "sha256:e21d3b5ca1f600677376b5468416e6d025a1380aaec77f981345cccec5916066";
+    imageDigest = "sha256:a67b11e95e953f550f020a41970185ccc5f83d78b86b8c575d02c904aa0f9cd7";
     finalImageName = "docker.io/bitnami/kubectl";
     finalImageTag = "latest";
-    archiveHash = "sha256-+KtUjnKSk2NqCJPX3eX6AqDzY9jtzrdyeBLcdJpvb1U=";
+    archiveHash = "sha256-vWNxItMBR2iH9ZISFcPq2LuXDN0y7PAruYlMwvAm/Ts=";
     os = "linux";
     arch = "amd64";
     sources = [

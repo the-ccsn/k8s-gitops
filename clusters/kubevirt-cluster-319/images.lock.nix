@@ -1000,10 +1000,10 @@
   }
   {
     imageName = "postgres";
-    imageDigest = "sha256:cd17e2ac98240fce1541ad2a803b34009b4eea5aec8a832363cdc7eca62e722e";
+    imageDigest = "sha256:57e5b9f69e672385cdf630f42b1306b5ca934c9bf8278b5f8b1948533d75a20b";
     finalImageName = "docker.io/library/postgres";
     finalImageTag = "15-alpine";
-    archiveHash = "sha256-MyvOxet+UahaakhuiAQH8w3mfu81G7GwtQ/C+wETdrQ=";
+    archiveHash = "sha256-bQ5Vti/bKN+Q3SpkWG4JGdBKCYRDm44AVkMmgl6Fyg8=";
     os = "linux";
     arch = "amd64";
     sources = [

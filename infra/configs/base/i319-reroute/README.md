@@ -38,8 +38,9 @@ The system utilizes Nginx to perform host rewriting before proxying the connecti
 
 ### Host Rewriting
 
-* **Match:** Regex capture group `~^(?<subdomain>[^.]+)\.i\.isning\.moe$`
-* **Rewrite:** Modifies the `Host` header to `$subdomain.ccsn.dev`
+* **Production:** Matches `*.319.ccsn.dev` and rewrites the `Host` header to `*.ccsn.dev`.
+* **Staging:** Matches `*.319.staging.ccsn.dev` and rewrites the `Host` header to `*.staging.ccsn.dev`.
+* **Infrastructure overlays:** Match `*.clustername.319.ccsn.dev` and rewrite the `Host` header to `*.clustername.ccsn.dev`.
 * **Header Injection:** Appends `X-Real-IP`, `X-Forwarded-For`, and dynamically sets `X-Forwarded-Proto` based on the ingress scheme.
 
 ### Port Mapping

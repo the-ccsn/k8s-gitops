@@ -12,7 +12,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/dnsNames/0
-        value: "*.kubevirt-cluster-319.ccsn.dev"
+        value: "*.kubevirt-cluster-319.319.ccsn.dev"
 
   - target:
       kind: Service

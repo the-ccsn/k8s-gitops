@@ -9,6 +9,6 @@ spec:
     name: letsencrypt-infra
     kind: ClusterIssuer
   dnsNames:
-  - "*.319.clustername.ccsn.dev"
+  - "*.clustername.319.ccsn.dev"
   - "*.319.ccsn.dev"
   - "*.319.staging.ccsn.dev"

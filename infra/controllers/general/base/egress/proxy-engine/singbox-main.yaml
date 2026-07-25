@@ -25,6 +25,14 @@ data:
         "servers": [
           { "type": "tls", "server": "one.one.one.one", "detour": "AllNodes", "tag": "remote", "domain_resolver": "local" },
           { "type": "tls", "server": "dot.pub", "detour": "direct", "tag": "local", "domain_resolver": "local-raw" },
+          {
+            "type": "tls",
+            "server": "223.5.5.5",
+            "server_port": 853,
+            "tls": { "server_name": "dns.alidns.com" },
+            "detour": "direct",
+            "tag": "public-egress-dot"
+          },
           { "type": "local", "detour": "direct", "tag": "local-raw" }
         ],
         "final": "local",
@@ -39,6 +47,42 @@ data:
           "listen_port": 7890,
           "tag": "mixed-in",
           "type": "mixed"
+        },
+        {
+          "listen": "0.0.0.0",
+          "listen_port": 8891,
+          "tag": "public-egress-http",
+          "type": "http"
+        },
+        {
+          "listen": "0.0.0.0",
+          "listen_port": 8892,
+          "tag": "public-egress-http-ipv4",
+          "type": "http"
+        },
+        {
+          "listen": "0.0.0.0",
+          "listen_port": 8893,
+          "tag": "public-egress-http-ipv6",
+          "type": "http"
+        },
+        {
+          "listen": "0.0.0.0",
+          "listen_port": 8894,
+          "tag": "campus-egress-http",
+          "type": "http"
+        },
+        {
+          "listen": "0.0.0.0",
+          "listen_port": 8895,
+          "tag": "campus-egress-http-ipv4",
+          "type": "http"
+        },
+        {
+          "listen": "0.0.0.0",
+          "listen_port": 8896,
+          "tag": "campus-egress-http-ipv6",
+          "type": "http"
         }
       ],
       "route": {
@@ -48,6 +92,58 @@ data:
         },
         "rules": [
           { "action": "sniff" },
+          {
+            "inbound": ["public-egress-http"],
+            "action": "resolve",
+            "server": "public-egress-dot",
+            "strategy": "prefer_ipv4"
+          },
+          {
+            "inbound": ["public-egress-http"],
+            "action": "route",
+            "outbound": "direct"
+          },
+          {
+            "inbound": ["public-egress-http-ipv4"],
+            "action": "resolve",
+            "server": "public-egress-dot",
+            "strategy": "ipv4_only"
+          },
+          {
+            "inbound": ["public-egress-http-ipv6"],
+            "action": "resolve",
+            "server": "public-egress-dot",
+            "strategy": "ipv6_only"
+          },
+          {
+            "inbound": ["campus-egress-http"],
+            "action": "resolve",
+            "server": "local-raw",
+            "strategy": "prefer_ipv4"
+          },
+          {
+            "inbound": ["campus-egress-http-ipv4"],
+            "action": "resolve",
+            "server": "local-raw",
+            "strategy": "ipv4_only"
+          },
+          {
+            "inbound": ["campus-egress-http-ipv6"],
+            "action": "resolve",
+            "server": "local-raw",
+            "strategy": "ipv6_only"
+          },
+          {
+            "inbound": [
+              "public-egress-http-ipv4",
+              "public-egress-http-ipv6",
+              "campus-egress-http",
+              "campus-egress-http-ipv4",
+              "campus-egress-http-ipv6"
+            ],
+            "action": "route",
+            "outbound": "direct"
+          },
           { "protocol": "dns", "action": "hijack-dns" },
           { "rule_set": ["anthropic", "google-gemini", "google-deepmind"], "outbound": "UnitedStates" },
           { "rule_set": ["geosite-geolocation-!cn"], "outbound": "AllNodes" },

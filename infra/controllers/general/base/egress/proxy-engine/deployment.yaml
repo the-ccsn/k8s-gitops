@@ -66,6 +66,18 @@ spec:
         ports:
         - containerPort: 7890
           name: mixed-proxy
+        - containerPort: 8891
+          name: public-http
+        - containerPort: 8892
+          name: public-v4
+        - containerPort: 8893
+          name: public-v6
+        - containerPort: 8894
+          name: campus-http
+        - containerPort: 8895
+          name: campus-v4
+        - containerPort: 8896
+          name: campus-v6
         - containerPort: 9090
           name: clash-api
         securityContext:

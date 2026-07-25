@@ -13,6 +13,36 @@ spec:
     appProtocol: tcp # Avoid sniffing this as HTTP by Istio, which causes 404
     protocol: TCP
     targetPort: 7890
+  - port: 8891
+    name: public-http
+    appProtocol: tcp # The client speaks HTTP proxy; Istio must not intercept CONNECT.
+    protocol: TCP
+    targetPort: 8891
+  - port: 8892
+    name: public-v4
+    appProtocol: tcp
+    protocol: TCP
+    targetPort: 8892
+  - port: 8893
+    name: public-v6
+    appProtocol: tcp
+    protocol: TCP
+    targetPort: 8893
+  - port: 8894
+    name: campus-http
+    appProtocol: tcp
+    protocol: TCP
+    targetPort: 8894
+  - port: 8895
+    name: campus-v4
+    appProtocol: tcp
+    protocol: TCP
+    targetPort: 8895
+  - port: 8896
+    name: campus-v6
+    appProtocol: tcp
+    protocol: TCP
+    targetPort: 8896
   - port: 9090
     name: clash-api
     appProtocol: http

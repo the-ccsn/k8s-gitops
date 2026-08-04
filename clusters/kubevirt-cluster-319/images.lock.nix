@@ -22,10 +22,10 @@
   }
   {
     imageName = "bitnami/kubectl";
-    imageDigest = "sha256:9e369df7ab3386b736d162348f167bcc02cb4ba3f5203e9151be854437d6e0af";
+    imageDigest = "sha256:c62a62db80e777acdee87f76bc6f06a95239ad2ff210bf78f585e39e33da98e2";
     finalImageName = "docker.io/bitnami/kubectl";
     finalImageTag = "latest";
-    archiveHash = "sha256-wBM5QQUaotqxVfpSq2XdxeOw5FrrkE8DVb+ri4wQqbE=";
+    archiveHash = "sha256-FZG9XJkbEwV3J6WHQ1HhizsgBPtRQ55sN21+hJn2c38=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -106,10 +106,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-core";
-    imageDigest = "sha256:887a85b8ea98b76bfc9f715f1a0785bb99f9a1034241513902dd6e95be922a83";
+    imageDigest = "sha256:d7b780d23721a000f0fb8e181add6675eafa336de5d033b77fd7da0c171ff7f7";
     finalImageName = "docker.io/goharbor/harbor-core";
-    finalImageTag = "v2.15.1";
-    archiveHash = "sha256-i5Pz+Wo1eSSb7xxI0qWLvt9nY3x9DQ42BR2DaHj3t+g=";
+    finalImageTag = "v2.15.2";
+    archiveHash = "sha256-gJl3cIbcFQ/L0aoIssu461DLT9am50N2MH59WJ+nG4w=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -127,10 +127,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-jobservice";
-    imageDigest = "sha256:0de4fd2ce3a02d3e6591b439e4674ea085885ddf43652b44004cc67eb19dba12";
+    imageDigest = "sha256:f71a4452a095bcd2a8f0683648a3ae28415432df87ccfb00ec7625f3e340a598";
     finalImageName = "docker.io/goharbor/harbor-jobservice";
-    finalImageTag = "v2.15.1";
-    archiveHash = "sha256-IOMWTPioMzuWYY7mOpQIWE1sDjJLplN6K4XPJl/JYBM=";
+    finalImageTag = "v2.15.2";
+    archiveHash = "sha256-1GhkL6qvCcir/81B+oGmC+47liT1XvxuMUIPe5hoUuM=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -148,10 +148,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-portal";
-    imageDigest = "sha256:ac55161c57a8351807adf8f8def264bdd52667c371d0436beefebdac4341c9e2";
+    imageDigest = "sha256:b811b67f7a7f6f1614e4bdf7478b207d13e8aa3f815ff6ad84f216a5098d213d";
     finalImageName = "docker.io/goharbor/harbor-portal";
-    finalImageTag = "v2.15.1";
-    archiveHash = "sha256-6giFWh8hvKI8dv2kQFhPfgA1e3IwNmy7tqnuy8R48VQ=";
+    finalImageTag = "v2.15.2";
+    archiveHash = "sha256-fzvPrQ3gq1zM+1i4ojoPHwEqL+pk4EGuo7NZ5Gd07uw=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -169,10 +169,10 @@
   }
   {
     imageName = "docker.io/goharbor/harbor-registryctl";
-    imageDigest = "sha256:554147a956989175f63f8d41573d716c6ddf6052acd1749c88c0f99ce6ee2bff";
+    imageDigest = "sha256:223d5cb49d5dbf0ba4ae022e7dd9775fa459904112dc12084d3aaa36c1408362";
     finalImageName = "docker.io/goharbor/harbor-registryctl";
-    finalImageTag = "v2.15.1";
-    archiveHash = "sha256-0nar7lmPwn7aKXnL0vMbFHQGFERs6aYqfZgMRujw9Os=";
+    finalImageTag = "v2.15.2";
+    archiveHash = "sha256-F4NXaic5YMhEl9Ek4TwRmfAuIc3oC+ryq6arLsUVw4U=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -190,10 +190,10 @@
   }
   {
     imageName = "docker.io/goharbor/registry-photon";
-    imageDigest = "sha256:ebf0325c2661729dbb317cbf839608eb8b15cfa158911a94976f2c21563c466e";
+    imageDigest = "sha256:c4ebef61ceb50a3d8bc21d149bc280422db20a1e69df317b64b74098c3615855";
     finalImageName = "docker.io/goharbor/registry-photon";
-    finalImageTag = "v2.15.1";
-    archiveHash = "sha256-VRXhI0dtdtmQgK1+gLLkY32dvoJLLZKVm93AhzgxuiQ=";
+    finalImageTag = "v2.15.2";
+    archiveHash = "sha256-AtrCH/rKaBbPJvjxLn/Qlh1NLVMWmK5p3Dfusyrou7s=";
     os = "linux";
     arch = "amd64";
     sources = [

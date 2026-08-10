@@ -10,4 +10,4 @@ spec:
     operation: copy
   url: oci://ghcr.io/helmforgedev/helm/vaultwarden
   ref:
-    tag: "1.12.6"
+    tag: "1.12.11"

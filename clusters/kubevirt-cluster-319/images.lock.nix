@@ -365,10 +365,10 @@
   }
   {
     imageName = "docker.io/vaultwarden/server";
-    imageDigest = "sha256:d626d04934cd1192ad8ced1adb975099fca78cec33ab467d2d3c923cde7f3b0c";
+    imageDigest = "sha256:ebdfe70701c60ac0c28c697e787cea767d7972940b786037b29fe0d507f821e8";
     finalImageName = "docker.io/vaultwarden/server";
-    finalImageTag = "1.36.0";
-    archiveHash = "sha256-0nfPTInWIYZGyPwRRC1aYKAKC7jVQeRlIWe3HmyNzrE=";
+    finalImageTag = "1.37.1";
+    archiveHash = "sha256-YiEQlYJchB91JlpcusiQAZmPlHnSIonhPcJQEOyn1Do=";
     os = "linux";
     arch = "amd64";
     sources = [

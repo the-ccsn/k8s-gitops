@@ -17,7 +17,7 @@ spec:
     namespace: dragonfly-operator-system
   values:
     # Default Dragonfly runtime image for all instances; can be overridden per-CR via spec.image.
-    dragonflyImage: ghcr.io/dragonflydb/dragonfly:v1.39.0
+    dragonflyImage: ghcr.io/dragonflydb/dragonfly:v1.40.1
     crds:
       create: true
       keep: true

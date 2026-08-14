@@ -22,10 +22,10 @@
   }
   {
     imageName = "bitnami/kubectl";
-    imageDigest = "sha256:1a86ba502f618724fd493f6a2b129f060454db04f06faa58d8ed94510280b17f";
+    imageDigest = "sha256:42dc6fdc6f792013ceeef7f675782bbb7292a1c9bbc25b7ecf34f37e0803f28a";
     finalImageName = "docker.io/bitnami/kubectl";
     finalImageTag = "latest";
-    archiveHash = "sha256-yTSC7f176Sy5fuTdDNg/p8w49sjPW6s7BWdeFuYsZAU=";
+    archiveHash = "sha256-UtGA1X3hPUhRvMOvg+dcxSgateS+pz16OnyETagtGfM=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -64,10 +64,10 @@
   }
   {
     imageName = "cloudflare/cloudflared";
-    imageDigest = "sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9";
+    imageDigest = "sha256:e39ee8da81ad5e05d77f38d2f51c60ca51bf2a8450ac3abab50c17fdb91d91bf";
     finalImageName = "docker.io/cloudflare/cloudflared";
-    finalImageTag = "2026.5.0";
-    archiveHash = "sha256-IVT8IUv20gFrdIeBLJop6qszY7vaXN5diNR1RJ7Xnds=";
+    finalImageTag = "2026.7.3";
+    archiveHash = "sha256-oVvt6oQQTUdY2p3vXRZf4TONIdgFLS05L2xCR5e6RUE=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -1000,10 +1000,10 @@
   }
   {
     imageName = "postgres";
-    imageDigest = "sha256:3d0f7584ed7d04e27fa050d6683a74746608faf21f202be78460d679cc56461f";
+    imageDigest = "sha256:4006528dcbdd9be8c1aaa50389caea4e93c46d6f54c3533bcd3253725e526e23";
     finalImageName = "docker.io/library/postgres";
     finalImageTag = "15-alpine";
-    archiveHash = "sha256-ApAoUCuMrGfVAZ7+JFW7yOU1+BSQ6BPsJz5qAifGjGQ=";
+    archiveHash = "sha256-gRE3ejHPXILyYQK1SvJ/d1JyWGu2RhrCoyrzKawijbM=";
     os = "linux";
     arch = "amd64";
     sources = [

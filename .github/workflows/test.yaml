@@ -140,7 +140,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@1fd61a06264d71cf445ed55c4f14d401d26a1c64 # v2.8.8
+        uses: fluxcd/flux2/action@dd233c4fadef306a62b7893204f8e3817fecc2b2 # v2.9.5
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@f3ad4b56adec90eb5661af565cdebec997ad4bfb # main
       - name: flux-local test
@@ -167,7 +167,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@1fd61a06264d71cf445ed55c4f14d401d26a1c64 # v2.8.8
+        uses: fluxcd/flux2/action@dd233c4fadef306a62b7893204f8e3817fecc2b2 # v2.9.5
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@f3ad4b56adec90eb5661af565cdebec997ad4bfb # main
       - name: flux-local diff

@@ -66,14 +66,14 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
 
       - name: Cache uv tools
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv
 
       - name: Restore image digest/archive-hash cache
         if: ${{ github.event.inputs.ignore_cache != 'true' && github.event.inputs.clean_cache != 'true' }}
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ~/.cache/nixos-image-lock
           key: ${{ runner.os }}-nixos-image-lock-${{ github.event.inputs.arch || 'amd64' }}-${{ github.event.inputs.os || 'linux' }}-v1-${{ github.run_id }}-${{ github.run_attempt }}
@@ -119,7 +119,7 @@ jobs:
 
       - name: Save image digest/archive-hash cache
         if: always() && !cancelled() && github.event.inputs.ignore_cache != 'true'
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ~/.cache/nixos-image-lock
           key: ${{ runner.os }}-nixos-image-lock-${{ github.event.inputs.arch || 'amd64' }}-${{ github.event.inputs.os || 'linux' }}-v1-${{ github.run_id }}-${{ github.run_attempt }}

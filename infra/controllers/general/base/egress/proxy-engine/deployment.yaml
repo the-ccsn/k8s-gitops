@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       initContainers:
       - name: fetch-nodes
-        image: docker.io/library/python:3.14-alpine@sha256:dd4d2bd5b53d9b25a51da13addf2be586beebd5387e289e798e4083d94ca837a
+        image: docker.io/library/python:3.14-alpine@sha256:2e740b2c28a426e74f11396c05e38afb3191acced75045b8d62df573c1dc8ce8
         envFrom:
         - secretRef:
             name: sub-converter-suburls-secret

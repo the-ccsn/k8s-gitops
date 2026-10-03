@@ -6,8 +6,10 @@ metadata:
 spec:
   selector:
     {}
-  scheme: http
+  scheme: https
+  bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
   tlsConfig:
+    caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
     insecureSkipVerify: false
   relabelConfigs:
     - action: labelmap

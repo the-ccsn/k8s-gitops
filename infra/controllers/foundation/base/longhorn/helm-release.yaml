@@ -33,6 +33,7 @@ spec:
       v1DataEngine: "true"
       upgradeChecker: "false"
       defaultDataPath: "/var/lib/longhorn"
+      allowEmptyDiskSelectorVolume: "false"
     persistence:
       createStorageClass: true
       dataEngine: "v1"

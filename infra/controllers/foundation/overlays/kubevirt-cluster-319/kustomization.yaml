@@ -7,3 +7,5 @@ resources:
   - ../../base/gateway-api/
   - ../../base/generic-device-plugin/
   - ../../base/longhorn/
+  - ./longhorn-hdd-nodes.yaml
+  - ./longhorn-hdd-storageclass.yaml

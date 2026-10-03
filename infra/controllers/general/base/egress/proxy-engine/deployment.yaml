@@ -5,6 +5,9 @@ metadata:
   namespace: egress-system
 spec:
   replicas: 1
+  # Both cache volumes are RWO and must be released before a replacement Pod starts.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: proxy-engine

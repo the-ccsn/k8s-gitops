@@ -12,8 +12,9 @@ spec:
     caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
     insecureSkipVerify: false
   relabelConfigs:
+    # KubeVirt feature labels exceed VictoriaMetrics' per-series label limit.
     - action: labelmap
-      regex: __meta_kubernetes_node_label_(.+)
+      regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
       replacement: kubernetes_node_$1
     - source_labels:
         - __meta_kubernetes_node_name

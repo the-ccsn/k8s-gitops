@@ -1,0 +1,66 @@
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: kubevirt-dl160
+  namespace: longhorn-system
+spec:
+  disks:
+    hdd-1:
+      diskType: filesystem
+      path: /var/lib/longhorn-hdd-1/longhorn
+      allowScheduling: true
+      evictionRequested: false
+      storageReserved: 0
+      tags: [hdd]
+    hdd-2:
+      diskType: filesystem
+      path: /var/lib/longhorn-hdd-2/longhorn
+      allowScheduling: true
+      evictionRequested: false
+      storageReserved: 0
+      tags: [hdd]
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: kubevirt-t410
+  namespace: longhorn-system
+spec:
+  disks:
+    hdd-1:
+      diskType: filesystem
+      path: /var/lib/longhorn-hdd-1/longhorn
+      allowScheduling: true
+      evictionRequested: false
+      storageReserved: 0
+      tags: [hdd]
+    hdd-2:
+      diskType: filesystem
+      path: /var/lib/longhorn-hdd-2/longhorn
+      allowScheduling: true
+      evictionRequested: false
+      storageReserved: 0
+      tags: [hdd]
+    hdd-3:
+      diskType: filesystem
+      path: /var/lib/longhorn-hdd-3/longhorn
+      allowScheduling: true
+      evictionRequested: false
+      storageReserved: 0
+      tags: [hdd]
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: kubevirt-dl380
+  namespace: longhorn-system
+spec:
+  disks:
+    hdd:
+      diskType: filesystem
+      path: /var/lib/longhorn-hdd/longhorn
+      allowScheduling: true
+      evictionRequested: false
+      storageReserved: 0
+      tags: [hdd]

@@ -1,0 +1,18 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-hdd
+provisioner: driver.longhorn.io
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+parameters:
+  dataEngine: "v1"
+  diskSelector: "hdd"
+  numberOfReplicas: "2"
+  replicaSoftAntiAffinity: "disabled"
+  dataLocality: "disabled"
+  staleReplicaTimeout: "30"
+  fsType: "ext4"
+  recurringJobSelector: "[]"

@@ -97,3 +97,22 @@ spec:
       persistence:
         enabled: true
         size: 5Gi
+
+  # The chart has no strategy setting; its attachment data volume is RWO.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: apps
+              version: v1
+              kind: Deployment
+              name: vaultwarden-vaultwarden
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: vaultwarden-vaultwarden
+              spec:
+                strategy:
+                  type: Recreate
+                  rollingUpdate: null

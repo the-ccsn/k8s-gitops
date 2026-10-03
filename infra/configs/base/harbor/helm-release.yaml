@@ -60,6 +60,10 @@ spec:
     trivy:
       enabled: false
 
+    # Registry and jobservice use RWO volumes; release them before replacement Pods start.
+    updateStrategy:
+      type: Recreate
+
     persistence:
       enabled: true
       resourcePolicy: keep

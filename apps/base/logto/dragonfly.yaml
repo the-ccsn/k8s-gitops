@@ -5,6 +5,7 @@ metadata:
   name: logto-dragonfly
   namespace: prod
 spec:
+  image: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
   replicas: 1
   args:
     - --maxmemory=1600mb

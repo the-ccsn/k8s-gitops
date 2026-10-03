@@ -7,7 +7,7 @@ metadata:
   name: dragonfly-operator
   namespace: dragonfly-operator-system
   annotations:
-    image-lock/extra-images: ghcr.io/dragonflydb/dragonfly:v1.39.0
+    image-lock/extra-images: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
 spec:
   releaseName: dragonfly-operator
   interval: 30m
@@ -17,7 +17,7 @@ spec:
     namespace: dragonfly-operator-system
   values:
     # Default Dragonfly runtime image for all instances; can be overridden per-CR via spec.image.
-    dragonflyImage: ghcr.io/dragonflydb/dragonfly:v1.40.1
+    dragonflyImage: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
     crds:
       create: true
       keep: true

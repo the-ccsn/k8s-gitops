@@ -248,7 +248,7 @@
       ]
     ];
     targets = [
-      { kind = "Deployment"; namespace = "egress-system"; name = "proxy-engine"; }
+      { kind = "StatefulSet"; namespace = "egress-system"; name = "proxy-engine"; }
     ];
   }
   {
@@ -448,25 +448,6 @@
     targets = [
       { kind = "Deployment"; namespace = "flux-system"; name = "flux-operator"; }
     ];
-  }
-  {
-    imageName = "ghcr.io/dragonflydb/dragonfly";
-    imageDigest = "sha256:0fa01a2b929e704c7a9300d23e7f52002ebd39e90996fb8bb63826aed92fa06f";
-    finalImageName = "ghcr.io/dragonflydb/dragonfly";
-    finalImageTag = "v1.39.0";
-    archiveHash = "sha256-iIDGqc3+JjQzLRviDZH4secv7tolk/CvSgA1BC/KNiI=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
-      ]
-    ];
-    targets = [];
   }
   {
     imageName = "ghcr.io/flux-iac/tofu-controller";
@@ -671,8 +652,27 @@
       ]
     ];
     targets = [
-      { kind = "Deployment"; namespace = "egress-system"; name = "proxy-engine"; }
+      { kind = "StatefulSet"; namespace = "egress-system"; name = "proxy-engine"; }
     ];
+  }
+  {
+    imageName = "ghcr.io/the-ccsn/dragonfly";
+    imageDigest = "sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862";
+    finalImageName = "ghcr.io/the-ccsn/dragonfly";
+    finalImageTag = "v1.40.1-auto-b204b3d41b2c";
+    archiveHash = "sha256-sq6B2IgG3lL59sqKwbr0o3WCu33qXQC22KsEVz6IZT4=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "dragonfly-operator-system"; name = "dragonfly-operator"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [];
   }
   {
     imageName = "ghcr.io/the-ccsn/k8s-gitops/tf-runner";
@@ -691,6 +691,27 @@
       ]
     ];
     targets = [];
+  }
+  {
+    imageName = "ghcr.io/the-ccsn/metacubexd";
+    imageDigest = "sha256:703e33a8d6794db8e7cc4046d5eb4151674db085d9c9414a75f33b2845a980e1";
+    finalImageName = "ghcr.io/the-ccsn/metacubexd";
+    finalImageTag = "sha-81a1be9b191571cf395707b0e705bc28a4acde36";
+    archiveHash = "sha256-JQ21UDP9fNhOmfAIvHEIZA7srEsqykM9INqVkfLyKfk=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "egress-system"; name = "proxy-dashboard"; }
+    ];
   }
   {
     imageName = "longhornio/backing-image-manager";

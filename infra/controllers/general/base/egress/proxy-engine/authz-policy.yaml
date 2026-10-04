@@ -38,3 +38,134 @@ spec:
         - key: request.auth.claims[roles]
           notValues:
             - proxy-engine:admin
+---
+# Block direct Pod access to the Web UI; other proxy ports retain their policy.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: proxy-webui-direct-access
+  namespace: egress-system
+spec:
+  selector:
+    matchLabels:
+      app: proxy-dashboard
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notPrincipals:
+              - cluster.local/ns/prod/sa/default-gateway-istio
+              - cluster.local/ns/egress-system/sa/waypoint
+      to:
+        - operation:
+            ports: ["8080"]
+---
+# The waypoint sees the original caller and restricts access through the Service.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: proxy-webui-service-access
+  namespace: egress-system
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: proxy-dashboard
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notPrincipals:
+              - cluster.local/ns/prod/sa/default-gateway-istio
+      to:
+        - operation:
+            ports: ["8080"]
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: proxy-dashboard-mtls
+  namespace: egress-system
+spec:
+  selector:
+    matchLabels:
+      app: proxy-dashboard
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: proxy-engine-mtls
+  namespace: egress-system
+spec:
+  selector:
+    matchLabels:
+      app: proxy-engine
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: proxy-engine-access
+  namespace: egress-system
+spec:
+  selector:
+    matchLabels:
+      app: proxy-engine
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["*"]
+      to:
+        - operation:
+            ports: ["7890", "8891", "8892", "8893", "8894", "8895", "8896"]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/egress-system/sa/proxy-dashboard
+      to:
+        - operation:
+            ports: ["9090"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: proxy-engine-api-service-access
+  namespace: egress-system
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: proxy-engine-headless
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notPrincipals:
+              - cluster.local/ns/egress-system/sa/proxy-dashboard
+      to:
+        - operation:
+            ports: ["9090"]
+---
+# The waypoint must verify the original proxy client, not just its own mesh identity.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: proxy-service-access
+  namespace: egress-system
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: proxy-svc
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["*"]
+      to:
+        - operation:
+            ports: ["7890", "8891", "8892", "8893", "8894", "8895", "8896"]

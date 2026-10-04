@@ -5,11 +5,15 @@ metadata:
   namespace: egress-system
 data:
   update_sub.py: |
+    import contextlib
     import copy
+    import fcntl
+    import ipaddress
     import json
     import os
     import re
     import sys
+    import tempfile
     import time
     import urllib.request
 
@@ -17,6 +21,10 @@ data:
     URLS_ENV = os.environ.get('SUB_URLS', '')
     OUTPUT_PATH = '/shared-nodes/nodes.json'
     LAST_GOOD_PATH = '/shared-nodes/nodes-last-good.json'
+    RUNTIME_PATH = '/runtime-nodes/nodes.json'
+    MAIN_PATH = '/etc/sing-box/main/main.json'
+    RUNTIME_MAIN_PATH = '/runtime-nodes/main.json'
+    LOCK_PATH = '/shared-nodes/.nodes-cache.lock'
     USER_AGENT = 'sing-box'
     TIMEOUT = 15
     RETRY_LIMIT = int(os.environ.get('FETCH_NODES_RETRY_LIMIT', '3'))
@@ -308,23 +316,86 @@ data:
         }
         return config, stats
 
+    @contextlib.contextmanager
+    def cache_lock():
+        # POSIX byte-range locks are coordinated by the Longhorn NFS server.
+        os.makedirs(os.path.dirname(LOCK_PATH), exist_ok=True)
+        with open(LOCK_PATH, 'a') as lock:
+            deadline = time.monotonic() + 30
+            while True:
+                try:
+                    fcntl.lockf(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except BlockingIOError:
+                    if time.monotonic() >= deadline:
+                        raise FetchNodesError('cache_lock_timeout')
+                    time.sleep(0.1)
+            try:
+                yield
+            finally:
+                fcntl.lockf(lock, fcntl.LOCK_UN)
+
     def write_json(path, payload):
-        # Ensure directory exists
+        # Publish complete files atomically; each writer gets its own temporary file.
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'w', encoding='utf-8') as file_handle:
-            json.dump(payload, file_handle, indent=2, ensure_ascii=False)
+        descriptor, temporary = tempfile.mkstemp(prefix='.nodes-', dir=os.path.dirname(path))
+        try:
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as file_handle:
+                json.dump(payload, file_handle, indent=2, ensure_ascii=False)
+                file_handle.flush()
+                os.fsync(file_handle.fileno())
+            os.replace(temporary, path)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+
+    def write_runtime_config(payload):
+        with open(MAIN_PATH, encoding='utf-8') as file_handle:
+            main = json.load(file_handle)
+        addresses = os.environ.get('POD_IPS', '').split(',')
+        cidrs = ['127.0.0.0/8', '::1/128', '0.0.0.0/32', '::/128'] + [
+            str(ipaddress.ip_network(ipaddress.ip_address(address.strip())))
+            for address in addresses
+            if address.strip()
+        ]
+        # Same-Pod connections bypass mesh; match only this Pod's API addresses.
+        guard = {'port': [9090], 'ip_cidr': cidrs, 'action': 'reject'}
+        rules = [guard]
+        for rule in main['route']['rules']:
+            rules.append(rule)
+            if rule.get('action') == 'sniff':
+                rules.extend([
+                    {'inbound': ['mixed-in'], 'port': [9090], 'action': 'resolve'},
+                    guard,
+                ])
+            elif rule.get('action') == 'resolve':
+                # Recheck every resolver result; a later resolve can change the address.
+                rules.append(guard)
+        main['route']['rules'] = rules
+        write_json(RUNTIME_MAIN_PATH, main)
+        write_json(RUNTIME_PATH, payload)
+
+    def publish_config(payload):
+        with cache_lock():
+            write_json(LAST_GOOD_PATH, payload)
+            write_json(OUTPUT_PATH, payload)
+        # Running replicas never read another Pod's partially changed startup config.
+        write_runtime_config(payload)
 
     def load_last_good_if_exists():
-        if not os.path.exists(LAST_GOOD_PATH):
-            return None
-        with open(LAST_GOOD_PATH, 'r', encoding='utf-8') as file_handle:
-            return json.load(file_handle)
+        with cache_lock():
+            if not os.path.exists(LAST_GOOD_PATH):
+                return None
+            with open(LAST_GOOD_PATH, 'r', encoding='utf-8') as file_handle:
+                payload = json.load(file_handle)
+            if not isinstance(payload, dict) or not isinstance(payload.get('outbounds'), list) or not payload['outbounds']:
+                raise FetchNodesError('invalid_last_good_config')
+            return payload
 
     started = time.time()
     try:
         final_config, stats = build_nodes_config()
-        write_json(OUTPUT_PATH, final_config)
-        write_json(LAST_GOOD_PATH, final_config)
+        publish_config(final_config)
         elapsed = round(time.time() - started, 3)
         print(
             'FETCH_NODES_SUCCESS '
@@ -339,9 +410,14 @@ data:
         print(f"Output saved to: {OUTPUT_PATH}")
     except Exception as error:
         elapsed = round(time.time() - started, 3)
-        last_good_config = load_last_good_if_exists()
+        try:
+            last_good_config = load_last_good_if_exists()
+        except Exception as cache_error:
+            print(f'FETCH_NODES_FAILURE reason=cache_unavailable error={cache_error}')
+            sys.exit(1)
         if last_good_config is not None:
-            write_json(OUTPUT_PATH, last_good_config)
+            # A fallback must not overwrite a newer shared snapshot published by a peer.
+            write_runtime_config(last_good_config)
             print(
                 'FETCH_NODES_FALLBACK '
                 f'reason={error} '

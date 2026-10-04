@@ -77,14 +77,7 @@ spec:
             regex: "failure_domain_(.+)"
           - action: labeldrop
             regex: "prometheus"
-        volumes: &volumes
-          - name: ca-certs
-            secret:
-              secretName: ca-certs
-        volumeMounts: &volumeMounts
-          - name: ca-certs
-            mountPath: /data/ca-certs
-            readOnly: true
+        # Remote write targets the in-cluster HTTP vmsingle endpoint; no custom CA is needed.
         resources:
           limits:
             cpu: "1"

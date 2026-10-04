@@ -11,7 +11,7 @@ metadata:
   namespace: egress-system
 rules:
 - apiGroups: ["apps"]
-  resources: ["deployments"]
+  resources: ["statefulsets"]
   resourceNames: ["proxy-engine"]
   verbs: ["get", "patch"]
 ---

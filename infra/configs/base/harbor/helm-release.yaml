@@ -60,6 +60,29 @@ spec:
     trivy:
       enabled: false
 
+    # Shared filesystem volumes allow Registry and Jobservice to overlap on updates.
+    updateStrategy:
+      type: RollingUpdate
+
+    registry:
+      replicas: 2
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+    jobservice:
+      replicas: 2
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+
     persistence:
       enabled: true
       resourcePolicy: keep
@@ -67,9 +90,13 @@ spec:
       persistentVolumeClaim:
         registry:
           size: 100Gi
+          existingClaim: harbor-registry-rwx
+          accessMode: ReadWriteMany
         jobservice:
           jobLog:
             size: 5Gi
+            existingClaim: harbor-jobservice-rwx
+            accessMode: ReadWriteMany
         database:
           size: 10Gi
         redis:
@@ -97,3 +124,101 @@ spec:
               data:
                 PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr"
                 REPLICATION_ADAPTER_WHITELIST: "ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr"
+          - target:
+              group: apps
+              version: v1
+              kind: Deployment
+              name: harbor-registry
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: harbor-registry
+                namespace: harbor
+              spec:
+                minReadySeconds: 10
+                template:
+                  spec:
+                    initContainers:
+                      - name: verify-rwx-migration
+                        image: docker.io/library/python:3.14-alpine@sha256:dd4d2bd5b53d9b25a51da13addf2be586beebd5387e289e798e4083d94ca837a
+                        command: [/bin/sh, -ec, "test -s /migration/.rwx-migration-complete"]
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          readOnlyRootFilesystem: true
+                          capabilities:
+                            drop: [ALL]
+                        resources:
+                          requests:
+                            cpu: 10m
+                            memory: 16Mi
+                          limits:
+                            cpu: 100m
+                            memory: 32Mi
+                        volumeMounts:
+                          - name: registry-data
+                            mountPath: /migration
+                            readOnly: true
+          - target:
+              group: apps
+              version: v1
+              kind: Deployment
+              name: harbor-jobservice
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: harbor-jobservice
+                namespace: harbor
+              spec:
+                minReadySeconds: 10
+                template:
+                  spec:
+                    initContainers:
+                      - name: verify-rwx-migration
+                        image: docker.io/library/python:3.14-alpine@sha256:dd4d2bd5b53d9b25a51da13addf2be586beebd5387e289e798e4083d94ca837a
+                        command: [/bin/sh, -ec, "test -s /migration/.rwx-migration-complete"]
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          readOnlyRootFilesystem: true
+                          capabilities:
+                            drop: [ALL]
+                        resources:
+                          requests:
+                            cpu: 10m
+                            memory: 16Mi
+                          limits:
+                            cpu: 100m
+                            memory: 32Mi
+                        volumeMounts:
+                          - name: job-logs
+                            mountPath: /migration
+                            readOnly: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-registry-rwx
+  namespace: harbor
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: longhorn-backup
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-jobservice-rwx
+  namespace: harbor
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: longhorn-backup
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 5Gi

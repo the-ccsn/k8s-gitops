@@ -18,6 +18,12 @@ spec:
     namespace: istio-system
   values:
     profile: ambient
+    ambient:
+      # Do not silently skip mesh enrollment when Kubernetes is unavailable during recovery.
+      enableAmbientDetectionRetry: true
+    # The chart's ConfigMap update alone does not restart CNI pods.
+    podAnnotations:
+      ccsn.dev/ambient-detection-retry: "true"
     # https://istio.io/latest/docs/ambient/install/platform-prerequisites/#k3s
     global:
       platform: k3s

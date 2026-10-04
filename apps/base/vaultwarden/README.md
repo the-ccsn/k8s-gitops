@@ -1,7 +1,7 @@
 # Vaultwarden rolling updates
 
-Vaultwarden keeps one steady-state replica. Updates use `maxUnavailable: 0`,
-`maxSurge: 1`, and ten seconds of readiness before replacing the old Pod. The
+Vaultwarden keeps one steady-state replica. Updates use Kubernetes' default
+rolling update limits and ten seconds of readiness before replacing the old Pod. The
 old container waits ten seconds before graceful shutdown to allow endpoint
 changes to propagate. The chart's startup/readiness probes remain enabled.
 

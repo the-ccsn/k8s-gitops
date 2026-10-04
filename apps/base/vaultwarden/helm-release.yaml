@@ -117,9 +117,6 @@ spec:
                 minReadySeconds: 10
                 strategy:
                   type: RollingUpdate
-                  rollingUpdate:
-                    maxUnavailable: 0
-                    maxSurge: 1
                 template:
                   spec:
                     initContainers:

@@ -3,6 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: proxy-engine-work-cache
   namespace: egress-system
+  # Retain the legacy PVC for rollback; new Pods use private emptyDir caches.
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: longhorn
   accessModes:

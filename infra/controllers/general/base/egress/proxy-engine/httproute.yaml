@@ -24,12 +24,12 @@ spec:
               type: ReplaceFullPath
               replaceFullPath: /ui/
       backendRefs:
-        - name: proxy-svc
+        - name: proxy-admin-svc
           port: 9090
     - matches:
         - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: proxy-svc
+        - name: proxy-admin-svc
           port: 9090

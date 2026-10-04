@@ -103,7 +103,10 @@ spec:
     matchLabels:
       app: proxy-engine
   mtls:
-    mode: STRICT
+    mode: PERMISSIVE
+  portLevelMtls:
+    "9090":
+      mode: STRICT
 ---
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
@@ -116,10 +119,7 @@ spec:
       app: proxy-engine
   action: ALLOW
   rules:
-    - from:
-        - source:
-            principals: ["*"]
-      to:
+    - to:
         - operation:
             ports: ["7890", "8891", "8892", "8893", "8894", "8895", "8896"]
     - from:
@@ -150,7 +150,7 @@ spec:
         - operation:
             ports: ["9090"]
 ---
-# The waypoint must verify the original proxy client, not just its own mesh identity.
+# Proxy listeners accept both mesh and non-mesh clients.
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
@@ -163,9 +163,6 @@ spec:
       name: proxy-svc
   action: ALLOW
   rules:
-    - from:
-        - source:
-            principals: ["*"]
-      to:
+    - to:
         - operation:
             ports: ["7890", "8891", "8892", "8893", "8894", "8895", "8896"]

@@ -10,5 +10,4 @@ resources:
   - ./service.yaml
   - ./httproute.yaml
   - ./authz-policy.yaml
-  - ./work-cache-pvc.yaml
   - ./restarter

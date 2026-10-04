@@ -15,21 +15,8 @@ spec:
   rules:
     - matches:
         - path:
-            type: Exact
-            value: /
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplaceFullPath
-              replaceFullPath: /ui/
-      backendRefs:
-        - name: proxy-svc
-          port: 9090
-    - matches:
-        - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: proxy-svc
-          port: 9090
+        - name: proxy-dashboard
+          port: 8080

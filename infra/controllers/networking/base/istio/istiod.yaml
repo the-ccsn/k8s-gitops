@@ -47,7 +47,6 @@ spec:
           envoyExtAuthzHttp:
             service: oauth2-proxy.prod.svc.cluster.local
             port: "80"
-            pathPrefix: /oauth2/auth
             includeRequestHeadersInCheck:
               - cookie
               - x-auth-request-redirect
@@ -61,6 +60,8 @@ spec:
               - content-type
               - set-cookie
               - location
+            headersToDownstreamOnAllow:
+              - set-cookie
       defaultConfig:
         proxyMetadata:
           ISTIO_DUAL_STACK: "true"

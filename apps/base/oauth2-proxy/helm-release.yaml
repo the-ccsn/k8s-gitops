@@ -10,7 +10,6 @@ spec:
   chartRef:
     kind: OCIRepository
     name: helm-chart-oauth2-proxy
-    namespace: oauth2-proxy
   values:
     replicaCount: 1
     config:

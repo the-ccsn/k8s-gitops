@@ -3,39 +3,6 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   name: inject-absolute-redirect
-  namespace: kube-system
-  annotations:
-    description: "Inject X-Auth-Request-Redirect header with absolute URI before ext-authz filter"
-spec:
-  workloadSelector:
-    labels:
-      gateway.networking.k8s.io/gateway-name: infra-gateway
-  configPatches:
-  - applyTo: HTTP_FILTER
-    match:
-      context: GATEWAY
-      listener:
-        filterChain:
-          filter:
-            name: "envoy.filters.network.http_connection_manager"
-    patch:
-      operation: INSERT_FIRST
-      value:
-        name: envoy.filters.http.header_mutation
-        typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.http.header_mutation.v3.HeaderMutation
-          mutations:
-            request_mutations:
-            - append:
-                header:
-                  key: X-Auth-Request-Redirect
-                  value: "%REQ(:scheme)%://%REQ(:authority)%%REQ(:path)%"
-                append_action: OVERWRITE_IF_EXISTS_OR_ADD
----
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: inject-absolute-redirect
   namespace: prod
   annotations:
     description: "Inject X-Auth-Request-Redirect header with absolute URI before ext-authz filter"
@@ -62,38 +29,5 @@ spec:
             - append:
                 header:
                   key: X-Auth-Request-Redirect
-                  value: "%REQ(:scheme)%://%REQ(:authority)%%REQ(:path)%"
-                append_action: OVERWRITE_IF_EXISTS_OR_ADD
----
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: inject-absolute-redirect
-  namespace: staging
-  annotations:
-    description: "Inject X-Auth-Request-Redirect header with absolute URI before ext-authz filter"
-spec:
-  workloadSelector:
-    labels:
-      gateway.networking.k8s.io/gateway-name: default-gateway
-  configPatches:
-  - applyTo: HTTP_FILTER
-    match:
-      context: GATEWAY
-      listener:
-        filterChain:
-          filter:
-            name: "envoy.filters.network.http_connection_manager"
-    patch:
-      operation: INSERT_FIRST
-      value:
-        name: envoy.filters.http.header_mutation
-        typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.http.header_mutation.v3.HeaderMutation
-          mutations:
-            request_mutations:
-            - append:
-                header:
-                  key: X-Auth-Request-Redirect
-                  value: "%REQ(:scheme)%://%REQ(:authority)%%REQ(:path)%"
+                  value: "https://%REQ(:authority)%%REQ(:path)%"
                 append_action: OVERWRITE_IF_EXISTS_OR_ADD

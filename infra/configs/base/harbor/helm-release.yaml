@@ -60,16 +60,60 @@ spec:
     trivy:
       enabled: false
 
+    # Shared filesystem volumes allow Registry and Jobservice to overlap on updates.
+    updateStrategy:
+      type: RollingUpdate
+
+    core:
+      extraEnvVars:
+      - name: PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE
+        value: ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr
+      - name: REPLICATION_ADAPTER_WHITELIST
+        value: ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr
+
+    registry:
+      # Require two successful readiness probes before accepting traffic.
+      registry:
+        readinessProbe:
+          successThreshold: 2
+      controller:
+        readinessProbe:
+          successThreshold: 2
+      replicas: 2
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+    jobservice:
+      # Require two successful readiness probes before accepting traffic.
+      readinessProbe:
+        successThreshold: 2
+      replicas: 2
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+
     persistence:
       enabled: true
       resourcePolicy: keep
       storageClass: longhorn
       persistentVolumeClaim:
         registry:
+          storageClass: longhorn-hdd
           size: 100Gi
+          accessMode: ReadWriteMany
         jobservice:
           jobLog:
+            storageClass: longhorn-hdd
             size: 5Gi
+            accessMode: ReadWriteMany
         database:
           size: 10Gi
         redis:
@@ -79,21 +123,3 @@ spec:
     - kind: Secret
       name: harbor-oidc
       valuesKey: values.yaml
-
-  postRenderers:
-    - kustomize:
-        patches:
-          - target:
-              version: v1
-              kind: ConfigMap
-              name: harbor-core
-              namespace: harbor
-            patch: |
-              apiVersion: v1
-              kind: ConfigMap
-              metadata:
-                name: harbor-core
-                namespace: harbor
-              data:
-                PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr"
-                REPLICATION_ADAPTER_WHITELIST: "ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr"

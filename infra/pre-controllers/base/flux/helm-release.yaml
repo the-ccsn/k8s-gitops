@@ -67,3 +67,28 @@ spec:
       name: flux-oauth
       valuesKey: client-secret
       targetPath: web.config.authentication.oauth2.clientSecret
+---
+# The web policy permits 9080; the ambient gateway reaches it through HBONE.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flux-operator-web-ambient
+  namespace: flux-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: flux-operator
+      app.kubernetes.io/name: flux-operator
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prod
+          podSelector:
+            matchLabels:
+              gateway.networking.k8s.io/gateway-name: default-gateway
+      ports:
+        - protocol: TCP
+          port: 15008

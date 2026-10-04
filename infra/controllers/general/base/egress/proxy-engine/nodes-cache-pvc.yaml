@@ -3,10 +3,27 @@ kind: PersistentVolumeClaim
 metadata:
   name: nodes-cache
   namespace: egress-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nodes-cache-rwx
+  namespace: egress-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteMany
   resources:
     requests:
       storage: 1Gi

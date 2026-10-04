@@ -4,7 +4,10 @@ metadata:
   name: proxy-engine
   namespace: egress-system
 spec:
-  replicas: 1
+  replicas: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       app: proxy-engine
@@ -13,6 +16,16 @@ spec:
       labels:
         app: proxy-engine
     spec:
+      terminationGracePeriodSeconds: 60
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: proxy-engine
+              topologyKey: kubernetes.io/hostname
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -47,8 +60,10 @@ spec:
         - name: script-volume
           mountPath: /scripts
           readOnly: true
-        - name: config-temp
+        - name: nodes-cache
           mountPath: /shared-nodes
+        - name: config-temp
+          mountPath: /runtime-nodes
         - name: tmp
           mountPath: /tmp
       containers:
@@ -63,6 +78,10 @@ spec:
         - "/etc/sing-box/main/main.json"
         - "-c"
         - "/etc/sing-box/temp/nodes.json"
+        lifecycle:
+          preStop:
+            exec:
+              command: [/bin/sh, -ec, "sleep 10"]
         ports:
         - containerPort: 7890
           name: mixed-proxy
@@ -118,8 +137,7 @@ spec:
         - name: config-temp
           mountPath: /etc/sing-box/temp
           readOnly: true
-        # This should be considered non-persistent and can be cleared on each restart,
-        # as it's mainly used for caching geoip and geosite data.
+        # Downloads and mutable sing-box state belong to this Pod, not an RWX share.
         - name: work-cache
           mountPath: /var/lib/sing-box
         - name: tmp
@@ -129,8 +147,11 @@ spec:
         configMap:
           name: sing-box-main-config
       - name: config-temp
+        emptyDir:
+          sizeLimit: 10Mi
+      - name: nodes-cache
         persistentVolumeClaim:
-          claimName: nodes-cache
+          claimName: nodes-cache-rwx
       - name: script-volume
         configMap:
           name: sub-converter-script-config
@@ -138,5 +159,16 @@ spec:
         emptyDir:
           sizeLimit: 50Mi
       - name: work-cache
-        persistentVolumeClaim:
-          claimName: proxy-engine-work-cache
+        emptyDir:
+          sizeLimit: 100Mi
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: proxy-engine
+  namespace: egress-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: proxy-engine

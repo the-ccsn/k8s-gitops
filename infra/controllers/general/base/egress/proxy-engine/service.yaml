@@ -50,3 +50,32 @@ spec:
     targetPort: 9090
   selector:
     app: proxy-engine
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-admin-svc
+  namespace: egress-system
+spec:
+  ports:
+    - port: 9090
+      name: http-clash-api
+      appProtocol: http
+      targetPort: 9090
+  selector:
+    app: proxy-engine
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: proxy-admin-session
+  namespace: egress-system
+spec:
+  host: proxy-admin-svc.egress-system.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpCookie:
+          name: proxy-engine-session
+          path: /
+          ttl: 0s

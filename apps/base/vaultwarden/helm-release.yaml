@@ -5,13 +5,10 @@ metadata:
   name: vaultwarden
 spec:
 
-  # Why isn't this HA?
-  # Vaultwarden isn't designed for HA.
-  # Although there's some workaround to run multiple instances, we'd rather endure
-  # short downtime during redeploy than risk data loss or corruption.
-  # See also: https://github.com/dani-garcia/vaultwarden/discussions/2691
-
-  # The pg database supports HA, so we enable it for shorter downtime in case one of pg instances goes down.
+  # Keep one steady-state instance; rolling updates briefly overlap two instances.
+  # PostgreSQL and the migrated RWX data volume are shared during that overlap.
+  # WebSocket notifications are process-local and may need a client reconnect.
+  # See README.md for the mandatory data migration before rollout.
 
   releaseName: vaultwarden
   interval: 30m
@@ -97,3 +94,78 @@ spec:
       persistence:
         enabled: true
         size: 5Gi
+        # Keep the chart-managed RWO claim for rollback; only the Deployment moves.
+        annotations:
+          helm.sh/resource-policy: keep
+
+  # The pinned chart has no strategy setting. Keep its old PVC in the release.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: apps
+              version: v1
+              kind: Deployment
+              name: vaultwarden-vaultwarden
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: vaultwarden-vaultwarden
+              spec:
+                replicas: 1
+                minReadySeconds: 10
+                strategy:
+                  type: RollingUpdate
+                template:
+                  spec:
+                    initContainers:
+                      - name: verify-rwx-migration
+                        image: docker.io/library/python:3.14-alpine@sha256:dd4d2bd5b53d9b25a51da13addf2be586beebd5387e289e798e4083d94ca837a
+                        command:
+                          - /bin/sh
+                          - -ec
+                          - |
+                            test -f /data/.rwx-migration-complete
+                            test -s /data/rsa_key.pem
+                            test -s /data/rsa_key.pub.pem
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          readOnlyRootFilesystem: true
+                          capabilities:
+                            drop: [ALL]
+                        resources:
+                          requests:
+                            cpu: 10m
+                            memory: 16Mi
+                          limits:
+                            cpu: 100m
+                            memory: 32Mi
+                        volumeMounts:
+                          - name: data
+                            mountPath: /data
+                            readOnly: true
+                    containers:
+                      - name: vaultwarden
+                        lifecycle:
+                          preStop:
+                            exec:
+                              command: [/bin/sh, -ec, "sleep 10"]
+                    volumes:
+                      - name: data
+                        persistentVolumeClaim:
+                          claimName: vaultwarden-vaultwarden-data-rwx
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vaultwarden-vaultwarden-data-rwx
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: longhorn-backup
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

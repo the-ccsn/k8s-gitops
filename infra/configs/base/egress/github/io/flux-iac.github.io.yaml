@@ -49,11 +49,11 @@ spec:
     - number: 443
       name: https
       protocol: TLS
-  resolution: DNS
-  endpoints:
-    - address: proxy-svc.egress-system.svc.cluster.local
-      ports:
-        https: 7890
+      targetPort: 7890
+  resolution: STATIC
+  workloadSelector:
+    labels:
+      app: proxy-engine
 ---
 # Encapsulate the egress traffic into CONNECT tunnel to forward all traffic to it.
 # Applies to HTTPS traffic to flux-iac.github.io.

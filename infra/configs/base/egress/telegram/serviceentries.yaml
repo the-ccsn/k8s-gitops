@@ -28,8 +28,8 @@ spec:
     - number: 443
       name: https
       protocol: TLS
-  resolution: DNS
-  endpoints:
-    - address: proxy-svc.egress-system.svc.cluster.local
-      ports:
-        https: 7890
+      targetPort: 7890
+  resolution: STATIC
+  workloadSelector:
+    labels:
+      app: proxy-engine

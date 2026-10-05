@@ -77,6 +77,8 @@ spec:
         value: "https://login.ccsn.dev/oidc"
       - name: SSO_SCOPES
         value: "openid email profile offline_access"
+      - name: SSO_AUTHORIZE_EXTRA_PARAMS
+        value: "prompt=consent"
       - name: SSO_CLIENT_ID
         value: "1a2zc0uue83n20iy87u5a"
       - name: SSO_CLIENT_SECRET

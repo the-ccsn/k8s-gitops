@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-controllers-ready
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/name: infra-controllers-ready
+    app.kubernetes.io/component: readiness-gate
+    app.kubernetes.io/part-of: ccsn-k8s-gitops
+data:
+  purpose: Aggregate readiness gate for infrastructure controller branches.

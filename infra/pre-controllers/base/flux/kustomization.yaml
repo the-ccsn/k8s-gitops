@@ -2,7 +2,5 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./flux-oauth-secret.yaml
-  - ./helm-release.yaml
   - ./helm-oci-repo.yaml
   - ./cluster-role-binding.yaml

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: connector-github
+  namespace: prod
+type: Opaque
+stringData:
+  configuration: ENC[AES256_GCM,data:otBNB8+ZZosrUJ8jcrQYUfviuqjYh3W+096XGdmOzvsVj7WOUX2NW7zZO6goOtt/7SIeDulEo/p+6ynetdf2qIoaWE7aOg+Ev96ixPSTeI0DCLke4jg71tJhYWgNER0Yz2GgV/HhymZ7DIfnWwwZsPwXjJGdemyKzL8eEatexOaXdXW2HB4CAfZY,iv:zRl+etcGknpXoaNFgVEGTi0c09G2X9imxsnNXE2FHYg=,tag:sIRraS2FWZ7lJXxia5Of/w==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB3SkVsMkFUMHhZdWFNWlQ1
+        aDVIM1A4U0JMODJvU0FqcHVRZVVxQTJXSWtNCnZtWEFJaGdJQ3VHUnhPN3lOVDB5
+        ZDN0ZktLSGkyRmNYVCtDQWlrUk42NUEKLS0tIHhQMU54SEQraGRzTjZyYkIrWHpj
+        TXdJcHNWcEJydSt5YWdwWE4wZzhxREkK4a8JgBLYT3+RQMnyxDVMew1QZNliG6JH
+        /d/tKK/bjYjOvSE7qyno/uBvkf3I6MJS6tUNmXXchqpq05a6OHycoA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1td0htsklm8xpsvcync3ulwxs82w5a9a03eeq9wwg8pm2mx3t99fqtgyhhs
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-10-05T04:22:14Z"
+  mac: ENC[AES256_GCM,data:f3TyOCOL+veQdEx1qj2FfGwGhLjMDODt9X5KX01I/yBcK0Xifze/S9PBgCz0TP9uBxwSSsP636XgrlIJGOPkMsGYbvbD8sGrgh4HYNUEpnUJg8uQdOwruO5xTFGR1/B9t/E2KZplVzcD73OfRUn9K3w9eH82RtsVo9FVqitIFWw=,iv:z6/II+gjSZkwX0tZI0KNbteGuIh+mYxBc58MmHjMnbU=,tag:wg/GpOCVTRw1W/yP7htiFQ==,type:str]
+  version: 3.13.3

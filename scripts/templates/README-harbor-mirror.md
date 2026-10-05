@@ -38,19 +38,23 @@ rewrite path and testing Harbor project resolution instead.
 
 ## Initialize Proxy Cache Projects
 
-Proxy-cache registries/projects are managed by `tofu-controller` + Terraform:
+Proxy-cache registries, projects and the pull-only robot account are managed by
+Crossplane CRs in `infra/configs/base/harbor/managed-resources/`:
 
-- Controller install: `infra/pre-controllers/base/tofu-controller`
-- Terraform CR: `infra/configs/base/harbor/tofu-terraform.yaml`
-- Terraform code: `infra/configs/base/harbor/tf`
+- `proxy-caches.yaml` declares seven registry/project pairs. The composition creates
+  each registry, then passes its actual ID to the project.
+- `robot.yaml` resolves project names and uses the SOPS-encrypted
+  `harbor-k8s-robot-credential` Secret, key `password`.
+- `provider-config.yaml` authenticates through the SOPS-encrypted
+  `harbor-management` Secret, key `credentials`.
 
-Terraform runs in namespace `harbor` and reuses Harbor's existing admin password secret.
+There is no tofu-controller, Terraform CR or runner image. For private upstreams,
+add `spec.registry.accessId` and an `accessSecretRef` pointing to a SOPS-encrypted
+Secret in namespace `harbor`. Credentials must not be stored in the composite.
 
-- `harbor_username` is set to `admin` via `spec.vars` in `Terraform` CR
-- `harbor_password` is read from secret `harbor-admin-auth` via `spec.varsFrom`
-- `robot_account_k8s_secret` is read from secret `harbor-k8s-robot-account-auth` via `spec.varsFrom`
-
-If you need upstream registry credentials, add them via `spec.varsFrom` (recommended) or `spec.vars` in the `Terraform` CR.
+Confirm all proxy caches and the robot Account are Ready before configuring node
+mirrors. Follow [Harbor adoption](../../infra/configs/base/harbor/README.md) when
+reusing existing Harbor data.
 
 ## k3s
 

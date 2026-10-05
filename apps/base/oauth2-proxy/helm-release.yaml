@@ -14,6 +14,8 @@ spec:
     replicaCount: 1
     config:
       forceLegacyConfig: false
+      requiredSecretKeys:
+        - cookie-secret
       existingSecret: oauth2-proxy-secrets
       emailDomains:
         - "*"
@@ -29,8 +31,7 @@ spec:
         providers:
           - id: oidc
             provider: oidc
-            clientID: ${OAUTH2_PROXY_CLIENT_ID}
-            clientSecret: ${OAUTH2_PROXY_CLIENT_SECRET}
+            clientSecretFile: /etc/oauth2-proxy/credentials/clientSecret
             scope: openid profile email roles offline_access
             additionalClaims:
               - roles
@@ -59,6 +60,14 @@ spec:
             values:
               - claimSource:
                   claim: access_token
+    extraVolumes:
+      - name: oauth-credentials
+        secret:
+          secretName: oauth2-proxy-oidc
+    extraVolumeMounts:
+      - name: oauth-credentials
+        mountPath: /etc/oauth2-proxy/credentials
+        readOnly: true
     extraArgs:
       redirect-url: "https://oauth2-gateway.ccsn.dev/oauth2/callback"
       reverse-proxy: "true"
@@ -94,3 +103,9 @@ spec:
       capabilities:
         drop:
           - ALL
+
+  valuesFrom:
+    - kind: Secret
+      name: oauth2-proxy-oidc
+      valuesKey: clientId
+      targetPath: alphaConfig.configData.providers[0].clientID

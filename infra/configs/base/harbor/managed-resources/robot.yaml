@@ -1,0 +1,132 @@
+apiVersion: robot.harbor.m.crossplane.io/v1alpha1
+kind: Account
+metadata:
+  name: k8s
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    name: k8s
+    level: system
+    permissions:
+    - kind: project
+      namespaceRef:
+        name: dockerhub
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    - kind: project
+      namespaceRef:
+        name: gcr
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    - kind: project
+      namespaceRef:
+        name: ghcr
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    - kind: project
+      namespaceRef:
+        name: istio
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    - kind: project
+      namespaceRef:
+        name: mcr
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    - kind: project
+      namespaceRef:
+        name: quay
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    - kind: project
+      namespaceRef:
+        name: registry-k8s
+        policy:
+          resolve: Always
+      access:
+      - action: pull
+        resource: repository
+      - action: list
+        resource: repository
+      - action: read
+        resource: artifact
+      - action: list
+        resource: artifact
+      - action: list
+        resource: tag
+    secretSecretRef:
+      name: harbor-k8s-robot-credential
+      key: password
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig

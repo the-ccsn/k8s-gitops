@@ -25,7 +25,7 @@ spec:
         auth:
           strategy: openid
           openid:
-            client_id: "h465htc5ewe0zshhg3ynn"
+            client_id: "${clientId}"
             issuer_uri: "https://login.ccsn.dev/oidc"
             scopes:
               - "openid"

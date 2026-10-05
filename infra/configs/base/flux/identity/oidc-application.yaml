@@ -1,0 +1,26 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: flux-web
+  namespace: flux-system
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Flux Web
+    type: Traditional
+    description: ''
+    isThirdParty: false
+    redirectUris:
+    - https://flux.ccsn.dev/oauth2/callback
+    - https://flux.319.ccsn.dev/oauth2/callback
+    postLogoutRedirectUris: []
+    corsAllowedOrigins: []
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

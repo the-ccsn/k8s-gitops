@@ -1,0 +1,26 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Harbor
+    type: Traditional
+    description: ''
+    isThirdParty: false
+    redirectUris:
+    - https://harbor.ccsn.dev/c/oidc/callback
+    postLogoutRedirectUris:
+    - https://harbor.ccsn.dev/account/sign-in
+    corsAllowedOrigins: []
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

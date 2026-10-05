@@ -10,3 +10,5 @@ resources:
   - ./helm-release.yaml
   - ./logto-redis-auth-secret.yaml
   - ./dragonfly.yaml
+  - ./identity/
+  - ./management-credentials.yaml

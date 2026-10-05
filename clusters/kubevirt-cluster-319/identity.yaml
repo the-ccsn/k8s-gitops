@@ -1,0 +1,68 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: identity-providers
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-pre-controllers
+  interval: 30m
+  retryInterval: 30s
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/pre-controllers/base/crossplane/providers
+  prune: false
+  healthChecks:
+    - apiVersion: pkg.crossplane.io/v1
+      kind: Provider
+      name: provider-upjet-logto
+    - apiVersion: pkg.crossplane.io/v1
+      kind: Provider
+      name: provider-upjet-harbor
+    - apiVersion: pkg.crossplane.io/v1
+      kind: Function
+      name: function-go-templating
+    - apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      name: proxycaches.harbor.ccsn.dev
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: logto
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: infra-configs
+  - name: identity-providers
+  interval: 5m
+  retryInterval: 10s
+  timeout: 15m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/base/logto
+  targetNamespace: prod
+  commonMetadata:
+    labels:
+      app.kubernetes.io/env: prod
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  healthChecks:
+  - apiVersion: helm.toolkit.fluxcd.io/v2
+    kind: HelmRelease
+    name: logto
+    namespace: prod
+  - apiVersion: application.logto.m.crossplane.io/v1alpha1
+    kind: Application
+    name: kubernetes-cluster
+    namespace: flux-system
+  - apiVersion: v1
+    kind: Secret
+    name: kubernetes-oidc
+    namespace: flux-system

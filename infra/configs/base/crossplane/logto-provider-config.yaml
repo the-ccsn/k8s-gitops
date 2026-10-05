@@ -1,0 +1,11 @@
+apiVersion: logto.m.crossplane.io/v1beta1
+kind: ClusterProviderConfig
+metadata:
+  name: ccsn-logto
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      name: logto-management
+      namespace: prod
+      key: credentials

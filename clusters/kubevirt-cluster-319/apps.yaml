@@ -10,6 +10,7 @@ spec:
     - name: infra-namespaces
     - name: infra-controllers
     - name: infra-configs
+    - name: logto
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -22,3 +23,8 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+  postBuild:
+    substituteFrom:
+    - kind: Secret
+      name: kubernetes-oidc
+      optional: false

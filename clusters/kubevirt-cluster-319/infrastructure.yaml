@@ -71,13 +71,37 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infra-controllers-networking
+  name: infra-controllers-networking-core
   namespace: flux-system
 spec:
   dependsOn:
     - name: infra-namespaces
     - name: infra-pre-controllers
     - name: infra-controllers-foundation
+  interval: 1h
+  retryInterval: 10s
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/controllers/networking/overlays/kubevirt-cluster-319-core
+  prune: true
+  wait: true
+  # https://fluxcd.io/flux/components/kustomize/kustomizations/#decryption
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-controllers-networking
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-controllers-networking-core
+    - name: logto
   interval: 1h
   retryInterval: 10s
   timeout: 5m
@@ -92,6 +116,11 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+  postBuild:
+    substituteFrom:
+    - kind: Secret
+      name: kubernetes-oidc
+      optional: false
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -128,7 +157,7 @@ spec:
     - name: infra-namespaces
     - name: infra-pre-controllers
     - name: infra-controllers-foundation
-    - name: infra-controllers-networking
+    - name: infra-controllers-networking-core
     - name: infra-controllers-monitoring
   interval: 1h
   retryInterval: 10s
@@ -176,7 +205,9 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infra-controllers
+    - name: infra-controllers-general
+    - name: infra-controllers-networking-core
+    - name: identity-providers
   interval: 1h
   retryInterval: 10s
   timeout: 5m

@@ -1,0 +1,76 @@
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: dockerhub
+  namespace: harbor
+spec:
+  registry:
+    name: dockerhub-upstream
+    providerName: docker-hub
+    endpointUrl: https://hub.docker.com
+---
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: gcr
+  namespace: harbor
+spec:
+  registry:
+    name: gcr-registry-upstream
+    providerName: docker-registry
+    endpointUrl: https://gcr.io
+---
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: ghcr
+  namespace: harbor
+spec:
+  registry:
+    name: ghcr-upstream
+    providerName: github-ghcr
+    endpointUrl: https://ghcr.io
+---
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: istio
+  namespace: harbor
+spec:
+  registry:
+    name: istio-registry-upstream
+    providerName: docker-registry
+    endpointUrl: https://registry.istio.io
+---
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: mcr
+  namespace: harbor
+spec:
+  registry:
+    name: mcr-upstream
+    providerName: docker-registry
+    endpointUrl: https://mcr.microsoft.com
+---
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: quay
+  namespace: harbor
+spec:
+  registry:
+    name: quay-registry-upstream
+    providerName: docker-registry
+    endpointUrl: https://quay.io
+---
+apiVersion: harbor.ccsn.dev/v1alpha1
+kind: ProxyCache
+metadata:
+  name: registry-k8s
+  namespace: harbor
+spec:
+  registry:
+    name: k8s-registry-upstream
+    providerName: docker-registry
+    endpointUrl: https://registry.k8s.io

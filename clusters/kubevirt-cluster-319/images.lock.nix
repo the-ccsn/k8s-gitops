@@ -450,27 +450,6 @@
     ];
   }
   {
-    imageName = "ghcr.io/flux-iac/tofu-controller";
-    imageDigest = "sha256:e16d8295e66f73d66f6904a9129d8aedfa84612d1e8b5a8e122fda99d28af09c";
-    finalImageName = "ghcr.io/flux-iac/tofu-controller";
-    finalImageTag = "v0.16.3";
-    archiveHash = "sha256-gx5PoE785o3xUbtH1CekZj/BO2Vkxm8iqBv7ftGM1vQ=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "flux-system"; name = "tofu-controller"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "HelmRelease"; namespace = "flux-system"; name = "tofu-controller"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-pre-controllers"; }
-      ]
-    ];
-    targets = [
-      { kind = "Deployment"; namespace = "flux-system"; name = "tofu-controller"; }
-    ];
-  }
-  {
     imageName = "ghcr.io/grafana/grafana-operator";
     imageDigest = "sha256:3abeaccdf54e9e02c2f4b6215be594c8f78b94a866961ada7f92b677bf33c9b4";
     finalImageName = "ghcr.io/grafana/grafana-operator";
@@ -670,24 +649,6 @@
       [
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-general"; }
         { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
-      ]
-    ];
-    targets = [];
-  }
-  {
-    imageName = "ghcr.io/the-ccsn/k8s-gitops/tf-runner";
-    imageDigest = "sha256:8600a5292bb1773b55486e093289258f2dc3f16112856a11f8a523f018472d28";
-    finalImageName = "ghcr.io/the-ccsn/k8s-gitops/tf-runner";
-    finalImageTag = "v0.16.3-custom-202605251544";
-    archiveHash = "sha256-MLvkJawyPgAhCWkeu7wA+EL5BrUb3CTt6lV4UDuys+w=";
-    os = "linux";
-    arch = "amd64";
-    sources = [
-      { kind = "HelmRelease"; namespace = "flux-system"; name = "tofu-controller"; }
-    ];
-    sourceChains = [
-      [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-pre-controllers"; }
       ]
     ];
     targets = [];

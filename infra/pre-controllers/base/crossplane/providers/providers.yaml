@@ -1,0 +1,20 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-upjet-logto
+spec:
+  # v0.1.0 multi-platform package, signed with GitHub Actions OIDC.
+  package: ghcr.io/the-ccsn/provider-upjet-logto@sha256:1fd9318c4891d96449bbd01c70e9f62835fb590868949effafa055ed05264b01
+  packagePullPolicy: IfNotPresent
+  revisionActivationPolicy: Automatic
+  revisionHistoryLimit: 2
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-upjet-harbor
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/provider-upjet-harbor:v1.3.0
+  packagePullPolicy: IfNotPresent
+  revisionActivationPolicy: Automatic
+  revisionHistoryLimit: 2

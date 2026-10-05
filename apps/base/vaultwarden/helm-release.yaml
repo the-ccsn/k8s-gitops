@@ -80,12 +80,15 @@ spec:
       - name: SSO_AUTHORIZE_EXTRA_PARAMS
         value: "prompt=consent"
       - name: SSO_CLIENT_ID
-        value: "1a2zc0uue83n20iy87u5a"
+        valueFrom:
+          secretKeyRef:
+            name: vaultwarden-oidc
+            key: clientId
       - name: SSO_CLIENT_SECRET
         valueFrom:
           secretKeyRef:
             name: vaultwarden-oidc
-            key: SSO_CLIENT_SECRET
+            key: clientSecret
 
     resources:
       requests:

@@ -1,0 +1,43 @@
+apiVersion: connector.logto.m.crossplane.io/v1alpha1
+kind: Connector
+metadata:
+  name: connector-github
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    connectorId: github-universal
+    configurationSecretRef:
+      name: connector-github
+      key: configuration
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+  writeConnectionSecretToRef:
+    name: connector-github-state
+---
+apiVersion: connector.logto.m.crossplane.io/v1alpha1
+kind: Connector
+metadata:
+  name: connector-smtp
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    connectorId: simple-mail-transfer-protocol
+    configurationSecretRef:
+      name: connector-smtp
+      key: configuration
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+  writeConnectionSecretToRef:
+    name: connector-smtp-state

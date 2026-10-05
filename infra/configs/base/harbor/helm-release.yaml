@@ -71,6 +71,18 @@ spec:
       - name: REPLICATION_ADAPTER_WHITELIST
         value: ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr
 
+      - name: OIDC_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: harbor-oidc
+            key: clientId
+      - name: OIDC_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: harbor-oidc
+            key: clientSecret
+      - name: CONFIG_OVERWRITE_JSON
+        value: '{"self_registration":false,"auth_mode":"oidc_auth","primary_auth_mode":true,"oidc_name":"Student Network Center Accounts","oidc_endpoint":"https://login.ccsn.dev/oidc","oidc_scope":"openid,profile,email,roles,offline_access","oidc_client_id":"$(OIDC_CLIENT_ID)","oidc_client_secret":"$(OIDC_CLIENT_SECRET)","oidc_verify_cert":true,"oidc_auto_onboard":true,"oidc_user_claim":"username","oidc_groups_claim":"roles","oidc_group_filter":"^harbor:[a-z]+$","oidc_admin_group":"harbor:admin","oidc_logout":true}'
     registry:
       # Require two successful readiness probes before accepting traffic.
       registry:
@@ -118,8 +130,3 @@ spec:
           size: 10Gi
         redis:
           size: 5Gi
-
-  valuesFrom:
-    - kind: Secret
-      name: harbor-oidc
-      valuesKey: values.yaml

@@ -1,0 +1,94 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: harbor-proxy-cache
+spec:
+  compositeTypeRef:
+    apiVersion: harbor.ccsn.dev/v1alpha1
+    kind: ProxyCache
+  mode: Pipeline
+  pipeline:
+  - step: registry-and-project
+    functionRef:
+      name: function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      options:
+      - missingkey=error
+      inline:
+        template: |
+          {{- $xr := getCompositeResource . -}}
+          {{- $registry := getComposedResource . "registry" | default dict -}}
+          {{- $project := getComposedResource . "project" | default dict -}}
+          {{- $registryID := dig "status" "atProvider" "registryId" "" $registry | int64 -}}
+          {{- $registryReady := false -}}
+          {{- $projectReady := false -}}
+          {{- range (dig "status" "conditions" (list) $registry) -}}
+          {{- if and (eq .type "Ready") (eq .status "True") -}}{{- $registryReady = true -}}{{- end -}}
+          {{- end -}}
+          {{- range (dig "status" "conditions" (list) $project) -}}
+          {{- if and (eq .type "Ready") (eq .status "True") -}}{{- $projectReady = true -}}{{- end -}}
+          {{- end -}}
+          {{- $projectReady = and $projectReady (gt $registryID 0) (eq $registryID (dig "status" "atProvider" "registryId" 0 $project | int64)) }}
+          apiVersion: harbor.m.crossplane.io/v1alpha1
+          kind: Registry
+          metadata:
+            name: {{ $xr.spec.registry.name | quote }}
+            namespace: {{ $xr.metadata.namespace | quote }}
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: registry
+              gotemplating.fn.crossplane.io/ready: {{ $registryReady | ternary "True" "False" | quote }}
+          spec:
+            managementPolicies: {{ $xr.spec.resourceManagementPolicies | toJson }}
+            forProvider:
+              name: {{ $xr.spec.registry.name | quote }}
+              providerName: {{ $xr.spec.registry.providerName | quote }}
+              endpointUrl: {{ $xr.spec.registry.endpointUrl | quote }}
+              insecure: false
+          {{- with (get $xr.spec.registry "accessId") }}
+              accessId: {{ . | quote }}
+          {{- end }}
+          {{- with (get $xr.spec.registry "accessSecretRef") }}
+              accessSecretSecretRef:
+                name: {{ .name | quote }}
+                key: {{ .key | quote }}
+          {{- end }}
+            providerConfigRef:
+              name: {{ $xr.spec.providerConfigName | quote }}
+              kind: ProviderConfig
+          {{- /* Retain an existing project if the registry temporarily loses status. */ -}}
+          {{- $projectRegistryID := $registryID -}}
+          {{- if and (le $projectRegistryID 0) $project -}}
+          {{- $projectRegistryID = dig "spec" "forProvider" "registryId" 0 $project | int64 -}}
+          {{- end -}}
+          {{- if gt $projectRegistryID 0 }}
+          ---
+          apiVersion: harbor.m.crossplane.io/v1alpha1
+          kind: Project
+          metadata:
+            name: {{ $xr.metadata.name | quote }}
+            namespace: {{ $xr.metadata.namespace | quote }}
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: project
+              gotemplating.fn.crossplane.io/ready: {{ $projectReady | ternary "True" "False" | quote }}
+          spec:
+            managementPolicies: {{ $xr.spec.resourceManagementPolicies | toJson }}
+            forProvider:
+              name: {{ $xr.metadata.name | quote }}
+              public: false
+              registryId: {{ $projectRegistryID }}
+              proxySpeedKb: -1
+            providerConfigRef:
+              name: {{ $xr.spec.providerConfigName | quote }}
+              kind: ProviderConfig
+          {{- end }}
+          ---
+          apiVersion: harbor.ccsn.dev/v1alpha1
+          kind: ProxyCache
+          metadata:
+            annotations:
+              gotemplating.fn.crossplane.io/ready: {{ and $registryReady $projectReady (gt $registryID 0) | ternary "True" "False" | quote }}
+          status:
+            registryId: {{ $registryID }}

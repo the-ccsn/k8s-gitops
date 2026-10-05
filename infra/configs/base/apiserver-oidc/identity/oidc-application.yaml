@@ -1,0 +1,29 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: kubernetes-cluster
+  namespace: flux-system
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    name: Kubernetes Cluster
+    type: SPA
+    description: ''
+    isThirdParty: false
+    redirectUris:
+    - http://localhost:8000
+    - http://localhost:18000
+    - https://kiali.ccsn.dev
+    - https://headlamp.ccsn.dev/oidc-callback
+    postLogoutRedirectUris: []
+    corsAllowedOrigins: []
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  writeConnectionSecretToRef:
+    name: kubernetes-oidc
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

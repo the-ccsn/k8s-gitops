@@ -1,0 +1,146 @@
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: k8s-cluster-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: k8s:cluster-admin
+    description: Kubernetes Cluster wide super admin (`cluster-admin`)
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: grafana-editor
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: grafana:editor
+    description: In-cluster Grafana Editor
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: grafana-viewer
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: grafana:viewer
+    description: In-cluster Grafana Viewer
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: grafana-instance-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: grafana:instance_admin
+    description: In-cluster Grafana GrafanaAdmin
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: grafana-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: grafana:admin
+    description: In-cluster Grafana Admin
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: flux-cluster-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: flux:cluster-admin
+    description: Flux Cluster Admin
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: proxy-engine-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: proxy-engine:admin
+    description: Proxy-engine dashboard access
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

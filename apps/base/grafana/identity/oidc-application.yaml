@@ -1,0 +1,30 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Grafana
+    type: Traditional
+    description: ''
+    isThirdParty: false
+    redirectUris:
+    - https://grafana.ccsn.dev/login/generic_oauth
+    - https://grafana.319.ccsn.dev/login/generic_oauth
+    postLogoutRedirectUris:
+    - https://grafana.ccsn.dev/login
+    - https://grafana.319.ccsn.dev/login
+    corsAllowedOrigins:
+    - https://grafana.ccsn.dev
+    - https://grafana.319.ccsn.dev
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

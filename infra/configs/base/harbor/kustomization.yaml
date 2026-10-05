@@ -5,11 +5,9 @@ resources:
   - ./helm-repo.yaml
   - ./helm-release.yaml
   - ./harbor-admin-secret.yaml
-  - ./harbor-oidc-secret.yaml
   - ./harbor-redis-auth-secret.yaml
   - ./pg-cluster.yaml
   - ./dragonfly.yaml
 
-  - ./git-repository.yaml
-  - ./tofu-terraform.yaml
-  - ./harbor-k8s-robot-account-auth-secret.yaml
+  - ./identity/
+  - ./managed-resources/

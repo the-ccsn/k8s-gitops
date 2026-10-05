@@ -38,7 +38,7 @@ spec:
       # baseURL: https://headlamp.ccsn.dev
       watchPlugins: true
       oidc:
-        clientID: "h465htc5ewe0zshhg3ynn"
+        clientID: "${clientId}"
         issuerURL: "https://login.ccsn.dev/oidc"
         scopes: "openid email profile offline_access roles"
         usePKCE: true
@@ -77,4 +77,3 @@ spec:
       - name: plugin-kubevirt
         mountPath: /headlamp/plugins/kubevirt
         subPath: plugins/kubevirt/
-  # Note: OIDC credentials are provided via the external Secret `headlamp-oidc` in namespace `prod`.

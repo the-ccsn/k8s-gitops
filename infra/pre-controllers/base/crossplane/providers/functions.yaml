@@ -1,0 +1,10 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Function
+metadata:
+  name: function-go-templating
+spec:
+  # v0.13.0, used for Harbor registry-to-project ID propagation.
+  package: xpkg.crossplane.io/crossplane-contrib/function-go-templating@sha256:d57fcf0b05f50d7ed7fa3a2e754fdc536aa78c22fc38505074d2dab114dda0ec
+  packagePullPolicy: IfNotPresent
+  revisionActivationPolicy: Automatic
+  revisionHistoryLimit: 2

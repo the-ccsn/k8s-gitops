@@ -1,0 +1,14 @@
+apiVersion: harbor.m.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: ccsn-harbor
+  namespace: harbor
+spec:
+  url: https://harbor.ccsn.dev
+  insecure: false
+  credentials:
+    source: Secret
+    secretRef:
+      name: harbor-management
+      namespace: harbor
+      key: credentials

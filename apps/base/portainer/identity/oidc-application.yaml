@@ -1,0 +1,53 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: portainer
+  namespace: portainer
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Portainer
+    type: Traditional
+    description: ''
+    isThirdParty: false
+    redirectUris:
+    - https://portainer.ccsn.dev/
+    postLogoutRedirectUris:
+    - https://portainer.ccsn.dev/
+    corsAllowedOrigins: []
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: portainer-third-party
+  namespace: portainer
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Portainer
+    type: Traditional
+    description: ''
+    isThirdParty: true
+    redirectUris:
+    - https://portainer.ccsn.dev/
+    postLogoutRedirectUris:
+    - https://portainer.ccsn.dev/
+    corsAllowedOrigins: []
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

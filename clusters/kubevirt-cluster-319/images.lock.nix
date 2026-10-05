@@ -365,10 +365,10 @@
   }
   {
     imageName = "docker.io/vaultwarden/server";
-    imageDigest = "sha256:ebdfe70701c60ac0c28c697e787cea767d7972940b786037b29fe0d507f821e8";
+    imageDigest = "sha256:1587c45feaa479f1f5e8af3b00eded36bff77bcf1880cf8dbf0541706dd470e0";
     finalImageName = "docker.io/vaultwarden/server";
-    finalImageTag = "1.37.1";
-    archiveHash = "sha256-YiEQlYJchB91JlpcusiQAZmPlHnSIonhPcJQEOyn1Do=";
+    finalImageTag = "1.37.3";
+    archiveHash = "sha256-Eux0fWCsGCdbM0g3B0RjJkj58G2YWUT+Pm50JoSqxuQ=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -1338,6 +1338,27 @@
     ];
     targets = [
       { kind = "Deployment"; namespace = "kubevirt"; name = "virt-operator"; }
+    ];
+  }
+  {
+    imageName = "quay.io/oauth2-proxy/oauth2-proxy";
+    imageDigest = "sha256:aa0bd8dd5ab0c78e4c91c92755ad573a5f92241f88138b4141b8ec803463b4fd";
+    finalImageName = "quay.io/oauth2-proxy/oauth2-proxy";
+    finalImageTag = "v7.15.2";
+    archiveHash = "sha256-oMGYyqPjF5RyzlQ+x1+8VaFaC59YWBkuii79QtBpPOs=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "prod"; name = "oauth2-proxy"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "prod"; name = "oauth2-proxy"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "prod"; name = "oauth2-proxy"; }
     ];
   }
   {

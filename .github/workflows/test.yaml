@@ -143,8 +143,43 @@ jobs:
         uses: fluxcd/flux2/action@1fd61a06264d71cf445ed55c4f14d401d26a1c64 # v2.8.8
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@f3ad4b56adec90eb5661af565cdebec997ad4bfb # main
+      # flux-local 8.2.0 identifies Secret/ConfigMap by kind alone. Keep custom
+      # API groups as RawObjects while preserving core Secret handling.
+      - name: Checkout pinned flux-local source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: allenporter/flux-local
+          ref: 4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
+          path: .local/flux-local
+          persist-credentials: false
+      - name: Fix flux-local core resource identification
+        shell: bash
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+
+          path = Path(".local/flux-local/flux_local/manifest.py")
+          source = path.read_text()
+          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
+              before = f"if kind == {kind}:"
+              after = f'if kind == {kind} and api_version == "v1":'
+              if source.count(before) != 1:
+                  raise SystemExit(f"Unexpected flux-local parser for {kind}")
+              source = source.replace(before, after)
+          path.write_text(source)
+
+          path = Path(".local/flux-local/flux_local/git_repo.py")
+          source = path.read_text()
+          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
+              before = f'doc.get("kind") == {kind}'
+              after = before + ' and doc.get("apiVersion") == "v1"'
+              if source.count(before) != 2:
+                  raise SystemExit(f"Unexpected flux-local traversal for {kind}")
+              source = source.replace(before, after)
+          path.write_text(source)
+          PYTHON
       - name: flux-local test
-        uses: allenporter/flux-local/action/test@4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
+        uses: ./.local/flux-local/action/test
         with:
           path: clusters/${{ matrix.cluster }}
           enable-helm: true
@@ -170,9 +205,44 @@ jobs:
         uses: fluxcd/flux2/action@1fd61a06264d71cf445ed55c4f14d401d26a1c64 # v2.8.8
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@f3ad4b56adec90eb5661af565cdebec997ad4bfb # main
+      # flux-local 8.2.0 identifies Secret/ConfigMap by kind alone. Keep custom
+      # API groups as RawObjects while preserving core Secret handling.
+      - name: Checkout pinned flux-local source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: allenporter/flux-local
+          ref: 4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
+          path: .local/flux-local
+          persist-credentials: false
+      - name: Fix flux-local core resource identification
+        shell: bash
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+
+          path = Path(".local/flux-local/flux_local/manifest.py")
+          source = path.read_text()
+          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
+              before = f"if kind == {kind}:"
+              after = f'if kind == {kind} and api_version == "v1":'
+              if source.count(before) != 1:
+                  raise SystemExit(f"Unexpected flux-local parser for {kind}")
+              source = source.replace(before, after)
+          path.write_text(source)
+
+          path = Path(".local/flux-local/flux_local/git_repo.py")
+          source = path.read_text()
+          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
+              before = f'doc.get("kind") == {kind}'
+              after = before + ' and doc.get("apiVersion") == "v1"'
+              if source.count(before) != 2:
+                  raise SystemExit(f"Unexpected flux-local traversal for {kind}")
+              source = source.replace(before, after)
+          path.write_text(source)
+          PYTHON
       - name: flux-local diff
         id: diff
-        uses: allenporter/flux-local/action/diff@4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
+        uses: ./.local/flux-local/action/diff
         continue-on-error: true
         with:
           live-branch: main
@@ -190,12 +260,15 @@ jobs:
           python3 - <<'PY'
           import json
           import os
+          from pathlib import Path
+
+          diff_path = Path("diff.patch")
 
           payload = {
             "cluster": os.environ["CLUSTER"],
             "resource": os.environ["RESOURCE"],
             "outcome": os.environ["DIFF_OUTCOME"],
-            "diff": json.loads(r'''${{ toJSON(steps.diff.outputs.diff) }}'''),
+            "diff": diff_path.read_text() if diff_path.exists() else "",
             "run_url": os.environ["RUN_URL"],
           }
 
@@ -282,6 +355,7 @@ jobs:
               total_failed += 1
 
           short_sha = "${{ github.sha }}"[:7]
+          diff_byte_budget = 48000 // max(1, total_changed)
           print("## flux-local diff summary")
           print()
           print(f"Commit: `{short_sha}` | Clusters: {len(grouped)} | Resources: {total_resources}")
@@ -324,24 +398,28 @@ jobs:
                   print(f"<details><summary>Resource `{resource}`: ⚠️ updates detected</summary>")
                   print()
                   print("```diff")
-                  print(entry["diff"].rstrip())
+                  diff_bytes = entry["diff"].encode("utf-8")
+                  print(diff_bytes[:diff_byte_budget].decode("utf-8", errors="ignore").rstrip())
                   print("```")
+                  if len(diff_bytes) > diff_byte_budget:
+                    print("Diff truncated; download the full diff from the workflow artifacts.")
                   print()
                   print("</details>")
               print()
           PYEOF
+          delimiter="$(openssl rand -hex 16)"
           {
-            echo "body<<EOF"
+            echo "body<<${delimiter}"
             python3 build_comment.py
             echo
             echo "[Open workflow logs](${RUN_URL})"
-            echo "EOF"
+            echo "${delimiter}"
           } >> "$GITHUB_OUTPUT"
       - name: Upload combined result to action summary
+        env:
+          COMMENT_BODY: ${{ steps.build_comment.outputs.body }}
         run: |
-          {
-            echo "${{ steps.build_comment.outputs.body }}"
-          } >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$COMMENT_BODY" >> "$GITHUB_STEP_SUMMARY"
       - name: Comment combined diff on PR
         if: ${{ github.event_name == 'pull_request' }}
         uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3

@@ -42,6 +42,7 @@ kubeconform_flags=("-skip=Secret")
 kubeconform_config=(
   "-strict"
   "-ignore-missing-schemas"
+  "-schema-location" "/tmp/cilium-crd-schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
   "-schema-location" "default"
   "-schema-location" "/tmp/flux-crd-schemas"
   "-schema-location" "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
@@ -52,6 +53,16 @@ kubeconform_config=(
 echo "INFO - Downloading Flux OpenAPI schemas"
 mkdir -p /tmp/flux-crd-schemas/master-standalone-strict
 curl -sL https://github.com/fluxcd/flux2/releases/latest/download/crd-schemas.tar.gz | tar zxf - -C /tmp/flux-crd-schemas/master-standalone-strict
+
+# The catalog's BGP peer schema predates sourceInterface. Validate against the
+# official CRD from the Cilium version selected by this cluster instead.
+cilium_version="$(yq -r '.spec.ref.tag' infra/pre-controllers/base/cilium/helm-oci-repo.yaml)"
+[[ "$cilium_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+mkdir -p /tmp/cilium-crd-schemas/cilium.io
+curl --fail --silent --show-error --location --retry 3 \
+  "https://raw.githubusercontent.com/cilium/cilium/v${cilium_version}/pkg/k8s/apis/cilium.io/client/crds/v2/ciliumbgppeerconfigs.yaml" | \
+  yq -o=json '.spec.versions[] | select(.name == "v2") | .schema.openAPIV3Schema' \
+    > /tmp/cilium-crd-schemas/cilium.io/ciliumbgppeerconfig_v2.json
 
 find . -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file;
   do

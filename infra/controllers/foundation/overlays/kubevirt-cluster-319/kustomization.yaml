@@ -9,3 +9,17 @@ resources:
   - ../../base/longhorn/
   - ./longhorn-hdd-nodes.yaml
   - ./longhorn-hdd-storageclass.yaml
+  - ./external-dns-campus.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: external-dns
+      namespace: external-dns-system
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --annotation-filter=networking.ccsn.dev/dns-scope!=campus
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --exclude-domains=ingress.319.ccsn.dev

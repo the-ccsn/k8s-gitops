@@ -1486,6 +1486,7 @@
     ];
     targets = [
       { kind = "Deployment"; namespace = "external-dns-system"; name = "external-dns"; }
+      { kind = "Deployment"; namespace = "external-dns-system"; name = "external-dns-campus"; }
     ];
   }
   {

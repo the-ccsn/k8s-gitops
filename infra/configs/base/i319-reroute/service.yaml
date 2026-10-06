@@ -7,9 +7,10 @@ metadata:
     # MUST be patched
     external-dns.alpha.kubernetes.io/hostname: "*.clustername.319.ccsn.dev,*.319.ccsn.dev,*.319.staging.ccsn.dev" # Set the desired hostnames for External DNS
 spec:
-  ipFamilyPolicy: SingleStack
+  ipFamilyPolicy: RequireDualStack
   ipFamilies:
   - IPv6
+  - IPv4
   type: LoadBalancer
   ports:
   # Map external HTTP traffic

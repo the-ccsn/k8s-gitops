@@ -1,0 +1,19 @@
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: network-admin
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: network:admin
+    description: Network device administration through the cluster gateway
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

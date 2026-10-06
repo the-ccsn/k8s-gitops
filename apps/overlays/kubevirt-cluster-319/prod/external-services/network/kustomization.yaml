@@ -6,3 +6,5 @@ resources:
   - ./s5624p.yaml
   - ./s5100.yaml
   - ./s5624p-compat.yaml
+  - ./role.yaml
+  - ./authz-policy.yaml

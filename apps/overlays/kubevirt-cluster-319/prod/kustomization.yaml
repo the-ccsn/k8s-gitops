@@ -5,6 +5,7 @@ namespace: prod
 commonLabels:
   app.kubernetes.io/env: prod
 resources:
+  - ./external-services/
   - ./../../../base/grafana/
   - ./../../../base/logto/
   - ./../../../base/oauth2-proxy/

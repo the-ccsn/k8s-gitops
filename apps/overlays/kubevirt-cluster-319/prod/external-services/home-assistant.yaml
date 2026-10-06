@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-home-assistant
+spec:
+  exportTo: ["."]
+  hosts:
+    - ha-direct.local
+  location: MESH_EXTERNAL
+  ports:
+    - number: 80
+      name: http-home-assistant
+      protocol: HTTP
+  resolution: DNS
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-home-assistant
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - ha.ccsn.dev
+  rules:
+    - timeouts:
+        request: 0s
+      backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: ha-direct.local
+          port: 80

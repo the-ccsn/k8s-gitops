@@ -1,0 +1,50 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-admin-dl380
+spec:
+  exportTo: ["."]
+  hosts:
+    - admin-dl380.external-services.mesh.internal
+  location: MESH_EXTERNAL
+  ports:
+    - number: 443
+      name: http-admin-dl380
+      protocol: HTTP
+  resolution: DNS
+  endpoints:
+    - address: admin-dl380.local
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: external-admin-dl380
+spec:
+  exportTo: ["."]
+  host: admin-dl380.external-services.mesh.internal
+  trafficPolicy:
+    portLevelSettings:
+      - port:
+          number: 443
+        tls:
+          mode: SIMPLE
+          sni: admin-dl380.local
+          insecureSkipVerify: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-admin-dl380
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - admin-dl380.ccsn.dev
+  rules:
+    - timeouts:
+        request: 0s
+      backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: admin-dl380.external-services.mesh.internal
+          port: 443

@@ -21,6 +21,9 @@ data:
         listen [::]:80;
         server_name ~^(?<subdomain>[^.]+)\.319\.ccsn\.dev$;
 
+        client_max_body_size 0;
+        client_body_timeout 3600s;
+
         location / {
             proxy_set_header Host $subdomain.ccsn.dev;
             proxy_set_header X-Real-IP $remote_addr;
@@ -29,7 +32,10 @@ data:
             proxy_set_header X-Forwarded-Port 80;
 
             proxy_http_version 1.1;
-            proxy_set_header Connection "";
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_read_timeout 3600s;
+            proxy_send_timeout 3600s;
             proxy_buffering off;
             proxy_request_buffering off;
             
@@ -57,6 +63,9 @@ data:
         quic_retry on;
         ssl_early_data on;
 
+        client_max_body_size 0;
+        client_body_timeout 3600s;
+
         location / {
             proxy_set_header Host $subdomain.ccsn.dev;
             proxy_set_header X-Real-IP $remote_addr;
@@ -65,7 +74,10 @@ data:
             proxy_set_header X-Forwarded-Port 443;
 
             proxy_http_version 1.1;
-            proxy_set_header Connection "";
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_read_timeout 3600s;
+            proxy_send_timeout 3600s;
             proxy_buffering off;
             proxy_request_buffering off;
             

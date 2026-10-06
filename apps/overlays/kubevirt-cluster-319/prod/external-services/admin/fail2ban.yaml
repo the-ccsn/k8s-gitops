@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-fail2ban
+spec:
+  exportTo: ["."]
+  hosts:
+    - fail2ban.external-services.mesh.internal
+  location: MESH_EXTERNAL
+  ports:
+    - number: 9898
+      name: http-fail2ban
+      protocol: HTTP
+  resolution: DNS
+  endpoints:
+    - address: openmediavault.local
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-fail2ban
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - ban.ccsn.dev
+  rules:
+    - backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: fail2ban.external-services.mesh.internal
+          port: 9898

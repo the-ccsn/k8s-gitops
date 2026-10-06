@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-s5100
+spec:
+  exportTo: ["."]
+  hosts:
+    - s5100.external-services.mesh.internal
+  location: MESH_EXTERNAL
+  ports:
+    - number: 80
+      name: http-s5100
+      protocol: HTTP
+  resolution: STATIC
+  endpoints:
+    - address: 192.168.255.3
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-s5100
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - s5100.ccsn.dev
+  rules:
+    - backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: s5100.external-services.mesh.internal
+          port: 80

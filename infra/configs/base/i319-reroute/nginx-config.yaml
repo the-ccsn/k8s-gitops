@@ -29,5 +29,10 @@ data:
         include /etc/nginx/mime.types;
         default_type application/octet-stream;
 
+        map $http_upgrade $connection_upgrade {
+            default upgrade;
+            '' '';
+        }
+
         include /etc/nginx/conf.d/*.conf;
     }

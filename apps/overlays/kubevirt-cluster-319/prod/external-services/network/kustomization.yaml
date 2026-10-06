@@ -5,3 +5,4 @@ resources:
   - ./msr3600.yaml
   - ./s5624p.yaml
   - ./s5100.yaml
+  - ./s5624p-compat.yaml

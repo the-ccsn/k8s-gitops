@@ -1,0 +1,28 @@
+# iDRAC requires RSA key exchange; avoid its unsupported small-DH cipher suites.
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: external-admin-t410-compat
+spec:
+  priority: 10
+  workloadSelector:
+    labels:
+      gateway.networking.k8s.io/gateway-name: default-gateway
+  configPatches:
+    - applyTo: CLUSTER
+      match:
+        context: GATEWAY
+        cluster:
+          service: admin-t410.external-services.mesh.internal
+          portNumber: 443
+      patch:
+        operation: MERGE
+        value:
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+              common_tls_context:
+                tls_params:
+                  cipher_suites:
+                    - AES128-SHA

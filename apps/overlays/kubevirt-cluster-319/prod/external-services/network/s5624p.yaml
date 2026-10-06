@@ -11,9 +11,10 @@ spec:
     - number: 80
       name: http-s5624p
       protocol: HTTP
-  resolution: STATIC
+  resolution: DNS
   endpoints:
-    - address: 192.168.255.2
+    # Normalize the legacy switch response before Envoy parses it.
+    - address: external-s5624p-compat.prod.svc.cluster.local
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

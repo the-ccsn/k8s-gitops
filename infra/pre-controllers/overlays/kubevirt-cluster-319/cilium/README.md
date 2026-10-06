@@ -28,11 +28,21 @@ Cilium assigns addresses for LoadBalancer Services from these pools. This stage 
 [cilium-bgp-auth.yaml](cilium-bgp-auth.yaml) provides the BGP peer authentication secret, and [cilium-bgp-eip-lb.yaml](cilium-bgp-eip-lb.yaml) defines the BGP behavior:
 
 - Only nodes with the node-role.kubernetes.io/lb-gateway label participate in advertisements.
-- Nodes establish BGP sessions from the ovsbr1 layer-3 uplink interface.
+- The peers use eBGP multihop with TTL 2 to tolerate a routed peering path.
+- The node routing table selects the BGP source address. Do not constrain
+  `sourceInterface` to `ovsbr1`: Cilium skips peers when that interface has
+  multiple addresses of the same family.
 - Each node peers with the main router over both IPv4 and IPv6.
 - Only Service advertisements labeled advertise: bgp are published.
 
 This keeps VIP allocation and VIP advertisement as two independent controls.
+
+The router reaches nodes directly through `br-svc`; nodes retain their default
+gateway on the layer-3 switch. Keep the router's connected `192.168.1.0/24`
+route. If a static route previously replaced it, disabling the static route
+alone can leave the prefix absent: reconfigure `vlan_svc` with `ifdown vlan_svc`
+and `ifup vlan_svc`, using an independent management connection, then verify
+both the connected route and the BGP VIP routes are installed.
 
 ### Upstream routing
 
@@ -93,6 +103,7 @@ router bgp 65000
  bgp router-id <ROUTER_ID>
  neighbor K8S-CLUSTER peer-group
  neighbor K8S-CLUSTER remote-as <CILIUM_NODE_ASN>
+ neighbor K8S-CLUSTER ebgp-multihop 2
  neighbor K8S-CLUSTER password <BGP_PASSWORD>
  bgp listen range <ROUTER_IPV4_LISTEN_RANGE> peer-group K8S-CLUSTER
  bgp listen range <ROUTER_IPV6_LISTEN_RANGE> peer-group K8S-CLUSTER

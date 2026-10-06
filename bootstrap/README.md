@@ -89,6 +89,8 @@ Do not run a second `flux bootstrap` or manually install another Cilium release.
 
 ```bash
 kubectl --context snc wait node --all --for=condition=Ready --timeout=10m
+kubectl --context snc label nodes kubevirt-dl160 kubevirt-t410 kubevirt-dl380 \
+  node-role.kubernetes.io/lb-gateway=true
 kubectl --context snc -n flux-system get fluxinstance,gitrepository,kustomization
 kubectl --context snc -n flux-system get secret sops-age
 flux --context snc get all -A

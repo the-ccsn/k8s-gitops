@@ -1,0 +1,51 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: network-devices-ext-auth
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default-gateway
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+  - to:
+    - operation:
+        hosts:
+        - router.ccsn.dev
+        - router.ccsn.dev:*
+        - msr3600.ccsn.dev
+        - msr3600.ccsn.dev:*
+        - s5624p.ccsn.dev
+        - s5624p.ccsn.dev:*
+        - s5100.ccsn.dev
+        - s5100.ccsn.dev:*
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: network-devices-deny-non-admin
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default-gateway
+  action: DENY
+  rules:
+  - to:
+    - operation:
+        hosts:
+        - router.ccsn.dev
+        - router.ccsn.dev:*
+        - msr3600.ccsn.dev
+        - msr3600.ccsn.dev:*
+        - s5624p.ccsn.dev
+        - s5624p.ccsn.dev:*
+        - s5100.ccsn.dev
+        - s5100.ccsn.dev:*
+    when:
+    - key: request.auth.claims[roles]
+      notValues:
+      - network:admin

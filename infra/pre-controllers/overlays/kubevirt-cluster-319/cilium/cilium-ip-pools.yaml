@@ -6,7 +6,31 @@ metadata:
 spec:
   allowFirstLastIPs: No
   blocks:
-  - cidr: "172.30.0.0/24"
+  - start: "172.30.0.1"
+    stop: "172.30.0.200"
+  - start: "172.30.0.202"
+    stop: "172.30.0.254"
+  serviceSelector:
+    matchExpressions:
+    - key: networking.ccsn.dev/lb-pool
+      operator: NotIn
+      values:
+      - i319-reroute
+
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "i319-reroute-ipv4-pool"
+spec:
+  blocks:
+  - start: "172.30.0.201"
+    stop: "172.30.0.201"
+  serviceSelector:
+    matchLabels:
+      networking.ccsn.dev/lb-pool: i319-reroute
+      io.kubernetes.service.namespace: i319-reroute
+      io.kubernetes.service.name: i319-reroute
 
 ---
 apiVersion: "cilium.io/v2"

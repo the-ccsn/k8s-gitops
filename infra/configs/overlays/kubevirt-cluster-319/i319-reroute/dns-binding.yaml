@@ -1,0 +1,28 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: i319-reroute-dns-binding
+  namespace: i319-reroute
+spec:
+  endpoints:
+    - dnsName: "*.kubevirt-cluster-319.319.ccsn.dev"
+      recordType: CNAME
+      targets:
+        - ingress.319.ccsn.dev
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "*.319.ccsn.dev"
+      recordType: CNAME
+      targets:
+        - ingress.319.ccsn.dev
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "*.319.staging.ccsn.dev"
+      recordType: CNAME
+      targets:
+        - ingress.319.ccsn.dev
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns-campus
+  namespace: external-dns-system
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: external-dns-campus
+  template:
+    metadata:
+      labels:
+        app: external-dns-campus
+    spec:
+      serviceAccountName: external-dns
+      containers:
+        - name: external-dns
+          image: registry.k8s.io/external-dns/external-dns:v0.21.0@sha256:f53faaf71cb270d1ca9dce6ea0c94bfebf1a18696263487f0fbc74b9bf2bd7ff
+          args:
+            - --source=service
+            - --namespace=i319-reroute
+            - --annotation-filter=networking.ccsn.dev/dns-scope=campus
+            - --domain-filter=ingress.319.ccsn.dev
+            - --zone-id-filter=d3ad7a4e9b3d7286206b316d469dc2a7
+            - --managed-record-types=AAAA
+            - --registry=txt
+            - --txt-owner-id=kubevirt-cluster-319-campus-ipv6
+            - --txt-prefix=_external-dns-campus-
+            - --policy=sync
+            - --provider=cloudflare
+            - --cloudflare-dns-records-per-page=5000
+            - --cloudflare-record-comment=Managed by external-dns-campus
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-dns-secret
+                  key: apiToken

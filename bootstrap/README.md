@@ -36,4 +36,10 @@ This directory contains the Terraform bootstrap flow for a new cluster.
 - `bootstrap_revision` should usually match the branch or tag you want Flux to track.
 - Keep the age private key out of version control.
 
+For campus ingress, configure OpenWrt port forwarding to `172.30.0.201` and
+complete the [OpenWrt DDNS setup](../infra/configs/base/i319-reroute/README.md#dns-and-openwrt-ddns).
+The router writes `ingress.319.ccsn.dev` A from its campus-facing IPv4;
+ExternalDNS writes AAAA from the Service IPv6. Set up the entry A before
+switching existing campus wildcard records to the declared CNAMEs.
+
 TODO: Add bootstrap image and flux controllers image to airgap image lock

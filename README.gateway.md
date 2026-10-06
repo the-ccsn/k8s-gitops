@@ -3,7 +3,8 @@
 This document outlines the ingress routing architecture for the cluster.
 The design targets efficient handling of internal and external traffic,
 using Split DNS for local access, Cloudflare Tunnel for public access, and a
-direct campus/IPv4/IPv6 path via the 319 Router and i319-reroute proxy.
+direct campus dual-stack path via the 319 Router behind the campus firewall
+and the i319-reroute proxy.
 
 ## Architecture Diagram
 
@@ -32,9 +33,9 @@ graph LR
     CF_Tunnel -->|"Forward"| GW_8080
 
     %% --- 2. Middle Path (Includes i319-reroute routing) ---
-    Cam -->|"Direct IPv4/6 (Fast Path)"| 319_router
-    Int -->|"NAT Hairpin IPv4/6 (Fast Path)"| 319_router
-    319_router -->|"Forward"| Domain_319
+    Cam -->|"IPv6 route / IPv4 DNAT"| 319_router
+    Int -->|"Split DNS or NAT hairpin"| 319_router
+    319_router -->|"80/TCP, 443/TCP+UDP"| Domain_319
     
     %% Domain receives 80 & 443 traffic and passes it to the proxy
     Domain_319 -->|"HTTP & HTTPS"| 319_reroute
@@ -65,10 +66,21 @@ graph LR
 * **Route:** External Client -> Cloudflare Tunnel -> Gateway (`:8080`)
 * **Description:** Provides secure public access to `*.ccsn.dev` without exposing local ports. Cloudflare handles TLS termination.
 
-### 2. IPv6 Direct Access (Fast Path)
+### 2. Campus Dual-Stack Access (Fast Path)
 
-* **Route:** Client (Campus / Internal) -> `319 Router` -> `*.319.ccsn.dev` (Domain) -> `i319-reroute Proxy` -> Gateway (`:80` or `:8080`)
-* **Description:** Campus-network or NAT-hairpin internal clients reach `*.319.ccsn.dev` via the `319 Router`, which forwards requests to the `*.319.ccsn.dev` domain endpoint. That domain accepts both HTTP (80) and HTTPS (443) and hands traffic to the `i319-reroute Proxy`. The proxy terminates TLS (for HTTPS), rewrites the Host header to `*.ccsn.dev`, and splits traffic: decrypted HTTPS is forwarded to the Gateway on `:8080`, while plain HTTP is forwarded to `:80`.
+* **IPv6 route:** Campus client -> 319 router route/filter -> the
+  Cilium-allocated Service IPv6 -> `i319-reroute` -> Gateway.
+* **IPv4 route:** Campus client -> 319 NAT router campus IPv4 -> DNAT to the
+  Cilium `172.30.0.0/24` Service IPv4 -> `i319-reroute` -> Gateway.
+* **Ports:** The firewall/NAT contract exposes 80/TCP, 443/TCP, and 443/UDP.
+* **Description:** The proxy terminates TLS for HTTPS, rewrites the Host header
+  to the canonical non-`.319` hostname, and sends decrypted HTTPS to Gateway
+  port 8080 while plain HTTP uses port 80.
+
+The campus firewall is upstream of the 319 router. It blocks unsolicited
+external-to-campus access and performs campus-edge NAT. It does not expose the
+`*.319` path to external networks; both address families are campus-internal
+entry paths handled by the 319 router.
 
 ### 3. Internal Access (Split DNS Fast Path)
 
@@ -78,7 +90,13 @@ graph LR
 ## Core Components
 
 * **Cloudflare Tunnel:** Secures external IPv4/general traffic. Terminates TLS before forwarding to the local network.
-* **i319-reroute Proxy:** A custom reverse proxy handling the `*.319.ccsn.dev` domain. Its primary jobs are TLS termination, Host header rewriting, and HTTP/HTTPS traffic splitting.
+* **Campus Firewall:** Blocks unsolicited external access to campus-internal
+  networks and provides the campus edge NAT boundary.
+* **319 Router:** Routes and filters IPv6, and DNATs the campus IPv4 entry to
+  the Service's private LoadBalancer IPv4.
+* **i319-reroute Proxy:** A dual-stack reverse proxy handling the
+  `*.319.ccsn.dev` domain. Its primary jobs are TLS termination, Host header
+  rewriting, and HTTP/HTTPS traffic splitting.
 * **Standard Gateway:** The core entry point for the backend services.
 
 ## Gateway Port Mapping

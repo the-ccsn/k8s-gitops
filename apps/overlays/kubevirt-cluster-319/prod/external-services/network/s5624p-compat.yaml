@@ -41,6 +41,9 @@ data:
       default_backend s5624p
     backend s5624p
       http-request lua.s5624p-cookies
+      # Cloudflare authenticates at the edge; its JWT exceeds the switch's header budget.
+      http-request del-header cf-access-jwt-assertion
+      http-request del-header cf-access-authenticated-user-email
       # The switch emits an invalid "MIME - Version" header; strip it before Envoy.
       option accept-unsafe-violations-in-http-response
       http-response del-header "MIME - Version"
@@ -62,7 +65,7 @@ spec:
       labels:
         app.kubernetes.io/name: external-s5624p-compat
       annotations:
-        checksum/config: 0db15e6f1d76d582476e6cb66aa3d9c7da6263745c4eea1d7eecd3786faa5c18
+        checksum/config: 07a50ed5687349eaed2aa0962febc3eb5cb9c5234a633ae06a63010243d052b6
     spec:
       securityContext:
         runAsNonRoot: true

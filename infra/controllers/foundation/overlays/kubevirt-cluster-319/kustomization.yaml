@@ -19,7 +19,7 @@ patches:
     patch: |-
       - op: add
         path: /spec/template/spec/containers/0/args/-
-        value: --annotation-filter=networking.ccsn.dev/dns-scope!=campus
+        value: --annotation-filter=networking.ccsn.dev/dns-scope notin (campus)
       - op: add
         path: /spec/template/spec/containers/0/args/-
         value: --exclude-domains=ingress.319.ccsn.dev

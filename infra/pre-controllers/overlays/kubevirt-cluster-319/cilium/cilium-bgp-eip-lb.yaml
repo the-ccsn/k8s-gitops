@@ -5,8 +5,7 @@ metadata:
   name: cilium-bgp-peer
 spec:
   authSecretRef: cilium-bgp-auth
-  transport:
-    sourceInterface: ovsbr1
+  ebgpMultihop: 2
   families:
     - afi: ipv4
       safi: unicast

@@ -39,7 +39,8 @@ metadata:
 spec:
   registry:
     name: istio-registry-upstream
-    providerName: docker-registry
+    # Preserve the existing adapter; Terraform treats provider_name as immutable.
+    providerName: huawei
     endpointUrl: https://registry.istio.io
 ---
 apiVersion: harbor.ccsn.dev/v1alpha1

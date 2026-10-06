@@ -11,3 +11,5 @@ resources:
   - ./admin-r730.yaml
   - ./portainer.yaml
   - ./fail2ban.yaml
+  - ./admin-dl380-compat.yaml
+  - ./admin-t410-compat.yaml

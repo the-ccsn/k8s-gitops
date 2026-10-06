@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: external-s5624p-compat
+data:
+  cookies.lua: |
+    -- Keep the switch's login cookies without forwarding shared-domain SSO cookies.
+    local allowed = { lang = true, use_lang = true, user_name = true, password = true }
+    core.register_action("s5624p-cookies", { "http-req" }, function(txn)
+      local retained = {}
+      local values = txn.http:req_get_headers()["cookie"] or {}
+      -- HAProxy header values are indexed from zero.
+      for index = 0, #values do
+        local value = values[index] or ""
+        for cookie in value:gmatch("[^;]+") do
+          local name = cookie:match("^%s*([^=%s]+)%s*=")
+          if allowed[name] then
+            retained[#retained + 1] = cookie:gsub("^%s+", ""):gsub("%s+$", "")
+          end
+        end
+      end
+      txn.http:req_del_header("cookie")
+      if #retained > 0 then
+        txn.http:req_set_header("cookie", table.concat(retained, "; "))
+      end
+    end)
+  haproxy.cfg: |
+    global
+      maxconn 128
+      nbthread 1
+      tune.lua.bool-sample-conversion normal
+      lua-load /usr/local/etc/haproxy/cookies.lua
+    defaults
+      mode http
+      timeout connect 5s
+      timeout client 60s
+      timeout server 60s
+    frontend gateway
+      bind :8080
+      http-request return status 200 if { path /healthz }
+      default_backend s5624p
+    backend s5624p
+      http-request lua.s5624p-cookies
+      # The switch emits an invalid "MIME - Version" header; strip it before Envoy.
+      option accept-unsafe-violations-in-http-response
+      http-response del-header "MIME - Version"
+      server switch 192.168.255.2:80 check
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-s5624p-compat
+  labels:
+    app.kubernetes.io/name: external-s5624p-compat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-s5624p-compat
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: external-s5624p-compat
+      annotations:
+        checksum/config: 0db15e6f1d76d582476e6cb66aa3d9c7da6263745c4eea1d7eecd3786faa5c18
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: haproxy
+          image: haproxy:3.2-alpine@sha256:5d97434a423c2533cfeb42874d45cf6d69a840b60334582dfbfd5008e94c80be
+          args:
+            - haproxy
+            - -W
+            - -db
+            - -f
+            - /usr/local/etc/haproxy/haproxy.cfg
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/etc/haproxy
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: external-s5624p-compat
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-s5624p-compat
+spec:
+  selector:
+    app.kubernetes.io/name: external-s5624p-compat
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

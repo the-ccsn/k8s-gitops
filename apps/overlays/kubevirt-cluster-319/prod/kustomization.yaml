@@ -11,3 +11,13 @@ resources:
   - ./../../../base/headlamp/
   - ./../../../base/flux-operator/
   - ./../../../base/vaultwarden/
+# Apply after commonLabels to preserve the adapter's existing selector.
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: external-s5624p-compat
+    patch: |-
+      - op: remove
+        path: /spec/selector/matchLabels/app.kubernetes.io~1env

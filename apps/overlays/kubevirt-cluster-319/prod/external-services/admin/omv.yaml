@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-omv
+spec:
+  exportTo: ["."]
+  hosts:
+    - omv.external-services.mesh.internal
+  location: MESH_EXTERNAL
+  ports:
+    - number: 80
+      name: http-omv
+      protocol: HTTP
+  resolution: DNS
+  endpoints:
+    - address: openmediavault.local
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-omv
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - omv.ccsn.dev
+  rules:
+    - backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: omv.external-services.mesh.internal
+          port: 80

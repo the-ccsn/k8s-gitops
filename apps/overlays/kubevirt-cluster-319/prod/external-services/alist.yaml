@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-alist
+spec:
+  exportTo: ["."]
+  hosts:
+    - alist.external-services.mesh.internal
+  location: MESH_EXTERNAL
+  ports:
+    - number: 5244
+      name: http-alist
+      protocol: HTTP
+  resolution: DNS
+  endpoints:
+    - address: openmediavault.local
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-alist
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - alist.ccsn.dev
+  rules:
+    - backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: alist.external-services.mesh.internal
+          port: 5244

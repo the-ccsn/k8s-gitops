@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-admin-dl160
+spec:
+  exportTo: ["."]
+  hosts:
+    - admin-dl160.local
+  location: MESH_EXTERNAL
+  ports:
+    - number: 80
+      name: http-admin-dl160
+      protocol: HTTP
+  resolution: DNS
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-admin-dl160
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - admin-dl160.ccsn.dev
+  rules:
+    - backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: admin-dl160.local
+          port: 80

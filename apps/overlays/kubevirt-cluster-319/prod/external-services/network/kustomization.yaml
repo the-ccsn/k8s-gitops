@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./router.yaml
+  - ./msr3600.yaml
+  - ./s5624p.yaml
+  - ./s5100.yaml

@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-s5624p
+spec:
+  exportTo: ["."]
+  hosts:
+    - s5624p.external-services.mesh.internal
+  location: MESH_EXTERNAL
+  ports:
+    - number: 80
+      name: http-s5624p
+      protocol: HTTP
+  resolution: STATIC
+  endpoints:
+    - address: 192.168.255.2
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: external-s5624p
+spec:
+  parentRefs:
+    - name: default-gateway
+  hostnames:
+    - s5624p.ccsn.dev
+  rules:
+    - backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: s5624p.external-services.mesh.internal
+          port: 80

@@ -92,6 +92,23 @@ After reconciliation, record both addresses and verify the NAT/firewall path:
 kubectl -n i319-reroute get service i319-reroute -o wide
 ```
 
+External services use canonical `*.ccsn.dev` HTTPRoutes attached to the existing
+production Gateway, alongside their ServiceEntries under the production app
+overlay's `external-services/`. Campus access to `foo.319.ccsn.dev` enters this
+Nginx proxy, which rewrites Host to `foo.ccsn.dev` and forwards HTTPS traffic
+after TLS termination to the existing Gateway HTTP listener on port 8080.
+The Gateway then routes to the external backend. No per-service campus
+listener or hostname list is needed. The production Nginx path forwards
+WebSocket upgrades and streams large uploads with one-hour read/write inactivity
+timeouts. Reload or roll out the Nginx Deployment when changing its ConfigMaps.
+
+K3s CoreDNS imports the overlay's `coredns-custom` ConfigMap. Its `local.override`
+forwards `.local` queries to the OpenWrt DNS server at `192.168.1.1`; other
+queries continue using the existing upstreams. `cluster.local` is excluded
+from forwarding to the router, preserving Kubernetes service discovery.
+Verify router DNS resolution from the Gateway Pod's network before cutting
+over any external service.
+
 ## Architecture Data Flow
 
 ```mermaid

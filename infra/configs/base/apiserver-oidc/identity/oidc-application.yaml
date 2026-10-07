@@ -21,7 +21,12 @@ spec:
     postLogoutRedirectUris: []
     corsAllowedOrigins: []
     oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
-    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+    # Temporary compatibility setting for Headlamp's missing prompt=consent.
+    # This applies to all applications sharing the Kubernetes OIDC client.
+    # Track https://github.com/kubernetes-sigs/headlamp/issues/7558 and
+    # https://github.com/kubernetes-sigs/headlamp/pull/7560; disable once the
+    # deployed Headlamp sends prompt=consent with offline_access.
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":true,"rotateRefreshToken":true,"allowTokenExchange":false}'
   writeConnectionSecretToRef:
     name: kubernetes-oidc
   providerConfigRef:

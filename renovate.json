@@ -13,6 +13,17 @@
       "infra/configs/base/cloudnative-pg/official-image-catalogs/**"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^apps/base/headlamp/helm-release\\.yaml$/"],
+      "matchStrings": [
+        "reference:\\s*(?<depName>ghcr\\.io/[^\\s:]+):(?<currentValue>v?\\d+\\.\\d+\\.\\d+(?:-[^\\s]+)?)"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
       "description": "Automerge non-major updates",
@@ -29,6 +40,14 @@
       "matchManagers": ["flux"],
       "matchDatasources": ["docker"],
       "pinDigests": false
+    },
+    {
+      "description": "Track versioned Headlamp plugin image volumes",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["apps/base/headlamp/helm-release.yaml"],
+      "matchDatasources": ["docker"],
+      "pinDigests": false,
+      "ignoreUnstable": true
     }
   ]
 }

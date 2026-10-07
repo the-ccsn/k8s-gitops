@@ -53,27 +53,46 @@ spec:
       limits:
         cpu: "200m"
         memory: "512Mi"
+
+    podSecurityContext:
+      fsGroup: 101
+
+    # cert-manager 0.1.1 is published as an archive, without a versioned OCI image.
+    # Keep this exception outside Renovate's image-volume tracking.
+    pluginsManager:
+      enabled: true
+      baseImage: node:24-alpine
+      version: "0.1.1"
+      env:
+        - name: HOME
+          value: /tmp
+      resources:
+        requests:
+          cpu: "10m"
+          memory: "64Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+      configContent: |-
+        plugins:
+          - name: cert-manager
+            source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
+            version: "0.1.1"
+
     # Plugin volumes and mounts (mount plugin images into /headlamp/plugins/...)
     volumes:
       - name: plugin-flux
         image:
-          reference: ghcr.io/headlamp-k8s/headlamp-plugin-flux:v0.6.0
-          pullPolicy: IfNotPresent
-      - name: plugin-cert-manager
-        image:
-          reference: ghcr.io/headlamp-k8s/headlamp-plugin-cert-manager:v0.1.0
+          reference: ghcr.io/headlamp-k8s/headlamp-plugin-flux:v0.7.0
           pullPolicy: IfNotPresent
       - name: plugin-kubevirt
         image:
-          reference: ghcr.io/naval-group/headlamp-kubevirt:0.2.2
+          reference: ghcr.io/naval-group/headlamp-kubevirt:0.3.1
           pullPolicy: IfNotPresent
     volumeMounts:
       - name: plugin-flux
         mountPath: /headlamp/plugins/flux
         subPath: plugins/flux/
-      - name: plugin-cert-manager
-        mountPath: /headlamp/plugins/cert-manager
-        subPath: plugins/cert-manager/
       - name: plugin-kubevirt
         mountPath: /headlamp/plugins/kubevirt
         subPath: plugins/kubevirt/

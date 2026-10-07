@@ -19,7 +19,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: restarter
-            image: rancher/kubectl:v1.36.0@sha256:05d2b313e2f397e0ade252136aed47abd72d56ead11d1b027ac70f66362c8495
+            image: rancher/kubectl:v1.36.2@sha256:06c7a7a9772737494ae1e0c3af90f1b5385630c147e47c1c7cea92f4bed55fbe
             command:
             - /bin/sh
             - -c

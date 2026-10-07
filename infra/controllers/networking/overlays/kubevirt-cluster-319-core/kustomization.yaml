@@ -4,3 +4,8 @@ kind: Kustomization
 resources:
   - ../../base/cloudflare-operator/
   - ../../base/istio/
+images:
+  - name: adyanth/cloudflare-operator
+    newName: ghcr.io/isning/cloudflare-operator
+    newTag: sha-633b3ae
+    digest: sha256:1c4d818617612647325921d49bc6add9cbc78365a0c80b1d793d9e285fea551d

@@ -6,7 +6,8 @@ metadata:
 spec:
   releaseName: k8s-gateway
   interval: 30m
-  timeout: 5m
+  # Allow the first pull from Codeberg on the campus network to complete.
+  timeout: 20m
   chart:
     spec:
       chart: k8s-gateway

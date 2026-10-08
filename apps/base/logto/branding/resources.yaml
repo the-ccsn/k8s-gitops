@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logto-branding
+  labels:
+    app.kubernetes.io/name: logto-branding
+spec:
+  replicas: 2
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: logto-branding
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+        fsGroup: 10001
+      containers:
+      - name: nginx
+        image: nginx:1.29.8-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+        args:
+        - -e
+        - /dev/stderr
+        - -g
+        - daemon off;
+        - -c
+        - /etc/nginx/nginx.conf
+        ports:
+        - name: http
+          containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 20m
+            memory: 32Mi
+          limits:
+            memory: 64Mi
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        - name: assets
+          mountPath: /usr/share/nginx/html/branding
+          readOnly: true
+        command:
+        - nginx
+      volumes:
+      - name: config
+        configMap:
+          name: logto-branding-assets
+      - name: tmp
+        emptyDir: {}
+      - name: assets
+        configMap:
+          name: logto-branding-assets
+          items:
+          - key: snc-ccsn-light.svg
+            path: snc-ccsn-light.svg
+          - key: snc-ccsn-dark.svg
+            path: snc-ccsn-dark.svg
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logto-branding
+spec:
+  selector:
+    app.kubernetes.io/name: logto-branding
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: logto-branding
+spec:
+  parentRefs:
+  - name: default-gateway
+  hostnames:
+  - login.ccsn.dev
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /branding/
+    backendRefs:
+    - name: logto-branding
+      port: 80

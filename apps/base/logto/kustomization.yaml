@@ -12,3 +12,4 @@ resources:
   - ./dragonfly.yaml
   - ./identity/
   - ./management-credentials.yaml
+  - ./branding/

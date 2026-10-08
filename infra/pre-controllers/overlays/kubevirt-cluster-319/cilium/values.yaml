@@ -12,6 +12,13 @@ k8s:
 
 devices: ovsbr+
 
+extraConfig:
+  # Nix declares snat0 with only the node IPv4 and usable public IPv6 address.
+  # Avoid selecting kube-vip Service VIPs from the multi-address ovsbr1 device.
+  # https://github.com/cilium/cilium/issues/38376 (stale-closed, not fixed)
+  # https://github.com/cilium/cilium/issues/17158 (routing-based selection)
+  derive-masq-ip-addr-from-device: snat0
+
 # Requires NIC/OVS/IPv6 MTU 9000 on every host before recreating agents.
 # Existing Pod interfaces retain their old MTU until the Pod is recreated.
 MTU: 9000
@@ -29,8 +36,7 @@ bpf:
   # Keep Ambient kubelet probe replies local when bypassing the host stack.
   # https://github.com/cilium/cilium/issues/36022
   # https://github.com/istio/istio/issues/52208
-  # Rollout gate: IPv6 SNAT must use a reachable node GUA, not a service VIP.
-  # DL160 public egress currently fails when BPF selects 2001:da8:237:951:319::1.
+  # Rollout requires the snat0 address source above on every node.
   masquerade: true
   hostLegacyRouting: false
   # Reduce periodic trace events for long-lived connections.

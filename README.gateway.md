@@ -176,7 +176,7 @@ capacity estimate or an HTTP/2/3 benchmark.
 nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
   scripts/network/benchmark_server_timing.py \
   --output ../task-logs/server-timing-benchmark \
-  --rounds 3 --duration 12 --rate 2000
+  --stage capacity --connections 16 64 256 --rounds 3 --duration 4
 ```
 
 The harness needs at least six available physical cores. `--connections`
@@ -201,6 +201,37 @@ the tested connection counts. CPU/request is diagnostic data and is not an
 acceptance gate. Equal-rate latency runs are optional.
 A point estimate within the budget is not a statistical pass: an isolated host
 and enough repeatable samples are needed to establish a 1% limit.
+
+The 2026-10-09 retained-candidate run used three alternating rounds of
+4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each
+mode's reported capacity is its highest median across the sweep. The 1%
+throughput acceptance result is **not passed**:
+
+| Scenario | Disabled req/s | Enabled req/s | Throughput change |
+| --- | ---: | ---: | ---: |
+| Nginx | 81,154 | 78,149 | -3.7% |
+| Envoy → TLS backend | 37,249 | 31,834 | -14.5% |
+| Nginx → Envoy → Envoy → TLS backend | 36,456 | 27,524 | -24.5% |
+
+Envoy's peak point estimate is 1.4% higher than the previous implementation;
+the chain differs by -0.3%, within the observed variation. Nginx is unchanged,
+and its identical `reference` and `on` implementations differ by 3.1% in peak
+estimates. Baseline ranges span 2.3–3.8%, so these workstation measurements
+cannot establish a 1% limit. No sample reported socket errors, HTTP failures,
+or proxy CPU throttling. CPU/request is not part of acceptance.
+
+[Recorded throughput summary](scripts/network/benchmarks/server-timing-throughput-2026-10-09.json)
+includes capacity curves, ranges, source hashes, tool versions, and images.
+Raw samples and per-role CPU frequency readings are under the workspace's
+`task-logs/server-timing-throughput-retained/` directory. The recorded checkout
+precedes the candidate commit; file hashes identify the measured sources.
+Reference sources are snapshots from commit `ffa188e`.
+
+Chrome's navigation and resource APIs each exposed all 16 metrics in the
+integration chain, preserving an application description containing a comma.
+A local 401 response also exposed its available timings without inventing
+upstream measurements. Browser artifacts are under
+`task-logs/server-timing-browser/` in the workspace.
 
 The earlier fixed-64-connection run is retained in the
 [historical summary](scripts/network/benchmarks/server-timing-2026-10-09.json).

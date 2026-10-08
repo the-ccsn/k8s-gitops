@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ../../base/cloudflare-operator/
   - ../../base/istio/
+  - ./k8s-gateway/
 images:
   - name: adyanth/cloudflare-operator
     newName: ghcr.io/isning/cloudflare-operator

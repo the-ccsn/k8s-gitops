@@ -1,0 +1,118 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: k8s-gateway
+  namespace: external-dns-system
+spec:
+  releaseName: k8s-gateway
+  interval: 30m
+  timeout: 5m
+  chart:
+    spec:
+      chart: k8s-gateway
+      version: "3.7.4"
+      interval: 12h
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-gateway
+  values:
+    image:
+      registry: codeberg.org
+      repository: k8s-gateway/k8s_gateway
+      tag: "1.8.3@sha256:f692817ed4615526fc8b0749f3aa3e7c61f035280d42bdf38429aa81f31211ca"
+    domain: ccsn.dev
+    watchedResources:
+      - HTTPRoute
+    filters:
+      gatewayClasses:
+        - istio
+    ttl: 60
+    fallthrough:
+      enabled: true
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 10001
+      runAsGroup: 10001
+      fsGroup: 10001
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: k8s-gateway
+    service:
+      type: LoadBalancer
+      port: 53
+      useTcp: true
+      ipFamilyPolicy: SingleStack
+      ipFamilies:
+        - IPv4
+      annotations:
+        external-dns.alpha.kubernetes.io/hostname: kubevirt-cluster-319.dns.internal.ccsn.dev
+        external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+        external-dns.alpha.kubernetes.io/ttl: "60"
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              version: v1
+              kind: ConfigMap
+              name: k8s-gateway
+            patch: |-
+              - op: replace
+                path: /data/Corefile
+                value: |
+                  .:1053 {
+                      # Only address queries should use Gateway records.
+                      view addresses {
+                          expr type() in ['A', 'AAAA']
+                      }
+                      k8s_gateway ccsn.dev {
+                          resources HTTPRoute
+                          gatewayClasses istio
+                          ttl 60
+                          fallthrough
+                      }
+                      # Never forward back to OpenWrt or the cluster resolver.
+                      forward . 1.1.1.1 8.8.8.8
+                      cache 60
+                      errors
+                      health :8080 {
+                          lameduck 5s
+                      }
+                      ready :8181
+                      prometheus 0.0.0.0:9153
+                      loop
+                      reload
+                  }
+                  .:1053 {
+                      # Public HTTPS/SVCB address hints could bypass split DNS.
+                      template IN HTTPS ccsn.dev {
+                          rcode NOERROR
+                          fallthrough
+                      }
+                      template IN SVCB ccsn.dev {
+                          rcode NOERROR
+                          fallthrough
+                      }
+                      # Preserve public TXT/MX/CAA and other non-address records.
+                      forward . 1.1.1.1 8.8.8.8
+                      cache 60
+                      errors
+                  }

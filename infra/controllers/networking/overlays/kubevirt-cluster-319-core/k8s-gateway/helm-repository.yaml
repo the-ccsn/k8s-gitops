@@ -1,0 +1,8 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: k8s-gateway
+  namespace: external-dns-system
+spec:
+  interval: 12h
+  url: https://k8s-gateway.kryptonian.kapsi.fi/

@@ -41,6 +41,11 @@ data:
       nbthread 1
       tune.lua.bool-sample-conversion normal
       lua-load /usr/local/etc/haproxy/cookies.lua
+      # The legacy parser ignores POST bodies when Content-Length is lowercase.
+      h1-case-adjust content-length Content-Length
+      h1-case-adjust content-type Content-Type
+      h1-case-adjust cookie Cookie
+      h1-case-adjust host Host
     defaults
       mode http
       timeout connect 5s
@@ -52,6 +57,7 @@ data:
       default_backend s5624p
     backend s5624p
       http-request lua.s5624p-cookies
+      option h1-case-adjust-bogus-server
       # Edge and gateway authentication finish before headers are normalized here.
       # The switch emits an invalid "MIME - Version" header; strip it before Envoy.
       option accept-unsafe-violations-in-http-response
@@ -74,7 +80,7 @@ spec:
       labels:
         app.kubernetes.io/name: external-s5624p-compat
       annotations:
-        checksum/config: 0d8294dc96da5047a843b28ef304faedef20ab7502a587e128a0231ab322b6c3
+        checksum/config: aa8adedda7b3ec79a68adf1bae73771748add247fbf435114640c3ce06953542
     spec:
       securityContext:
         runAsNonRoot: true

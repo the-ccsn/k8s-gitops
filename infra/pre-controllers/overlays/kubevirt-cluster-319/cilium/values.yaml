@@ -58,11 +58,10 @@ ipam:
     clusterPoolIPv6PodCIDRList: [fd00::/104]
 
 updateStrategy:
-  # Gate this migration on endpoint, Ambient/non-Ambient traffic and probe checks.
-  # Recreate agents one node at a time using the Pod Eviction API, then restore
-  # RollingUpdate with maxUnavailable=1 after all three nodes are verified.
-  type: OnDelete
-  rollingUpdate: null
+  # Restore normal updates after the gated three-node BPF/jumbo migration.
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
 
 bandwidthManager:
   enabled: true

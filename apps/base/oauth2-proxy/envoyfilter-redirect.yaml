@@ -31,3 +31,36 @@ spec:
                   key: X-Auth-Request-Redirect
                   value: "https://%REQ(:authority)%%REQ(:path)%"
                 append_action: OVERWRITE_IF_EXISTS_OR_ADD
+
+  # The reroute listener keeps canonical Host for routing. Accept only its matching
+  # campus alias as the browser-visible host; never accept arbitrary redirect URLs.
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.ext_authz"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua.campus_redirect
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          default_source_code:
+            inline_string: |
+              function envoy_on_request(handle)
+                local headers = handle:headers()
+                local authority = headers:get(":authority") or ""
+                local host = authority:lower():gsub(":%d+$", "")
+                local original = (headers:get("x-forwarded-host") or ""):lower()
+                local canonical, replacements = original:gsub("%.319%.", ".", 1)
+                if original:match("^[a-z0-9][a-z0-9%.%-]*%.ccsn%.dev$")
+                    and replacements == 1 and canonical == host then
+                  headers:replace("x-auth-request-redirect",
+                    "https://" .. original .. (headers:get(":path") or "/"))
+                end
+              end

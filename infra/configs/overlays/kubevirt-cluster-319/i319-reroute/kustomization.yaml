@@ -36,3 +36,10 @@ patches:
       kind: ConfigMap
       name: i319-reroute-nginx-subconfig
       namespace: i319-reroute
+
+  # Roll the proxy when the rendered Nginx configuration changes.
+  - path: ./deployment-config-patch.yaml
+    target:
+      kind: Deployment
+      name: i319-reroute-proxy
+      namespace: i319-reroute

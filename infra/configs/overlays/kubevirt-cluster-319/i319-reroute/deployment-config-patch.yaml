@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: i319-reroute-proxy
+  namespace: i319-reroute
+spec:
+  template:
+    metadata:
+      annotations:
+        checksum/config: 2688a418a1ae09849d29fb9e066462d66aef7cf46c1aca0387bfeb8e12c02d2a

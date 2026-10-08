@@ -26,6 +26,7 @@ data:
 
         location / {
             proxy_set_header Host $subdomain.ccsn.dev;
+            proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto http;
@@ -68,6 +69,7 @@ data:
 
         location / {
             proxy_set_header Host $subdomain.ccsn.dev;
+            proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto https;
@@ -104,6 +106,7 @@ data:
 
         location / {
             proxy_set_header Host $subdomain.staging.ccsn.dev;
+            proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto http;
@@ -138,6 +141,7 @@ data:
 
         location / {
             proxy_set_header Host $subdomain.staging.ccsn.dev;
+            proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto https;

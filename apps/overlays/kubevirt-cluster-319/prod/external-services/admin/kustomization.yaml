@@ -13,3 +13,4 @@ resources:
   - ./fail2ban.yaml
   - ./admin-dl380-compat.yaml
   - ./admin-t410-compat.yaml
+  - ./admin-r730-compat.yaml

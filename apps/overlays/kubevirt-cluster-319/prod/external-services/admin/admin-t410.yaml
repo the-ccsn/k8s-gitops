@@ -40,6 +40,19 @@ spec:
   hostnames:
     - admin-t410.ccsn.dev
   rules:
+    # Buffer only the legacy data API; firmware uploads and KVM stay streaming.
+    - matches:
+        - method: POST
+          path:
+            type: Exact
+            value: /data
+      timeouts:
+        request: 0s
+      backendRefs:
+        - group: networking.istio.io
+          kind: Hostname
+          name: admin-t410.external-services.mesh.internal
+          port: 443
     - timeouts:
         request: 0s
       backendRefs:

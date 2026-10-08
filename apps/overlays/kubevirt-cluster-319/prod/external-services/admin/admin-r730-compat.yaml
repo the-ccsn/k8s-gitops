@@ -1,0 +1,28 @@
+# This iDRAC needs RSA key exchange; Envoy does not support its DHE suites.
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: external-admin-r730-compat
+spec:
+  priority: 10
+  workloadSelector:
+    labels:
+      gateway.networking.k8s.io/gateway-name: default-gateway
+  configPatches:
+    - applyTo: CLUSTER
+      match:
+        context: GATEWAY
+        cluster:
+          service: admin-r730.external-services.mesh.internal
+          portNumber: 443
+      patch:
+        operation: MERGE
+        value:
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+              common_tls_context:
+                tls_params:
+                  cipher_suites:
+                    - AES128-SHA

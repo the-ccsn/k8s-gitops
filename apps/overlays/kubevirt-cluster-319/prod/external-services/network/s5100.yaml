@@ -11,9 +11,9 @@ spec:
     - number: 80
       name: http-s5100
       protocol: HTTP
-  resolution: STATIC
+  resolution: DNS
   endpoints:
-    - address: 192.168.255.3
+    - address: external-s5100-compat.prod.svc.cluster.local
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

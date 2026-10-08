@@ -14,10 +14,13 @@ spec:
     kind: OCIRepository
     name: helm-chart-istiod
     namespace: istio-system
-  # https://github.com/istio/istio/blob/1.27.0/manifests/charts/istio-control/istio-discovery/values.yaml
+  # https://github.com/istio/istio/blob/1.31.1/manifests/charts/istio-control/istio-discovery/values.yaml
   values:
     profile: ambient
     global:
+      hub: docker.io/istio
+      tag: "1.31.1"
+      variant: distroless
       # Used to locate istiod.
       istioNamespace: istio-system
       # enable pod disruption budget for the control plane, which is used to

@@ -1344,11 +1344,11 @@
     ];
   }
   {
-    imageName = "registry.istio.io/release/install-cni";
-    imageDigest = "sha256:c37347421fe4d99b34d193b79437e7186fda762b2ae8231f28e2b9add287b9b5";
-    finalImageName = "registry.istio.io/release/install-cni";
-    finalImageTag = "1.30.0-rc.0-distroless";
-    archiveHash = "sha256-YHw4kFUcra/OgFPZCl0b4AYK9P9+P4yk8VQ+XI04uPY=";
+    imageName = "docker.io/istio/install-cni";
+    imageDigest = "sha256:5b4b7a9a6188cbb6a65d2c700df793b50484e87d009f26be5e22d46dfbbc3c62";
+    finalImageName = "docker.io/istio/install-cni";
+    finalImageTag = "1.31.1-distroless";
+    archiveHash = "sha256-GcWzlA659JXAkQ/Tu6WT+AZZjLJIRde9+EjiUiJmxSI=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -1357,8 +1357,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "istio-system"; name = "istio-cni"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking-core"; }
       ]
     ];
     targets = [
@@ -1366,11 +1365,11 @@
     ];
   }
   {
-    imageName = "registry.istio.io/release/pilot";
-    imageDigest = "sha256:db64101f2e1828323950dc1bf12ed35bcf77121fc3cbb505bef31a5fb7dfe605";
-    finalImageName = "registry.istio.io/release/pilot";
-    finalImageTag = "1.30.0-rc.0-distroless";
-    archiveHash = "sha256-jkLTtqhOt8OcIbqJeFk/Ogdx7PtnVWPd6G9fky3TUm8=";
+    imageName = "docker.io/istio/pilot";
+    imageDigest = "sha256:e46fd278250c4877df1e7c3d47cc2e66492e39ab79c58e3e62bb3487307526dc";
+    finalImageName = "docker.io/istio/pilot";
+    finalImageTag = "1.31.1-distroless";
+    archiveHash = "sha256-ZBLLht2EuYHQqbhg3mL2MWfgUE4VGNFq17pUCqQpldo=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -1379,8 +1378,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "istio-system"; name = "istiod"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking-core"; }
       ]
     ];
     targets = [
@@ -1388,11 +1386,11 @@
     ];
   }
   {
-    imageName = "registry.istio.io/release/proxyv2";
-    imageDigest = "sha256:9ac03a22e3cbc83def63242c4609ddf5b3a7bdac9fa06fa815eb72611fd44616";
-    finalImageName = "registry.istio.io/release/proxyv2";
-    finalImageTag = "1.30.0-rc.0-distroless";
-    archiveHash = "sha256-E0fv5Z0dL5eLpG9o57/36U30T2s0B7FqzSbiU0Hr0zQ=";
+    imageName = "docker.io/istio/proxyv2";
+    imageDigest = "sha256:15e6087b4033bc6cfbcddc4b47d93cb0c2ec6f1a4730c349ee1f3308108e4acf";
+    finalImageName = "docker.io/istio/proxyv2";
+    finalImageTag = "1.31.1-distroless";
+    archiveHash = "sha256-Po1O58b5SqOvLs92ISFxXduMcE176OPk8OyIBa3LpJc=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -1400,18 +1398,17 @@
     ];
     sourceChains = [
       [
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking-core"; }
       ]
     ];
     targets = [];
   }
   {
-    imageName = "registry.istio.io/release/ztunnel";
-    imageDigest = "sha256:d2e1bdab8c85c335c173828a3fd34898a46fbb9139b409f646b4e8e4d328ad7e";
-    finalImageName = "registry.istio.io/release/ztunnel";
-    finalImageTag = "1.30.0-rc.0";
-    archiveHash = "sha256-si/XGIUvSOAPwTd0GCezeiKxBDT2GnCNWrHuNNts5ws=";
+    imageName = "ghcr.io/the-ccsn/ztunnel";
+    imageDigest = "sha256:7a630dcd49cf6095bc001e16aff2992d5c299d585fbb8eaa5e2c19c589da6dc9";
+    finalImageName = "ghcr.io/the-ccsn/ztunnel";
+    finalImageTag = "1.31.1-ccsn-chacha20-31f6cb6bb606cef858c3db5abc3578df313ad45d";
+    archiveHash = "sha256-jGgH5VeHHpITTOc/7c6heEkoFiWxSJfzxYmHBxIpzLc=";
     os = "linux";
     arch = "amd64";
     sources = [
@@ -1420,8 +1417,7 @@
     sourceChains = [
       [
         { kind = "HelmRelease"; namespace = "istio-system"; name = "ztunnel"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking"; }
-        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-networking-core"; }
       ]
     ];
     targets = [

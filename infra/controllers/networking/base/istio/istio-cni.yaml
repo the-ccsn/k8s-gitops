@@ -9,7 +9,6 @@ spec:
   dependsOn:
     - name: istio-base
     - name: istiod
-    - name: ztunnel
   releaseName: istio-cni
   interval: 30m
   chartRef:
@@ -26,6 +25,9 @@ spec:
       ccsn.dev/ambient-detection-retry: "true"
     # https://istio.io/latest/docs/ambient/install/platform-prerequisites/#k3s
     global:
+      hub: docker.io/istio
+      tag: "1.31.1"
+      variant: distroless
       platform: k3s
       # In order to use native nftable rules instead of iptable rules, set this flag to true.
       nativeNftables: false

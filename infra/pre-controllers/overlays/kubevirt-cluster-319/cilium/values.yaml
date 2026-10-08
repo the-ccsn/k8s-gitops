@@ -12,6 +12,16 @@ k8s:
 
 devices: ovsbr+
 
+# Requires NIC/OVS/IPv6 MTU 9000 on every host before recreating agents.
+# Existing Pod interfaces retain their old MTU until the Pod is recreated.
+MTU: 9000
+
+pmtuDiscovery:
+  # Return ICMP errors for oversized DSR service requests.
+  # Keep Pod blackhole probing for other paths with smaller MTUs.
+  enabled: true
+  packetizationLayerPMTUDMode: blackhole
+
 bpf:
   # Use l2 insead l3 for KubeVirt compatability https://github.com/cilium/cilium/issues/37265#issuecomment-2626483413
   datapathMode: netkit-l2
@@ -19,8 +29,12 @@ bpf:
   # Keep Ambient kubelet probe replies local when bypassing the host stack.
   # https://github.com/cilium/cilium/issues/36022
   # https://github.com/istio/istio/issues/52208
+  # Rollout gate: IPv6 SNAT must use a reachable node GUA, not a service VIP.
+  # DL160 public egress currently fails when BPF selects 2001:da8:237:951:319::1.
   masquerade: true
   hostLegacyRouting: false
+  # Reduce periodic trace events for long-lived connections.
+  monitorInterval: 10s
   distributedLRU:
     enabled: true
   mapDynamicSizeRatio: 0.08

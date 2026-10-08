@@ -12,11 +12,35 @@ k8s:
 
 devices: ovsbr+
 
+extraConfig:
+  # Nix declares snat0 with only the node IPv4 and usable public IPv6 address.
+  # Avoid selecting kube-vip Service VIPs from the multi-address ovsbr1 device.
+  # https://github.com/cilium/cilium/issues/38376 (stale-closed, not fixed)
+  # https://github.com/cilium/cilium/issues/17158 (routing-based selection)
+  derive-masq-ip-addr-from-device: snat0
+
+# Requires NIC/OVS/IPv6 MTU 9000 on every host before recreating agents.
+# Existing Pod interfaces retain their old MTU until the Pod is recreated.
+MTU: 9000
+
+pmtuDiscovery:
+  # Return ICMP errors for oversized DSR service requests.
+  # Keep Pod blackhole probing for other paths with smaller MTUs.
+  enabled: true
+  packetizationLayerPMTUDMode: blackhole
+
 bpf:
   # Use l2 insead l3 for KubeVirt compatability https://github.com/cilium/cilium/issues/37265#issuecomment-2626483413
   datapathMode: netkit-l2
-  # Disable for Istio compatability
-  masquerade: false
+  # Requires the nix-config loopback address 169.254.7.127/32 on every node.
+  # Keep Ambient kubelet probe replies local when bypassing the host stack.
+  # https://github.com/cilium/cilium/issues/36022
+  # https://github.com/istio/istio/issues/52208
+  # Rollout requires the snat0 address source above on every node.
+  masquerade: true
+  hostLegacyRouting: false
+  # Reduce periodic trace events for long-lived connections.
+  monitorInterval: 10s
   distributedLRU:
     enabled: true
   mapDynamicSizeRatio: 0.08
@@ -34,9 +58,11 @@ ipam:
     clusterPoolIPv6PodCIDRList: [fd00::/104]
 
 updateStrategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxUnavailable: 1
+  # Gate this migration on endpoint, Ambient/non-Ambient traffic and probe checks.
+  # Recreate agents one node at a time using the Pod Eviction API, then restore
+  # RollingUpdate with maxUnavailable=1 after all three nodes are verified.
+  type: OnDelete
+  rollingUpdate: null
 
 bandwidthManager:
   enabled: true

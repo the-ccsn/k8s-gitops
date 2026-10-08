@@ -19,7 +19,18 @@ data:
           end
         end
       end
-      txn.http:req_del_header("cookie")
+      -- The legacy HTTP parser rejects requests with roughly 2 KiB of headers.
+      -- Keep only the headers needed by its form-based management interface.
+      local headers = {
+        ["host"] = true, ["content-length"] = true, ["content-type"] = true,
+        ["transfer-encoding"] = true, ["connection"] = true, ["expect"] = true,
+        ["accept"] = true, ["user-agent"] = true, ["origin"] = true, ["referer"] = true,
+      }
+      for name in pairs(txn.http:req_get_headers()) do
+        if not headers[name:lower()] then
+          txn.http:req_del_header(name)
+        end
+      end
       if #retained > 0 then
         txn.http:req_set_header("cookie", table.concat(retained, "; "))
       end
@@ -41,15 +52,7 @@ data:
       default_backend s5624p
     backend s5624p
       http-request lua.s5624p-cookies
-      # Cloudflare authenticates at the edge; its JWT exceeds the switch's header budget.
-      http-request del-header cf-access-jwt-assertion
-      http-request del-header cf-access-authenticated-user-email
-      # Gateway identity is enforced by Istio and is not consumed by the switch.
-      http-request del-header x-oauth2-gateway-access-token
-      http-request del-header x-oauth2-gateway-id-token
-      http-request del-header x-oauth2-gateway-groups
-      http-request del-header x-oauth2-gateway-user
-      http-request del-header x-oauth2-gateway-email
+      # Edge and gateway authentication finish before headers are normalized here.
       # The switch emits an invalid "MIME - Version" header; strip it before Envoy.
       option accept-unsafe-violations-in-http-response
       http-response del-header "MIME - Version"
@@ -71,7 +74,7 @@ spec:
       labels:
         app.kubernetes.io/name: external-s5624p-compat
       annotations:
-        checksum/config: fbd559ef9285237db4f7a70ccd93f525c155893a6e8501a628ce143ddd456278
+        checksum/config: 0d8294dc96da5047a843b28ef304faedef20ab7502a587e128a0231ab322b6c3
     spec:
       securityContext:
         runAsNonRoot: true

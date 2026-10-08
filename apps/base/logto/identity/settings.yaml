@@ -19,7 +19,9 @@ spec:
         },
         "branding": {
           "logoUrl": "https://ccsn.dev/img/SNC_CCSN_light.svg",
-          "darkLogoUrl": "https://ccsn.dev/img/SNC_CCSN_dark.svg"
+          "darkLogoUrl": "https://ccsn.dev/img/SNC_CCSN_dark.svg",
+          "favicon": "https://ccsn.dev/img/favicon.svg",
+          "darkFavicon": "https://ccsn.dev/img/favicon.svg"
         },
         "hideLogtoBranding": false,
         "languageInfo": {

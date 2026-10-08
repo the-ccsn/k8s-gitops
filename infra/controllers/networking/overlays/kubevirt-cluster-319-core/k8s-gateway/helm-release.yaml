@@ -99,8 +99,10 @@ spec:
                           ttl 60
                           fallthrough
                       }
-                      # Never forward back to OpenWrt or the cluster resolver.
-                      forward . 1.1.1.1 8.8.8.8
+                      # OpenWrt intercepts UDP/53 and sends it back to split DNS.
+                      forward . 1.1.1.1 8.8.8.8 {
+                          force_tcp
+                      }
                       cache 60
                       errors
                       health :8080 {
@@ -122,7 +124,9 @@ spec:
                           fallthrough
                       }
                       # Preserve public TXT/MX/CAA and other non-address records.
-                      forward . 1.1.1.1 8.8.8.8
+                      forward . 1.1.1.1 8.8.8.8 {
+                          force_tcp
+                      }
                       cache 60
                       errors
                   }

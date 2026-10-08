@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: persistent-state-for-ubuntu-desktop-demo-longhorn
   namespace: default
+  labels:
+    persistent-state-for: ubuntu-desktop-demo
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
     ccsn.dev/migrated-from: persistent-state-for-ubuntu-desktop-demo-mlmrg

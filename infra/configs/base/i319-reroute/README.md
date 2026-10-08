@@ -102,6 +102,13 @@ listener or hostname list is needed. The production Nginx path forwards
 WebSocket upgrades and streams large uploads with one-hour read/write inactivity
 timeouts. Reload or roll out the Nginx Deployment when changing its ConfigMaps.
 
+All production, staging, and infrastructure HTTP/HTTPS proxy locations append
+Nginx's own `Server-Timing` metrics while preserving upstream metrics unchanged.
+The njs module is already included in the pinned Nginx image. Its generated,
+hashed ConfigMap triggers a Deployment rollout when the module changes.
+See [Server Timing](../../../../README.gateway.md#server-timing) for metric
+definitions, limitations, and local verification commands.
+
 K3s CoreDNS imports the overlay's `coredns-custom` ConfigMap. Its `local.override`
 forwards `.local` queries to the OpenWrt DNS server at `192.168.1.1`; other
 queries continue using the existing upstreams. `cluster.local` is excluded

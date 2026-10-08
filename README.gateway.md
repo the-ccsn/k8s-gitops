@@ -87,6 +87,70 @@ entry paths handled by the 319 router.
 * **Route:** Internal Client -> Gateway (`:80` or `:443`)
 * **Description:** Local network clients resolve `*.ccsn.dev` directly to the local gateway IP via Split DNS, avoiding proxy overhead entirely.
 
+## Server Timing
+
+HTTP proxies append their own `Server-Timing` measurements independently.
+Nginx does not read Envoy-specific headers, and Envoy does not interpret Nginx
+metrics. Existing `Server-Timing` values remain opaque and are preserved,
+including application metrics and multiple proxy hops. Each metric's `desc`
+identifies the emitting Pod; Nginx upstream metrics also identify the attempt.
+All durations are milliseconds. No `Timing-Allow-Origin` or CORS header is added.
+
+| Metric | Measurement |
+| --- | --- |
+| `nginx_headers` | Request start until response headers are ready, including upstream waiting |
+| `nginx_upstream_connect` | Upstream connection establishment, including TLS when used |
+| `nginx_upstream_headers` | Upstream attempt start until its response headers arrive |
+| `envoy_headers` | Local request filter entry until response filter execution, including upstream waiting |
+| `envoy_upstream_tcp` | Upstream TCP connection establishment |
+| `envoy_upstream_tls` | Upstream TCP connected until TLS handshake completes |
+| `envoy_upstream_pool` | Upstream request creation until its connection pool is ready |
+| `envoy_upstream_headers` | First upstream request byte sent until first response byte received |
+| `envoy_request_receive` | First through last downstream request byte received, when already available |
+
+These intervals overlap; do not sum them. Missing measurements are omitted,
+not reported as zero. Nginx emits available measurements for each retry;
+Envoy's upstream measurements describe the selected upstream attempt, not a
+complete retry trace. Envoy connection and TLS durations describe the underlying
+connection and can repeat across requests that reuse it. Nginx reports zero
+connect duration for a reused connection.
+
+The root-namespace `server-timing` EnvoyFilter covers HTTP gateways and sidecars.
+`waypoint-server-timing` attaches the same implementation to the
+`istio-waypoint` GatewayClass, using Istio 1.30's `targetRefs` support. Pure
+TCP/TLS passthrough and ztunnel do not modify HTTP headers. The current proxy
+images do not expose separate downstream TLS handshake measurements in HTTP
+responses; browser resource timing provides the browser-to-edge TCP/TLS times.
+Nginx does not expose separate upstream TCP and TLS durations.
+
+Metrics are emitted when response headers are sent. They do not measure the
+complete response body or download, and do not buffer streaming responses.
+Same-origin browser code can inspect them with:
+
+```javascript
+performance.getEntriesByType("navigation")[0]?.serverTiming;
+performance.getEntriesByType("resource").map(entry => ({
+  url: entry.name,
+  timings: entry.serverTiming,
+}));
+```
+
+Verification from the repository root:
+
+```bash
+node --test scripts/network/tests/server-timing.test.mjs
+uv run --with pyyaml python scripts/network/tests/test_server_timing.py -v
+kubectl kustomize infra/configs/overlays/kubevirt-cluster-319
+```
+
+The integration check starts isolated local test proxies using the production
+Nginx image and matching Istio proxy version, verifies independent and chained
+proxies, upstream TLS, reused connections, retries, error/local responses,
+streaming, and all six Nginx locations. It performs no cluster writes. Test
+containers are stopped and retained for inspection, with configs and logs under
+the workspace's `task-logs/server-timing/` directory. Kustomize generates a
+hashed ConfigMap for the Nginx timing module so module updates trigger a rollout.
+
 ## Core Components
 
 * **Cloudflare Tunnel:** Secures external IPv4/general traffic. Terminates TLS before forwarding to the local network.

@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: List
+items:
+  # Root-namespace policy covers HTTP gateways and sidecars in every namespace.
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: EnvoyFilter
+    metadata:
+      name: server-timing
+      namespace: istio-system
+    spec:
+      priority: -10
+      configPatches: &serverTimingPatches
+        # Format this proxy's timing points before the response enters Lua.
+        # These private headers are overwritten locally and removed by Lua.
+        - applyTo: ROUTE_CONFIGURATION
+          patch:
+            operation: MERGE
+            value:
+              response_headers_to_add:
+                - header:
+                    key: x-ccsn-envoy-timing
+                    value: "upstream_tcp=%COMMON_DURATION(US_CX_BEG:US_CX_END:us)%;upstream_tls=%COMMON_DURATION(US_CX_END:US_HS_END:us)%;upstream_headers=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:us)%;upstream_pool=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;request_receive=%COMMON_DURATION(DS_RX_BEG:DS_RX_END:us)%"
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                - header:
+                    key: x-ccsn-envoy-timing-hop
+                    value: "%HOSTNAME%"
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+        - applyTo: HTTP_FILTER
+          match:
+            listener:
+              filterChain:
+                filter:
+                  name: envoy.filters.network.http_connection_manager
+          patch:
+            # Run first on requests and last on responses, including local replies.
+            operation: INSERT_FIRST
+            value:
+              name: ccsn.server_timing
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                default_source_code:
+                  inline_string: |
+                    function envoy_on_request(handle)
+                      handle:streamInfo():dynamicMetadata():set("ccsn.server_timing", "start_ms", handle:timestamp())
+                      handle:headers():remove("x-ccsn-envoy-timing")
+                      handle:headers():remove("x-ccsn-envoy-timing-hop")
+                    end
+
+                    function envoy_on_response(handle)
+                      local headers = handle:headers()
+                      local timings = headers:get("x-ccsn-envoy-timing") or ""
+                      local hop = headers:get("x-ccsn-envoy-timing-hop") or os.getenv("HOSTNAME") or "envoy"
+                      headers:remove("x-ccsn-envoy-timing")
+                      headers:remove("x-ccsn-envoy-timing-hop")
+                      hop = hop:gsub('["\\]', '\\%0'):gsub("[%c]", "")
+                      local metrics = {}
+                      local state = handle:streamInfo():dynamicMetadata():get("ccsn.server_timing")
+                      if state ~= nil and state.start_ms ~= nil then
+                        local elapsed = handle:timestamp() - state.start_ms
+                        if elapsed >= 0 then
+                          table.insert(metrics, "envoy_headers;dur=" .. elapsed .. ';desc="' .. hop .. '"')
+                        end
+                      end
+                      for name, raw in timings:gmatch("([a-z_]+)=([^;]+)") do
+                        local duration = tonumber(raw)
+                        -- Missing timing points render as '-'; never invent a zero.
+                        if duration ~= nil and duration >= 0 then
+                          -- COMMON_DURATION uses microseconds; pool readiness uses milliseconds.
+                          if name ~= "upstream_pool" then
+                            duration = duration / 1000
+                          end
+                          table.insert(metrics, "envoy_" .. name .. ";dur=" ..
+                            string.format("%.3f", duration) .. ';desc="' .. hop .. '"')
+                        end
+                      end
+                      if #metrics > 0 then
+                        -- Preserve every existing metric without interpreting it.
+                        headers:add("server-timing", table.concat(metrics, ", "))
+                      end
+                    end
+  # Istio 1.30 waypoints require explicit policy attachment.
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: EnvoyFilter
+    metadata:
+      name: waypoint-server-timing
+      namespace: istio-system
+    spec:
+      priority: -10
+      targetRefs:
+        - group: gateway.networking.k8s.io
+          kind: GatewayClass
+          name: istio-waypoint
+      configPatches: *serverTimingPatches

@@ -34,6 +34,9 @@ spec:
             cpu: "2"
             memory: "256Mi"
         volumeMounts:
+        - name: server-timing
+          mountPath: /etc/nginx/server-timing
+          readOnly: true
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
@@ -45,6 +48,9 @@ spec:
           mountPath: /etc/nginx/certs
           readOnly: true
       volumes:
+      - name: server-timing
+        configMap:
+          name: i319-reroute-server-timing
       - name: nginx-config
         configMap:
           name: i319-reroute-nginx-config

@@ -10,8 +10,7 @@ items:
     spec:
       priority: -10
       configPatches: &serverTimingPatches
-        # Format this proxy's timing points before the response enters Lua.
-        # These private headers are overwritten locally and removed by Lua.
+        # Snapshot only this proxy's timing points at response headers.
         - applyTo: ROUTE_CONFIGURATION
           patch:
             operation: MERGE
@@ -19,11 +18,7 @@ items:
               response_headers_to_add:
                 - header:
                     key: x-ccsn-envoy-timing
-                    value: "upstream_tcp=%COMMON_DURATION(US_CX_BEG:US_CX_END:us)%;upstream_tls=%COMMON_DURATION(US_CX_END:US_HS_END:us)%;upstream_headers=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:us)%;upstream_pool=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;request_receive=%COMMON_DURATION(DS_RX_BEG:DS_RX_END:us)%"
-                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
-                - header:
-                    key: x-ccsn-envoy-timing-hop
-                    value: "%HOSTNAME%"
+                    value: 'envoy_upstream_tcp;dur=%COMMON_DURATION(US_CX_BEG:US_CX_END:ms)%;desc="%HOSTNAME%",envoy_upstream_tls;dur=%COMMON_DURATION(US_CX_END:US_HS_END:ms)%;desc="%HOSTNAME%",envoy_upstream_headers;dur=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:ms)%;desc="%HOSTNAME%",envoy_upstream_pool;dur=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;desc="%HOSTNAME%",envoy_request_receive;dur=%COMMON_DURATION(DS_RX_BEG:DS_RX_END:ms)%;desc="%HOSTNAME%",__end'
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
         - applyTo: HTTP_FILTER
           match:
@@ -37,47 +32,51 @@ items:
             value:
               name: ccsn.server_timing
               typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-                default_source_code:
-                  inline_string: |
-                    function envoy_on_request(handle)
-                      handle:streamInfo():dynamicMetadata():set("ccsn.server_timing", "start_ms", handle:timestamp())
-                      handle:headers():remove("x-ccsn-envoy-timing")
-                      handle:headers():remove("x-ccsn-envoy-timing-hop")
-                    end
-
-                    function envoy_on_response(handle)
-                      local headers = handle:headers()
-                      local timings = headers:get("x-ccsn-envoy-timing") or ""
-                      local hop = headers:get("x-ccsn-envoy-timing-hop") or os.getenv("HOSTNAME") or "envoy"
-                      headers:remove("x-ccsn-envoy-timing")
-                      headers:remove("x-ccsn-envoy-timing-hop")
-                      hop = hop:gsub('["\\]', '\\%0'):gsub("[%c]", "")
-                      local metrics = {}
-                      local state = handle:streamInfo():dynamicMetadata():get("ccsn.server_timing")
-                      if state ~= nil and state.start_ms ~= nil then
-                        local elapsed = handle:timestamp() - state.start_ms
-                        if elapsed >= 0 then
-                          table.insert(metrics, "envoy_headers;dur=" .. elapsed .. ';desc="' .. hop .. '"')
-                        end
-                      end
-                      for name, raw in timings:gmatch("([a-z_]+)=([^;]+)") do
-                        local duration = tonumber(raw)
-                        -- Missing timing points render as '-'; never invent a zero.
-                        if duration ~= nil and duration >= 0 then
-                          -- COMMON_DURATION uses microseconds; pool readiness uses milliseconds.
-                          if name ~= "upstream_pool" then
-                            duration = duration / 1000
-                          end
-                          table.insert(metrics, "envoy_" .. name .. ";dur=" ..
-                            string.format("%.3f", duration) .. ';desc="' .. hop .. '"')
-                        end
-                      end
-                      if #metrics > 0 then
-                        -- Preserve every existing metric without interpreting it.
-                        headers:add("server-timing", table.concat(metrics, ", "))
-                      end
-                    end
+                "@type": type.googleapis.com/envoy.extensions.filters.http.header_mutation.v3.HeaderMutation
+                mutations:
+                  request_mutations:
+                    - remove: x-ccsn-envoy-timing
+                  response_mutations:
+                    - append:
+                        header:
+                          key: server-timing
+                          value: 'envoy_headers;dur=%DURATION%;desc="%HOSTNAME%"'
+                        append_action: APPEND_IF_EXISTS_OR_ADD
+                    - append:
+                        header:
+                          key: server-timing
+                          value: "%DYNAMIC_METADATA(ccsn.server_timing:metrics)%"
+                        append_action: APPEND_IF_EXISTS_OR_ADD
+                    # Also remove helpers on denials before the converter executes.
+                    - remove: x-ccsn-envoy-timing
+        - applyTo: HTTP_FILTER
+          match:
+            listener:
+              filterChain:
+                filter:
+                  name: envoy.filters.network.http_connection_manager
+                  subFilter:
+                    name: ccsn.server_timing
+          patch:
+            operation: INSERT_AFTER
+            value:
+              name: ccsn.server_timing_upstream
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
+                response_rules:
+                  - header: x-ccsn-envoy-timing
+                    remove: true
+                    on_header_present:
+                      metadata_namespace: ccsn.server_timing
+                      key: metrics
+                      type: STRING
+                      regex_value_rewrite:
+                        # One native pass omits missing durations. The sentinel
+                        # consumes the last separator, even if every metric is missing.
+                        pattern:
+                          google_re2: {}
+                          regex: 'envoy_[a-z_]+;dur=(?:-|);desc="[^"]*",|,?__end'
+                        substitution: ""
   # Istio 1.30 waypoints require explicit policy attachment.
   - apiVersion: networking.istio.io/v1alpha3
     kind: EnvoyFilter

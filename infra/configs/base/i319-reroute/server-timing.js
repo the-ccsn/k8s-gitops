@@ -6,7 +6,7 @@ function milliseconds(raw) {
     return Number.isFinite(value) ? value.toFixed(3) : null;
 }
 
-function append(r) {
+function fallback(r) {
     const metrics = [];
     const hop = (r.variables.hostname || "nginx")
         .replace(/["\\]/g, "\\$&").replace(/[\x00-\x1f\x7f]/g, "");
@@ -32,13 +32,7 @@ function append(r) {
         }
     }
 
-    if (metrics.length > 0) {
-        // Treat upstream Server-Timing as opaque, regardless of its producer.
-        const existing = r.headersOut["Server-Timing"];
-        const values = existing === undefined ? [] :
-            (Array.isArray(existing) ? existing : [existing]);
-        r.headersOut["Server-Timing"] = values.concat([metrics.join(", ")]);
-    }
+    return metrics.join(", ");
 }
 
-export default { append };
+export default { fallback };

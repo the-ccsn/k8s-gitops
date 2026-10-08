@@ -94,14 +94,23 @@ Nginx does not read Envoy-specific headers, and Envoy does not interpret Nginx
 metrics. Existing `Server-Timing` values remain opaque and are preserved,
 including application metrics and multiple proxy hops. Each metric's `desc`
 identifies the emitting Pod; Nginx upstream metrics also identify the attempt.
-All durations are milliseconds. No `Timing-Allow-Origin` or CORS header is added.
+All durations are milliseconds. Native Envoy duration formatters use whole
+milliseconds; sub-millisecond intervals appear as zero. Nginx's source
+variables also have millisecond resolution. No `Timing-Allow-Origin` or CORS
+header is added.
+
+Nginx uses lazy native `map` variables and `add_header` for single attempts;
+only retries, upstream groups and partial measurements evaluate njs. Envoy uses native timing formatters
+and Header Mutation; a native header-to-metadata regex omits unavailable metrics. Neither proxy
+creates per-request script state on its normal path. Nginx preserves inherited
+headers such as `Alt-Svc` with `add_header_inherit merge` (Nginx 1.29.3+).
 
 | Metric | Measurement |
 | --- | --- |
 | `nginx_headers` | Request start until response headers are ready, including upstream waiting |
 | `nginx_upstream_connect` | Upstream connection establishment, including TLS when used |
 | `nginx_upstream_headers` | Upstream attempt start until its response headers arrive |
-| `envoy_headers` | Local request filter entry until response filter execution, including upstream waiting |
+| `envoy_headers` | Stream start until response filter execution, including upstream waiting |
 | `envoy_upstream_tcp` | Upstream TCP connection establishment |
 | `envoy_upstream_tls` | Upstream TCP connected until TLS handshake completes |
 | `envoy_upstream_pool` | Upstream request creation until its connection pool is ready |
@@ -150,6 +159,70 @@ streaming, and all six Nginx locations. It performs no cluster writes. Test
 containers are stopped and retained for inspection, with configs and logs under
 the workspace's `task-logs/server-timing/` directory. Kustomize generates a
 hashed ConfigMap for the Nginx timing module so module updates trigger a rollout.
+
+The performance A/B harness compares the feature disabled/enabled for Nginx,
+Envoy with a TLS upstream, and Nginx -> Envoy -> Envoy -> TLS upstream. It uses
+a fast 256-byte backend, HTTP/1.1 keepalive, one worker per proxy, and separate
+physical CPU cores for each hop and the load generators. `wrk` measures
+saturation throughput with 64 connections; Vegeta measures latency at a fixed
+request rate. CPU time comes from container cgroup counters, and memory from
+cgroup anonymous-memory samples. The benchmark includes both script execution
+and the larger response headers. It is a local stress test, not a production
+capacity estimate or an HTTP/2/3 benchmark.
+
+```bash
+nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
+  scripts/network/benchmark_server_timing.py \
+  --output ../task-logs/server-timing-benchmark \
+  --rounds 3 --duration 12 --rate 2000
+```
+
+The harness needs at least six available physical cores. It alternates test
+order, warms each endpoint, validates responses, and saves every completed
+sample and its raw output. Rerunning the same command resumes the same run;
+use a different output directory when changing parameters. `--stage capacity`,
+`--stage latency`, and `--stage report` select individual stages. Test containers
+are stopped and retained for inspection; no cluster configuration is changed.
+
+The acceptance budget is **at most 1% throughput loss and at most 1% CPU time
+per request increase**, compared with the feature disabled. CPU/request includes
+all tested proxy hops, excluding the backend and load generator. Equal-rate
+latency runs, rather than saturation runs, provide the CPU/request comparison.
+A point estimate within the budget is not a statistical pass: an isolated host
+and enough repeatable samples are needed to establish a 1% limit.
+
+The 2026-10-09 local run on an Intel i7-14650HX used three alternating A/B
+rounds, 8-second samples, 64 connections for capacity, and 2,000 req/s for the
+CPU comparison. Its acceptance result is **failed**:
+
+| Scenario | Capacity req/s, off → on | Capacity change | CPU µs/request, off → on | CPU change |
+| --- | ---: | ---: | ---: | ---: |
+| Nginx | 73,330 → 70,556 | -3.8% | 23.96 → 31.01 | +29.4% |
+| Envoy → TLS backend | 38,211 → 31,830 | -16.7% | 49.42 → 55.21 | +11.7% |
+| Nginx → Envoy → Envoy → TLS backend | 36,067 → 25,952 | -28.0% | 112.57 → 130.71 | +16.1% |
+
+The table uses medians; capacity is the observed saturation throughput at 64
+connections. Nginx and chain baseline capacity ranges span roughly 5–6%, so
+these measurements cannot resolve a 1% throughput difference. Envoy's baseline
+capacity spread is below 1%, and its measured loss is much larger. All three
+CPU/request increases exceed the budget. No sample had proxy CPU throttling.
+
+The initial njs/Lua implementation's equal-load CPU/request increases were
+approximately 102.7%, 36.6%, and 60.3% for the same three scenarios. Native
+formatting materially reduces the overhead, but does not establish the agreed
+1% limit. Full per-response metrics remain enabled in this candidate; it does
+not obtain lower overhead by sampling or omitting supported intervals.
+
+[Recorded summary](scripts/network/benchmarks/server-timing-2026-10-09.json)
+includes images, CPU model, tool versions, timing-source hash, sample counts,
+ranges, and latency/memory data. Raw samples and container logs remain in the
+workspace's `task-logs/server-timing-benchmark-optimized/` directory. The
+recorded checkout commit precedes the candidate edits; the source hash identifies
+the tested timing implementation. Reproduce using the command above with
+`--duration 8` and a new output directory. `--scenarios` selects individual
+paths, and `--envoy-policy` permits a candidate policy inside the workspace.
+Changing timing sources invalidates resume. A failed acceptance result must not
+be interpreted as approval to deploy under the 1% budget.
 
 ## Core Components
 

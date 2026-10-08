@@ -104,8 +104,10 @@ timeouts. Reload or roll out the Nginx Deployment when changing its ConfigMaps.
 
 All production, staging, and infrastructure HTTP/HTTPS proxy locations append
 Nginx's own `Server-Timing` metrics while preserving upstream metrics unchanged.
-The njs module is already included in the pinned Nginx image. Its generated,
-hashed ConfigMap triggers a Deployment rollout when the module changes.
+Single upstream attempts use native lazy maps and `add_header`; njs handles
+retries and partial measurements. The njs module is already included in the
+pinned Nginx image. A generated, hashed ConfigMap triggers a Deployment rollout
+when timing configuration or the fallback module changes.
 See [Server Timing](../../../../README.gateway.md#server-timing) for metric
 definitions, limitations, and local verification commands.
 

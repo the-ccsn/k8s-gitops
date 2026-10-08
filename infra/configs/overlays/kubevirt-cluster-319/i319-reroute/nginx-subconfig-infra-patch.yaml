@@ -23,7 +23,7 @@ data:
         server_name ~^(?<subdomain>[^.]+)\.kubevirt-cluster-319\.319\.ccsn\.dev$;
 
         location / {
-            js_header_filter server_timing.append;
+            include /etc/nginx/server-timing/server-timing-headers.conf;
             proxy_set_header Host $subdomain.kubevirt-cluster-319.ccsn.dev;
             proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -61,7 +61,7 @@ data:
         ssl_early_data on;
 
         location / {
-            js_header_filter server_timing.append;
+            include /etc/nginx/server-timing/server-timing-headers.conf;
             proxy_set_header Host $subdomain.kubevirt-cluster-319.ccsn.dev;
             proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Real-IP $remote_addr;

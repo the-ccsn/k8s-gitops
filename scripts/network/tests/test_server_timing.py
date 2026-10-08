@@ -126,7 +126,7 @@ function envoy_on_request(handle)
 end
 """},
             },
-        }, {
+        }, *(copy.deepcopy(patch["patch"]["value"]) for patch in cls.patches[2:]), {
             "name": "envoy.filters.http.router",
             "typed_config": {"@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"},
         }]
@@ -179,23 +179,24 @@ upstream test_retry {{
 }}
 server {{
     listen 127.0.0.1:{cls.nginx_port};
+    add_header Alt-Svc 'h3=":443"; ma=86400';
     location / {{
-        js_header_filter server_timing.append;
+        include /etc/nginx/server-timing/server-timing-headers.conf;
         proxy_buffering off;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_pass http://127.0.0.1:{cls.outer_port};
     }}
     location /standalone {{
-        js_header_filter server_timing.append;
+        include /etc/nginx/server-timing/server-timing-headers.conf;
         proxy_pass http://127.0.0.1:{backend_port}/;
     }}
     location /nginx-local {{
-        js_header_filter server_timing.append;
+        include /etc/nginx/server-timing/server-timing-headers.conf;
         return 503;
     }}
     location /retry {{
-        js_header_filter server_timing.append;
+        include /etc/nginx/server-timing/server-timing-headers.conf;
         proxy_pass http://test_retry/;
     }}
 }}
@@ -224,12 +225,18 @@ server {{
             headers = response.getheaders()
             self.assertFalse(any(key.lower().startswith("x-ccsn-envoy-timing") for key, _ in headers))
             self.assertFalse(any(key.lower() == "timing-allow-origin" for key, _ in headers))
+            self.assertNotIn("__end", response.getheader("Server-Timing", ""))
+            self.assertEqual(response.getheader("Alt-Svc"), 'h3=":443"; ma=86400' if port == self.nginx_port and response.status == 200 else None)
             response.read()
             return response.status, ", ".join(value for key, value in headers if key.lower() == "server-timing")
 
     def test_each_proxy_works_independently(self) -> None:
         _, nginx = self.fetch(self.nginx_port, "/standalone")
         self.assertIn("nginx_upstream_headers", nginx)
+        # The fallback formats decimals; integer milliseconds demonstrate that
+        # the normal response used the native map instead of creating njs state.
+        self.assertRegex(nginx, r"nginx_headers;dur=[0-9]+;")
+        self.assertRegex(nginx, r"nginx_upstream_headers;dur=[0-9]+;")
         self.assertNotIn("envoy_", nginx)
         _, envoy = self.fetch(self.inner_port)
         self.assertIn("envoy_upstream_headers", envoy)
@@ -237,14 +244,23 @@ server {{
 
     def test_chain_preserves_all_hops_and_tls(self) -> None:
         _, timing = self.fetch(self.nginx_port)
-        for metric in ["app;dur=7", "opaque_layer;dur=9", "nginx_upstream_connect", "nginx_upstream_headers",
+        for metric in ['app;dur=7;desc="query, render"', "opaque_layer;dur=9", "nginx_upstream_connect", "nginx_upstream_headers",
                        "envoy_upstream_tcp", "envoy_upstream_tls", "envoy_upstream_headers", "envoy_headers"]:
             self.assertIn(metric, timing)
         self.assertEqual(timing.count("envoy_upstream_headers;"), 2)
         self.assertIn('desc="timing-inner"', timing)
         self.assertIn('desc="timing-outer"', timing)
         self.assertNotIn("forged", timing)
+        self.assertNotIn('envoy_upstream_tls;dur=;desc="timing-outer"', timing)
+        self.assertNotRegex(timing, r'envoy_upstream_tls;[^,]*desc="timing-outer"')
         self.assertNotIn("dur=-", timing)
+        self.assertNotIn("dur=;", timing)
+        # Both native total durations and seconds-to-milliseconds maps must
+        # reflect the 80 ms backend wait, rather than completion-only zeros.
+        for metric in ["nginx_headers", "nginx_upstream_headers", "envoy_headers", "envoy_upstream_headers"]:
+            durations = re.findall(metric + r";dur=([0-9.]+)", timing)
+            self.assertTrue(durations)
+            self.assertTrue(all(70 <= float(value) < 1000 for value in durations), durations)
         (self.artifacts / "response-timing.json").write_text(json.dumps({"server-timing": timing}, indent=2))
 
     def test_errors_and_local_responses(self) -> None:
@@ -263,7 +279,7 @@ server {{
         directory.mkdir(exist_ok=True)
         hosts = set()
         for filename, text in configs.items():
-            self.assertEqual(text.count("location / {"), text.count("js_header_filter server_timing.append;"))
+            self.assertEqual(text.count("location / {"), text.count("include /etc/nginx/server-timing/server-timing-headers.conf;"))
             (directory / filename).write_text(text)
             hosts.update(re.findall(r"server ([a-z0-9.-]+):\d+;", text))
         name = f"ccsn-server-timing-nginx-config-{self.run_id}"
@@ -299,6 +315,23 @@ server {{
                 self.assertIn("envoy_upstream_pool;", timing)
                 self.assertIn("envoy_upstream_tls;", timing)
                 response.read()
+
+    def test_local_reply_before_request_body_omits_all_unavailable_timings(self) -> None:
+        with closing(http.client.HTTPConnection("127.0.0.1", self.inner_port, timeout=5)) as conn:
+            conn.putrequest("POST", "/local")
+            conn.putheader("Content-Length", "1000")
+            conn.endheaders()
+            # No request body has arrived: neither upstream nor complete request
+            # receive intervals exist. The converter must omit all five metrics.
+            response = conn.getresponse()
+            self.assertEqual(response.status, 403)
+            timing = response.getheader("Server-Timing")
+            self.assertIn("envoy_headers;", timing)
+            self.assertEqual(timing.count("envoy_"), 1)
+            self.assertNotIn("__end", timing)
+            self.assertNotIn("dur=;", timing)
+            self.assertFalse(any(key.lower().startswith("x-ccsn-envoy-timing") for key, _ in response.getheaders()))
+            response.read()
 
     def test_stream_headers_do_not_wait_for_body(self) -> None:
         with closing(http.client.HTTPConnection("127.0.0.1", self.nginx_port, timeout=5)) as conn:

@@ -14,3 +14,5 @@ configMapGenerator:
   - name: i319-reroute-server-timing
     files:
       - server-timing.js
+      - server-timing-maps.conf
+      - server-timing-headers.conf

@@ -18,6 +18,7 @@ data:
 
     http {
         js_import server_timing from /etc/nginx/server-timing/server-timing.js;
+        include /etc/nginx/server-timing/server-timing-maps.conf;
 
         # Disable access log for gigabit throughput
         access_log off;

@@ -88,7 +88,7 @@ spec:
             source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
             version: "0.1.1"
 
-    # Plugin volumes and mounts (mount plugin images into /headlamp/plugins/...)
+    # Keep OCI plugins outside the installer directory to preserve their mounts.
     volumes:
       - name: plugin-flux
         image:
@@ -100,8 +100,8 @@ spec:
           pullPolicy: IfNotPresent
     volumeMounts:
       - name: plugin-flux
-        mountPath: /headlamp/plugins/flux
+        mountPath: /headlamp/static-plugins/flux
         subPath: plugins/flux/
       - name: plugin-kubevirt
-        mountPath: /headlamp/plugins/kubevirt
+        mountPath: /headlamp/static-plugins/kubevirt
         subPath: plugins/kubevirt/

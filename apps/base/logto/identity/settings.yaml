@@ -18,8 +18,8 @@ spec:
           "darkPrimaryColor": "#0057b8"
         },
         "branding": {
-          "logoUrl": "https://login.ccsn.dev/branding/snc-ccsn-light.svg?v=a12269f8e663",
-          "darkLogoUrl": "https://login.ccsn.dev/branding/snc-ccsn-dark.svg?v=83c090480247"
+          "logoUrl": "https://logto.io/logo.svg",
+          "darkLogoUrl": "https://logto.io/logo-dark.svg"
         },
         "hideLogtoBranding": false,
         "languageInfo": {

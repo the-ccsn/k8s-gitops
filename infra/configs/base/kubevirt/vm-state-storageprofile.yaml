@@ -1,0 +1,11 @@
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata:
+  name: longhorn-vm-state
+  annotations:
+    cdi.kubevirt.io/minimumSupportedPvcSize: 64Mi
+spec:
+  claimPropertySets:
+    - accessModes:
+        - ReadWriteMany
+      volumeMode: Filesystem

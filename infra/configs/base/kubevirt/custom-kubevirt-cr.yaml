@@ -31,28 +31,30 @@ spec:
     developerConfiguration:
       # https://kubevirt.io/user-guide/compute/node_overcommit/#node-cpu-allocation-ratio
       cpuAllocationRatio: 10 # 1vcpu = 1/10 cpu core
-      # https://github.com/kubevirt/kubevirt/blob/main/pkg/virt-config/feature-gates.go#L26
+      # Checked against KubeVirt v1.8.1 pkg/virt-config/featuregate/{active,inactive}.go.
+      # Persistent state, live migration and CPU/memory hotplug are already GA.
       featureGates:
         - Snapshot
         - VMExport
-        # required by windows
-        ## persisting backend state files of VMs, such as the contents of the vTPM
-        - VMPersistentState
-        - HypervStrictCheck
-        # https://kubevirt.io/user-guide/virtual_machines/dedicated_cpu_resources/
-        # To use this feature, we have to set kubelet's cpu-manager policy to static
         - CPUManager
-        - Sidecar
-        # required to increase PVC's size
-        # otherwise increase PVC's size will not be reflected in VM.
         - ExpandDisks
-        # passthrough devices
+        - HypervStrictCheck
         - HostDevices
-        - HostDisk
-        # - VMLiveUpdateFeatures
-        - LiveMigration
-    vmStateStorageClass: local-path-test
-    # vmRolloutStrategy: "LiveUpdate"
+        # Prefer declarative volume updates over deprecated HotplugVolumes.
+        - DeclarativeHotplugVolumes
+        - EnableVirtioFsStorageVolumes
+        # Desktop display selection and guest crash/reboot handling.
+        - VideoConfig
+        - PanicDevices
+        - RebootPolicy
+        # Diagnose resource use and dependencies; prioritize node maintenance.
+        - ObjectGraph
+        - VmiMemoryOverheadReport
+        - MigrationPriorityQueue
+        # Kubernetes 1.35 provides the required node-bound service account tokens.
+        - NodeRestriction
+    vmStateStorageClass: longhorn-vm-state
+    vmRolloutStrategy: LiveUpdate
     permittedHostDevices:
       # https://kubevirt.io/user-guide/compute/host-devices/#exposing-usb-devices
       usb:
@@ -67,9 +69,6 @@ spec:
   imagePullPolicy: IfNotPresent
   workloadUpdateStrategy:
     # live migration is preferred
-    # if live migration is not possible, evict the VM
+    # Non-migratable VMs pick up changes on their next explicit restart.
     workloadUpdateMethods:
       - LiveMigrate
-      - Evict
-    batchEvictionSize: 10
-    batchEvictionInterval: "1m"

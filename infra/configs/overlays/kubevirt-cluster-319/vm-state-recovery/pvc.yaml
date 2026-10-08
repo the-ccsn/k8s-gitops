@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: persistent-state-for-ubuntu-desktop-demo-longhorn
+  namespace: default
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    ccsn.dev/migrated-from: persistent-state-for-ubuntu-desktop-demo-mlmrg
+spec:
+  storageClassName: longhorn-vm-state
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 64Mi

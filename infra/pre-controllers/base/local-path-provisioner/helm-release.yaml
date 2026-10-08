@@ -18,7 +18,9 @@ spec:
     storageClass:
       ## Set a provisioner name. If unset, a name will be generated.
       provisionerName: rancher.io/local-path
-    
+
+    # These paths are node-local; never advertise them as shared filesystems.
+    nodePathMap: []
     # pathPattern must start with "{{ .PVC.Namespace }}/{{ .PVC.Name }}/": https://github.com/rancher/local-path-provisioner/pull/542
     storageClassConfigs:
       local-path:
@@ -28,7 +30,10 @@ spec:
           defaultVolumeType: hostPath
           reclaimPolicy: Delete
           pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
-        sharedFileSystemPath: /var/lib/rancher/k3s/storage/default
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/rancher/k3s/storage/default
       local-path-critical:
         storageClass:
           create: true
@@ -36,7 +41,10 @@ spec:
           defaultVolumeType: hostPath
           reclaimPolicy: Retain
           pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
-        sharedFileSystemPath: /var/lib/rancher/k3s/storage/critical
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/rancher/k3s/storage/critical
       local-path-test:
         storageClass:
           create: true
@@ -44,7 +52,10 @@ spec:
           defaultVolumeType: hostPath
           reclaimPolicy: Delete
           pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
-        sharedFileSystemPath: /var/lib/rancher/k3s/storage/test
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/rancher/k3s/storage/test
       local-path-nocow:
         storageClass:
           create: true
@@ -52,7 +63,10 @@ spec:
           defaultVolumeType: hostPath
           reclaimPolicy: Delete
           pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
-        sharedFileSystemPath: /var/lib/rancher/k3s/storage/00-nocow/default
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/rancher/k3s/storage/00-nocow/default
       local-path-nocow-critical:
         storageClass:
           create: true
@@ -60,7 +74,10 @@ spec:
           defaultVolumeType: hostPath
           reclaimPolicy: Retain
           pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
-        sharedFileSystemPath: /var/lib/rancher/k3s/storage/00-nocow/critical
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/rancher/k3s/storage/00-nocow/critical
       local-path-nocow-test:
         storageClass:
           create: true
@@ -68,7 +85,10 @@ spec:
           defaultVolumeType: hostPath
           reclaimPolicy: Delete
           pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
-        sharedFileSystemPath: /var/lib/rancher/k3s/storage/00-nocow/test
+        nodePathMap:
+          - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+            paths:
+              - /var/lib/rancher/k3s/storage/00-nocow/test
 
     resources:
       limits:

@@ -26,7 +26,7 @@ spec:
       spec:
         pvc:
           # this is the rootdisk of the node, it contains critical data
-          storageClassName: local-path-critical
+          storageClassName: longhorn-vm
           accessModes:
             - ReadWriteOnce
           resources:

@@ -8,3 +8,6 @@ resources:
   - ./recurringjob-vaultwarden.yaml
   - ./longhorn-storageclass.yaml
   - ./backuptarget-r2.yaml
+  - ./longhorn-vm-state-storageclass.yaml
+  - ./longhorn-volumesnapshotclass.yaml
+  - ./longhorn-vm-storageclass.yaml

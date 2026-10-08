@@ -21,3 +21,5 @@ resources:
   # ========================================
   - ./custom-networkaddonsconfig.yaml
   - ./kubevirt-metrics.yaml
+
+  - ./vm-state-storageprofile.yaml

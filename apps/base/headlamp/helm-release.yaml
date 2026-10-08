@@ -61,8 +61,7 @@ spec:
     # Keep this exception outside Renovate's image-volume tracking.
     pluginsManager:
       enabled: true
-      # Use Google's Docker Hub mirror; Harbor's dockerhub proxy misses this tag.
-      baseImage: mirror.gcr.io/library/node:24-alpine
+      baseImage: node:24-alpine
       version: "0.1.1"
       env:
         - name: HOME

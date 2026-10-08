@@ -18,7 +18,9 @@ items:
               response_headers_to_add:
                 - header:
                     key: x-ccsn-envoy-timing
-                    value: 'envoy_upstream_tcp;dur=%COMMON_DURATION(US_CX_BEG:US_CX_END:ms)%;desc="%HOSTNAME%",envoy_upstream_tls;dur=%COMMON_DURATION(US_CX_END:US_HS_END:ms)%;desc="%HOSTNAME%",envoy_upstream_headers;dur=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:ms)%;desc="%HOSTNAME%",envoy_upstream_pool;dur=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;desc="%HOSTNAME%",envoy_request_receive;dur=%COMMON_DURATION(DS_RX_BEG:DS_RX_END:ms)%;desc="%HOSTNAME%",__end'
+                    # Keep the separator with the optional metrics, so an empty
+                    # result does not leave a trailing comma in Server-Timing.
+                    value: ',envoy_upstream_tcp;dur=%COMMON_DURATION(US_CX_BEG:US_CX_END:ms)%;desc="%HOSTNAME%",envoy_upstream_tls;dur=%COMMON_DURATION(US_CX_END:US_HS_END:ms)%;desc="%HOSTNAME%",envoy_upstream_headers;dur=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:ms)%;desc="%HOSTNAME%",envoy_upstream_pool;dur=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;desc="%HOSTNAME%",envoy_request_receive;dur=%REQUEST_DURATION%;desc="%HOSTNAME%"'
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
         - applyTo: HTTP_FILTER
           match:
@@ -40,12 +42,7 @@ items:
                     - append:
                         header:
                           key: server-timing
-                          value: 'envoy_headers;dur=%DURATION%;desc="%HOSTNAME%"'
-                        append_action: APPEND_IF_EXISTS_OR_ADD
-                    - append:
-                        header:
-                          key: server-timing
-                          value: "%DYNAMIC_METADATA(ccsn.server_timing:metrics)%"
+                          value: 'envoy_headers;dur=%DURATION%;desc="%HOSTNAME%"%COALESCE({"operators":[{"command":"RESP","param":"x-ccsn-envoy-timing"},{"command":"DYNAMIC_METADATA","param":"ccsn.server_timing:metrics"}]})%'
                         append_action: APPEND_IF_EXISTS_OR_ADD
                     # Also remove helpers on denials before the converter executes.
                     - remove: x-ccsn-envoy-timing
@@ -62,21 +59,47 @@ items:
             value:
               name: ccsn.server_timing_upstream
               typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
-                response_rules:
-                  - header: x-ccsn-envoy-timing
-                    remove: true
-                    on_header_present:
-                      metadata_namespace: ccsn.server_timing
-                      key: metrics
-                      type: STRING
-                      regex_value_rewrite:
-                        # One native pass omits missing durations. The sentinel
-                        # consumes the last separator, even if every metric is missing.
-                        pattern:
-                          google_re2: {}
-                          regex: 'envoy_[a-z_]+;dur=(?:-|);desc="[^"]*",|,?__end'
-                        substitution: ""
+                "@type": type.googleapis.com/envoy.extensions.common.matching.v3.ExtensionWithMatcher
+                # Bypass conversion when every duration is available. The final
+                # mutation copies our helper directly and always removes it.
+                xds_matcher:
+                  matcher_list:
+                    matchers:
+                      - predicate:
+                          not_matcher:
+                            single_predicate:
+                              input:
+                                name: envoy.matching.inputs.response_headers
+                                typed_config:
+                                  "@type": type.googleapis.com/envoy.type.matcher.v3.HttpResponseHeaderMatchInput
+                                  header_name: x-ccsn-envoy-timing
+                              value_match:
+                                safe_regex:
+                                  google_re2: {}
+                                  regex: '.*;dur=-?;.*'
+                        on_match:
+                          action:
+                            name: skip
+                            typed_config:
+                              "@type": type.googleapis.com/envoy.extensions.filters.common.matcher.action.v3.SkipFilter
+                extension_config:
+                  name: ccsn.server_timing_upstream
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
+                    response_rules:
+                      - header: x-ccsn-envoy-timing
+                        remove: true
+                        on_header_present:
+                          metadata_namespace: ccsn.server_timing
+                          key: metrics
+                          type: STRING
+                          regex_value_rewrite:
+                            # Each optional metric owns its leading separator,
+                            # including the first one and an entirely empty list.
+                            pattern:
+                              google_re2: {}
+                              regex: ',envoy_[a-z_]+;dur=-?;desc="[^"]*"'
+                            substitution: ""
   # Istio 1.30 waypoints require explicit policy attachment.
   - apiVersion: networking.istio.io/v1alpha3
     kind: EnvoyFilter

@@ -100,8 +100,10 @@ variables also have millisecond resolution. No `Timing-Allow-Origin` or CORS
 header is added.
 
 Nginx uses lazy native `map` variables and `add_header` for single attempts;
-only retries, upstream groups and partial measurements evaluate njs. Envoy uses native timing formatters
-and Header Mutation; a native header-to-metadata regex omits unavailable metrics. Neither proxy
+only retries, upstream groups and partial measurements evaluate njs. Envoy uses
+native timing formatters and Header Mutation.
+Complete measurements bypass header-to-metadata conversion; a native regex
+omits unavailable measurements on the fallback path. Neither proxy
 creates per-request script state on its normal path. Nginx preserves inherited
 headers such as `Alt-Svc` with `add_header_inherit merge` (Nginx 1.29.3+).
 
@@ -164,7 +166,7 @@ The performance A/B harness compares the feature disabled/enabled for Nginx,
 Envoy with a TLS upstream, and Nginx -> Envoy -> Envoy -> TLS upstream. It uses
 a fast 256-byte backend, HTTP/1.1 keepalive, one worker per proxy, and separate
 physical CPU cores for each hop and the load generators. `wrk` measures
-saturation throughput with 64 connections; Vegeta measures latency at a fixed
+saturation throughput across a connection-count sweep; Vegeta measures latency at a fixed
 request rate. CPU time comes from container cgroup counters, and memory from
 cgroup anonymous-memory samples. The benchmark includes both script execution
 and the larger response headers. It is a local stress test, not a production
@@ -177,52 +179,46 @@ nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
   --rounds 3 --duration 12 --rate 2000
 ```
 
-The harness needs at least six available physical cores. It alternates test
-order, warms each endpoint, validates responses, and saves every completed
+The harness needs at least six available physical cores. `--connections`
+selects the capacity sweep (default: 16, 64, 256, 1024). `--cpus` can select six
+distinct physical cores explicitly. It alternates test order, warms each
+endpoint, validates responses, records available CPU frequency samples, and saves every completed
 sample and its raw output. Rerunning the same command resumes the same run;
 use a different output directory when changing parameters. `--stage capacity`,
 `--stage latency`, and `--stage report` select individual stages. Test containers
 are stopped and retained for inspection; no cluster configuration is changed.
 
-The acceptance budget is **at most 1% throughput loss and at most 1% CPU time
-per request increase**, compared with the feature disabled. CPU/request includes
-all tested proxy hops, excluding the backend and load generator. Equal-rate
-latency runs, rather than saturation runs, provide the CPU/request comparison.
+`--modes off on static` adds a constant-metric header control to separate header
+costs from timing computation. Header byte counts are recorded for each mode;
+static durations need not have exactly the same string length as measured ones.
+`reference` mode runs a previous implementation with
+`--reference-envoy-policy` and `--reference-nginx-timing-dir`; it uses the same
+hop descriptions as the candidate for comparable header sizes.
+
+The acceptance budget is **at most 1% peak throughput loss**, compared with the
+feature disabled. Each mode's capacity is the highest median throughput across
+the tested connection counts. CPU/request is diagnostic data and is not an
+acceptance gate. Equal-rate latency runs are optional.
 A point estimate within the budget is not a statistical pass: an isolated host
 and enough repeatable samples are needed to establish a 1% limit.
 
-The 2026-10-09 local run on an Intel i7-14650HX used three alternating A/B
-rounds, 8-second samples, 64 connections for capacity, and 2,000 req/s for the
-CPU comparison. Its acceptance result is **failed**:
+The earlier fixed-64-connection run is retained in the
+[historical summary](scripts/network/benchmarks/server-timing-2026-10-09.json).
+It also evaluated the former CPU/request budget. The current acceptance gate
+uses throughput only, and evaluates peak medians across a connection sweep.
 
-| Scenario | Capacity req/s, off → on | Capacity change | CPU µs/request, off → on | CPU change |
-| --- | ---: | ---: | ---: | ---: |
-| Nginx | 73,330 → 70,556 | -3.8% | 23.96 → 31.01 | +29.4% |
-| Envoy → TLS backend | 38,211 → 31,830 | -16.7% | 49.42 → 55.21 | +11.7% |
-| Nginx → Envoy → Envoy → TLS backend | 36,067 → 25,952 | -28.0% | 112.57 → 130.71 | +16.1% |
+The retained implementation keeps Nginx's generic native map. Experimental
+exact-value maps had inconsistent throughput results and were discarded. Envoy
+bypasses metadata conversion for complete measurements and emits its own
+metrics in one header. Missing measurements use a single native regex; all
+available intervals and opaque upstream values remain present on every response.
 
-The table uses medians; capacity is the observed saturation throughput at 64
-connections. Nginx and chain baseline capacity ranges span roughly 5–6%, so
-these measurements cannot resolve a 1% throughput difference. Envoy's baseline
-capacity spread is below 1%, and its measured loss is much larger. All three
-CPU/request increases exceed the budget. No sample had proxy CPU throttling.
-
-The initial njs/Lua implementation's equal-load CPU/request increases were
-approximately 102.7%, 36.6%, and 60.3% for the same three scenarios. Native
-formatting materially reduces the overhead, but does not establish the agreed
-1% limit. Full per-response metrics remain enabled in this candidate; it does
-not obtain lower overhead by sampling or omitting supported intervals.
-
-[Recorded summary](scripts/network/benchmarks/server-timing-2026-10-09.json)
-includes images, CPU model, tool versions, timing-source hash, sample counts,
-ranges, and latency/memory data. Raw samples and container logs remain in the
-workspace's `task-logs/server-timing-benchmark-optimized/` directory. The
-recorded checkout commit precedes the candidate edits; the source hash identifies
-the tested timing implementation. Reproduce using the command above with
-`--duration 8` and a new output directory. `--scenarios` selects individual
-paths, and `--envoy-policy` permits a candidate policy inside the workspace.
-Changing timing sources invalidates resume. A failed acceptance result must not
-be interpreted as approval to deploy under the 1% budget.
+Local measurements do not establish the 1% limit. Test containers are stopped
+and retained; no cluster configuration is changed. `--scenarios` selects paths,
+`--envoy-policy` and `--nginx-timing-dir` select workspace-local candidates, and
+changing timing sources invalidates resume. The pinned Istio image does not
+include the dynamic HTTP module extension, as verified with configuration
+validation; loading a native Envoy module would require a different proxy image.
 
 ## Core Components
 

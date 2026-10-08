@@ -228,7 +228,9 @@ server {{
             self.assertNotIn("__end", response.getheader("Server-Timing", ""))
             self.assertEqual(response.getheader("Alt-Svc"), 'h3=":443"; ma=86400' if port == self.nginx_port and response.status == 200 else None)
             response.read()
-            return response.status, ", ".join(value for key, value in headers if key.lower() == "server-timing")
+            timing = ", ".join(value for key, value in headers if key.lower() == "server-timing")
+            self.assertFalse(timing.rstrip().endswith(","), timing)
+            return response.status, timing
 
     def test_each_proxy_works_independently(self) -> None:
         _, nginx = self.fetch(self.nginx_port, "/standalone")
@@ -330,6 +332,7 @@ server {{
             self.assertEqual(timing.count("envoy_"), 1)
             self.assertNotIn("__end", timing)
             self.assertNotIn("dur=;", timing)
+            self.assertFalse(timing.rstrip().endswith(","), timing)
             self.assertFalse(any(key.lower().startswith("x-ccsn-envoy-timing") for key, _ in response.getheaders()))
             response.read()
 

@@ -16,7 +16,6 @@ resources:
   - ./cloudflare-operator/
   - ./i319-reroute/
   - ./coredns-custom.yaml
-  - ./vm-state-recovery/
 
 patches:
   - target:

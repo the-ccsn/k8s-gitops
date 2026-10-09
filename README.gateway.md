@@ -430,4 +430,3 @@ reference, and enabled endpoints; capacity acceptance remains pending.
 | **80** | Internal Split DNS, `i319-reroute` | Standard plain HTTP traffic. |
 | **443** | Internal Split DNS | Standard HTTPS traffic (Gateway handles TLS). |
 | **8080** | Cloudflare Tunnel, `i319-reroute` | Decrypted HTTPS traffic forwarded from upstream proxies. |
-

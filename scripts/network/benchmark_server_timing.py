@@ -15,6 +15,7 @@ import http.client
 import hashlib
 import json
 import os
+import random
 import re
 import resource
 import signal
@@ -66,19 +67,50 @@ def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]]) ->
         raise ValueError(f"Benchmark timing metrics differ: expected {dict(expected)}, got {dict(Counter(names))}")
 
 
-def throughput_acceptance(scenario: str, drop: float, baseline: dict, config: dict) -> dict:
+def capacity_confidence(samples: list[dict], scenario: str, config: dict) -> dict | None:
+    """Resample paired rounds and reselect each mode's peak in every draw."""
+    if config.get("confidence_method") != "paired_round_bootstrap_95pct" or config["rounds"] < 7:
+        return None
+    connections = config["connections"]
+    values = {(s["mode"], s["round"], s.get("connections", 64)): s["rps"]
+              for s in samples if s["stage"] == "capacity" and s["scenario"] == scenario
+              and s["mode"] in {"off", "on"}}
+    expected = {(mode, r, c) for mode in ["off", "on"]
+                for r in range(config["rounds"]) for c in connections}
+    if values.keys() != expected or any(not 0 < value < float("inf") for value in values.values()):
+        return None
+    generator = random.Random(0)
+    drops = []
+    for _ in range(5000):
+        rounds = generator.choices(range(config["rounds"]), k=config["rounds"])
+        peaks = {mode: max(statistics.median(values[mode, r, c] for r in rounds) for c in connections)
+                 for mode in ["off", "on"]}
+        drops.append((1 - peaks["on"] / peaks["off"]) * 100)
+    drops.sort()
+    return {"method": "paired_round_bootstrap", "rounds": config["rounds"],
+            "draws": 5000, "seed": 0, "one_sided_level": 0.95,
+            "upper_loss_percent": drops[4749]}
+
+
+def throughput_acceptance(scenario: str, drop: float, baseline: dict, config: dict,
+                          confidence: dict | None = None, diagnostic: bool = False) -> dict:
     # Historical runs retain their original 1% gate when no budgets were recorded.
     budgets = config.get("throughput_budgets_percent", {name: 1 for name in ["nginx", "envoy", "chain"]})
-    if scenario not in budgets:
+    if diagnostic or scenario not in budgets:
         return {"metric": "peak_throughput", "status": "diagnostic",
-                "reason": "No throughput budget was specified for this path"}
+                "reason": "Diagnostic experiment" if diagnostic else "No throughput budget was specified for this path"}
     budget = budgets[scenario]
     spread = (baseline["rps_range"][1] - baseline["rps_range"][0]) / baseline["rps"] * 100
-    return {"threshold_percent": budget, "metric": "peak_throughput",
-            "throughput_point_estimate_pass": drop <= budget,
-            "baseline_throughput_spread_percent": spread,
-            # A point estimate alone does not establish a repeatable throughput limit.
-            "status": "failed" if drop > budget else "inconclusive"}
+    status = "failed" if drop > budget else "inconclusive"
+    if (drop <= budget and confidence is not None and config.get("require_idle_builds")
+            and spread <= budget and confidence["upper_loss_percent"] <= budget):
+        status = "passed"
+    result = {"threshold_percent": budget, "metric": "peak_throughput",
+              "throughput_point_estimate_pass": drop <= budget,
+              "baseline_throughput_spread_percent": spread, "status": status}
+    if confidence is not None:
+        result["confidence"] = confidence
+    return result
 
 
 def command(*args: str) -> str:
@@ -143,7 +175,8 @@ class Benchmark:
         config = {"rounds": args.rounds, "duration": args.duration, "rate": args.rate, "cpus": selected_cpus,
                   "scenarios": args.scenarios, "connections": args.connections, "modes": args.modes,
                   "throughput_budgets_percent": {"nginx": getattr(args, "nginx_throughput_budget", 5),
-                                                 "envoy": getattr(args, "envoy_throughput_budget", 10)}}
+                                                 "envoy": getattr(args, "envoy_throughput_budget", 10)},
+                  "confidence_method": "paired_round_bootstrap_95pct"}
         if getattr(args, "require_idle_builds", False):
             config["require_idle_builds"] = True
         if "config" in self.state and self.state["config"] != config:
@@ -511,7 +544,10 @@ http {{
             if "capacity_change_percent" in entry:
                 throughput_drop = -entry["capacity_change_percent"]["rps"]
                 baseline = entry["capacity_off"]
-                entry["acceptance"] = throughput_acceptance(scenario, throughput_drop, baseline, self.state["config"])
+                confidence = capacity_confidence(self.state["samples"], scenario, self.state["config"])
+                entry["acceptance"] = throughput_acceptance(
+                    scenario, throughput_drop, baseline, self.state["config"], confidence,
+                    diagnostic=bool(self.state.get("diagnostic")))
             if "on" in self.state["config"].get("modes", ["off", "on"]) and "off" in self.state["config"].get("modes", ["off", "on"]):
                 entry["extra_header_bytes"] = self.state["endpoints"][f"{scenario}_on"]["header_bytes"] - self.state["endpoints"][f"{scenario}_off"]["header_bytes"]
             summary["results"][scenario] = entry

@@ -874,15 +874,17 @@
     },
     "envoy_native_concat": {
       "status": "Eight integration checks passed on the existing Istio image. Capacity comparison invalidated by renewed Android compilation; guarded fresh Envoy/Nginx comparisons queued after a continuous idle window.",
-      "shipped": false
+      "shipped": false,
+      "policy_sha256": "04e3e432c5b99adc609cd2d50edcf2ec7e3f22174d7231776a3e67cf53d028bc"
     }
   },
-  "harness_sha256": "b03a2bc17dd6baf1c3631a6f29de4d9df8874763fe0e30f65a83a52987c487ad",
+  "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",
   "reference_harness_correction": "Native reference mode now loads its own mounted binary. New invocations record the harness hash and reject resumes with missing or changed harness identity.",
   "plugin_scope": "Use existing Istio/Envoy binary interfaces (native filters or Wasm); no full proxy recompilation.",
   "current_acceptance_budgets_percent": {
     "nginx": 5,
     "envoy": 10
   },
-  "historical_gates": "Each experiment retains its original recorded acceptance gate; current budgets do not retroactively reclassify historical runs."
+  "historical_gates": "Each experiment retains its original recorded acceptance gate; current budgets do not retroactively reclassify historical runs.",
+  "current_acceptance_evidence": "At least seven complete paired rounds, idle-build guard, component baseline range within its budget, and a one-sided 95% paired-round bootstrap upper peak-throughput loss bound within the budget. Diagnostic empty filters cannot pass feature acceptance."
 }

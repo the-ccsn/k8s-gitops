@@ -116,6 +116,49 @@ class BenchmarkThroughputBudgetTest(unittest.TestCase):
         self.assertNotIn("threshold_percent", result)
 
 
+class BenchmarkCapacityConfidenceTest(unittest.TestCase):
+    def setUp(self):
+        self.config = {"rounds": 7, "connections": [16, 64], "require_idle_builds": True,
+                       "confidence_method": "paired_round_bootstrap_95pct",
+                       "throughput_budgets_percent": {"nginx": 5, "envoy": 10}}
+        self.baseline = {"rps": 1000, "rps_range": [1000, 1000]}
+
+    def samples(self, on):
+        return [{"stage": "capacity", "scenario": "nginx", "mode": mode,
+                 "round": r, "connections": c, "rps": value}
+                for r in range(7) for mode, c, value in [
+                    ("off", 16, 1000), ("off", 64, 500),
+                    ("on", 16, 900), ("on", 64, on[r])]]
+
+    def test_peak_is_reselected_and_stable_complete_sweep_can_pass(self):
+        confidence = benchmark.capacity_confidence(self.samples([960] * 7), "nginx", self.config)
+        self.assertAlmostEqual(confidence["upper_loss_percent"], 4)
+        result = benchmark.throughput_acceptance("nginx", 4, self.baseline, self.config, confidence)
+        self.assertEqual(result["status"], "passed")
+
+    def test_uncertainty_prevents_passing_a_good_point_estimate(self):
+        confidence = benchmark.capacity_confidence(self.samples([960] * 4 + [900] * 3), "nginx", self.config)
+        self.assertGreater(confidence["upper_loss_percent"], 5)
+        result = benchmark.throughput_acceptance("nginx", 4, self.baseline, self.config, confidence)
+        self.assertTrue(result["throughput_point_estimate_pass"])
+        self.assertEqual(result["status"], "inconclusive")
+
+    def test_partial_or_short_sweeps_have_no_confidence_claim(self):
+        samples = self.samples([960] * 7)
+        self.assertIsNone(benchmark.capacity_confidence(samples[:-1], "nginx", self.config))
+        self.assertIsNone(benchmark.capacity_confidence(samples, "nginx", {**self.config, "rounds": 5}))
+
+    def test_uncontrolled_noisy_or_diagnostic_runs_cannot_pass(self):
+        confidence = {"upper_loss_percent": 4}
+        for config, baseline, diagnostic in [
+                ({**self.config, "require_idle_builds": False}, self.baseline, False),
+                (self.config, {"rps": 1000, "rps_range": [900, 1100]}, False),
+                (self.config, self.baseline, True)]:
+            with self.subTest(config=config, baseline=baseline, diagnostic=diagnostic):
+                result = benchmark.throughput_acceptance("nginx", 4, baseline, config, confidence, diagnostic)
+                self.assertNotEqual(result["status"], "passed")
+
+
 class BenchmarkNativeReferenceTest(unittest.TestCase):
     def test_native_reference_loads_its_own_binary(self):
         with tempfile.TemporaryDirectory(dir=benchmark.ROOT.parent / "task-logs") as directory:

@@ -220,6 +220,15 @@ and enough repeatable samples are needed to establish the applicable limit.
 New invocations record both component budgets in their immutable configuration;
 historical reports retain the gate recorded for their original run.
 
+For an acceptance result, use at least seven complete paired rounds and
+`--require-idle-builds`. The report resamples paired rounds 5,000 times, reselects
+each mode's peak over the connection sweep for every draw, and requires the
+one-sided 95% bootstrap upper loss bound to fit the component budget. The
+baseline range must also fit the budget. Short, incomplete, uncontrolled, or
+noisy runs remain inconclusive; empty-filter diagnostics cannot pass feature
+acceptance. This check describes the measured workload and host, not a universal
+bound for every production workload.
+
 Further native probes are recorded in
 [the native probe summary](scripts/network/benchmarks/server-timing-native-probes-2026-10-09.json).
 An empty shared-library filter on the pinned Istio image lost 5.8% at 64

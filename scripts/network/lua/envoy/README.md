@@ -20,7 +20,9 @@ the production kustomization. Eleven two-worker checks and nine strict
 benchmark fixture preflights passed on
 `registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless`, covering TLS/plaintext,
 local responses, repeated opaque upstream fields, changing durations, streaming,
-and later response-filter waiting. Peak-throughput acceptance is pending.
+and later response-filter waiting. The complete seven-round guarded comparison lost 17.37% throughput, with a
+17.80% one-sided 95% upper loss, failing the independent 10% gate. This remains
+an unshipped experiment.
 The independent Envoy gate is a loss of at most 10%, including its one-sided
 95% confidence bound. Diagnostic profiling is not an acceptance result.
 

@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: networking.istio.io/v1alpha3
+  kind: EnvoyFilter
+  metadata:
+    name: server-timing
+    namespace: istio-system
+  spec:
+    priority: -10
+    configPatches: &id001
+    - applyTo: ROUTE_CONFIGURATION
+      patch:
+        operation: MERGE
+        value:
+          response_headers_to_add:
+          - header:
+              key: x-ccsn-envoy-timing
+              value: ',envoy_upstream_tcp;dur=%COMMON_DURATION(US_CX_BEG:US_CX_END:ms)%;desc="%HOSTNAME%",envoy_upstream_tls;dur=%COMMON_DURATION(US_CX_END:US_HS_END:ms)%;desc="%HOSTNAME%",envoy_upstream_headers;dur=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:ms)%;desc="%HOSTNAME%",envoy_upstream_pool;dur=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;desc="%HOSTNAME%",envoy_request_receive;dur=%REQUEST_DURATION%;desc="%HOSTNAME%"'
+            append_action: OVERWRITE_IF_EXISTS_OR_ADD
+    - applyTo: HTTP_FILTER
+      match:
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: ccsn.server_timing
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.header_mutation.v3.HeaderMutation
+            mutations:
+              request_mutations:
+              - remove: x-ccsn-envoy-timing
+              response_mutations:
+              - append:
+                  header:
+                    key: server-timing
+                    value: 'envoy_headers;dur=%DURATION%;desc="%HOSTNAME%"%CEL("x-ccsn-envoy-timing"
+                      in response.headers ? (!response.headers["x-ccsn-envoy-timing"].contains(";dur=;")
+                      ? response.headers["x-ccsn-envoy-timing"] : re.extract(response.headers["x-ccsn-envoy-timing"],
+                      r''^(?:(,envoy_upstream_tcp;dur=[0-9]+;desc="[^"]*")|,envoy_upstream_tcp;dur=-?;desc="[^"]*")(?:(,envoy_upstream_tls;dur=[0-9]+;desc="[^"]*")|,envoy_upstream_tls;dur=-?;desc="[^"]*")(?:(,envoy_upstream_headers;dur=[0-9]+;desc="[^"]*")|,envoy_upstream_headers;dur=-?;desc="[^"]*")(?:(,envoy_upstream_pool;dur=[0-9]+;desc="[^"]*")|,envoy_upstream_pool;dur=-?;desc="[^"]*")(?:(,envoy_request_receive;dur=[0-9]+;desc="[^"]*")|,envoy_request_receive;dur=-?;desc="[^"]*")$'',
+                      "\\1\\2\\3\\4\\5")) : "")%'
+                  append_action: APPEND_IF_EXISTS_OR_ADD
+              - remove: x-ccsn-envoy-timing
+- apiVersion: networking.istio.io/v1alpha3
+  kind: EnvoyFilter
+  metadata:
+    name: waypoint-server-timing
+    namespace: istio-system
+  spec:
+    priority: -10
+    targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: GatewayClass
+      name: istio-waypoint
+    configPatches: *id001

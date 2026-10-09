@@ -4073,7 +4073,13 @@
       "throughput": "Seven-round guarded comparison queued after the compact Nginx comparison",
       "shipped": false,
       "envoy_rebuild": false,
-      "image_changes": false
+      "image_changes": false,
+      "reviewable_source": "scripts/network/lua/envoy/filter.lua",
+      "reviewable_policy": {
+        "path": "scripts/network/lua/envoy/policy.yaml",
+        "sha256": "0352aac5c1c0d9480221a5fd5a5b349154c760307a2360b50faddd60a99d86c1",
+        "identity": "YAML scalar presentation differs; parsed policy equals the tested candidate and embedded Lua source is byte-identical"
+      }
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",

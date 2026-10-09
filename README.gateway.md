@@ -298,9 +298,15 @@ integration checks passed on the stock image, including cold local replies,
 response-filter waits, streaming, and 4,000 consecutive full-metric responses.
 The same checks passed with inline bytecode and no plugin file mount, avoiding
 an image change. All nine capacity fixture endpoints passed response preflight.
-Its seven-round capacity comparison and a fresh production Nginx comparison
-are queued after the compiler-idle window. No Wasm candidate is shipped or
-accepted before a valid throughput result.
+Its guarded seven-round capacity comparison lost 18.01%, with a one-sided
+95% upper loss bound of 18.51%; it was 7.68% slower than the retained policy
+and is rejected. The retained policy lost 11.18% in that same comparison.
+A separate seven-round production Nginx comparison lost 7.88%, with a 95%
+upper bound of 9.66%, failing the independent 5% gate. No runtime change
+is shipped. The O3 native Nginx candidate passed ten integration checks and
+is undergoing a fresh guarded comparison. A duplicate-port fixture failed
+preflight before any load; port allocation now holds every reservation until
+all roles have distinct ports, and seventeen benchmark regressions pass.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

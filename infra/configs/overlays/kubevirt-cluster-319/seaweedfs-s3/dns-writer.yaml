@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: omv-s3-dns-writer
+  namespace: external-dns-system
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    resourceNames: [seaweedfs-s3-direct-dns]
+    verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: omv-s3-dns-writer
+  namespace: external-dns-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: omv-s3-dns-writer
+subjects:
+  - kind: ServiceAccount
+    name: omv-s3-cert-reader
+    namespace: prod

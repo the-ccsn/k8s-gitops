@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - helm-repository.yaml
   - helm-release.yaml
+  - seaweedfs-s3-direct-dns.yaml

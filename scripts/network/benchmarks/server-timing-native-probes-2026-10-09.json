@@ -2934,6 +2934,198 @@
       },
       "completed_samples": 84,
       "limitations": "Point estimate within 5%, confidence upper bound outside 5%; no acceptance claimed"
+    },
+    {
+      "name": "envoy_unwrapped_native",
+      "kind": "Stock native HeaderMutation and unconditional HeaderToMetadata, without matcher wrapper",
+      "shipped": false,
+      "raw_directory": "server-timing-envoy-unwrapped-native-capacity-20261009T142920Z",
+      "source_sha256": "6ad8bcfafce53b9f67a0f1f33adce22717c544d65f1c91684e3c4ecf52a6506b",
+      "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+      "parameters": {
+        "rounds": 7,
+        "duration": 6,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "envoy"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "reference",
+          "on"
+        ],
+        "throughput_budgets_percent": {
+          "nginx": 5.0,
+          "envoy": 10.0
+        },
+        "confidence_method": "paired_round_bootstrap_95pct",
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "1.72 1.16 1.68 2/2533 98727",
+        "commit": "0ec858f785014dd401c79793d36f54784066359f",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "envoy": {
+          "capacity_off": {
+            "rps": 13078.22,
+            "proxy_cpu_us_per_request": 69.13768299799558,
+            "proxy_anon_mib": 26.0390625,
+            "client_cpu_cores": 0.1564443394577336,
+            "rps_range": [
+              13053.82,
+              13375.78
+            ],
+            "samples": 7,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 12676.11,
+                "rps_range": [
+                  12653.1,
+                  12937.89
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 13078.22,
+                "rps_range": [
+                  13053.82,
+                  13375.78
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 12583.77,
+                "rps_range": [
+                  12258.39,
+                  12710.47
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_reference": {
+            "rps": 11498.44,
+            "proxy_cpu_us_per_request": 79.59653996171505,
+            "proxy_anon_mib": 26.5390625,
+            "client_cpu_cores": 0.13948397346490415,
+            "rps_range": [
+              11272.36,
+              11586.86
+            ],
+            "samples": 7,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 11211.17,
+                "rps_range": [
+                  11157.95,
+                  11376.5
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 11498.44,
+                "rps_range": [
+                  11272.36,
+                  11586.86
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 11014.89,
+                "rps_range": [
+                  10970.38,
+                  11098.55
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 11278.03,
+            "proxy_cpu_us_per_request": 81.43359950497967,
+            "proxy_anon_mib": 26.1640625,
+            "client_cpu_cores": 0.13546745910801275,
+            "rps_range": [
+              11088.08,
+              11424.07
+            ],
+            "samples": 7,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 10985.34,
+                "rps_range": [
+                  10949.32,
+                  11142.39
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 11278.03,
+                "rps_range": [
+                  11088.08,
+                  11424.07
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 10688.15,
+                "rps_range": [
+                  10502.18,
+                  10852.96
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -13.764793679873854,
+            "proxy_cpu_us_per_request": 17.784681195261577,
+            "proxy_anon_mib": 0.4800480048004818,
+            "client_cpu_cores": -13.408526267189192
+          },
+          "throughput_change_from_reference_percent": -1.91686872306156,
+          "acceptance": {
+            "threshold_percent": 10.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 2.4618029059000457,
+            "status": "failed",
+            "confidence": {
+              "method": "paired_round_bootstrap",
+              "rounds": 7,
+              "draws": 5000,
+              "seed": 0,
+              "one_sided_level": 0.95,
+              "upper_loss_percent": 15.039561039197247
+            }
+          },
+          "extra_header_bytes": 325
+        }
+      },
+      "completed_samples": 63,
+      "limitations": "Failed the independent 10% throughput gate; stock Envoy binary unchanged"
     }
   ],
   "invalid_runs": [
@@ -3020,6 +3212,15 @@
         "soong_ui"
       ],
       "completed_samples": 27,
+      "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-envoy-unwrapped-native-capacity-20261009T134951Z",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "soong_ui"
+      ],
+      "completed_samples": 33,
       "acceptance": "invalid; no throughput conclusion"
     }
   ],
@@ -3796,7 +3997,26 @@
       "scope": "Stock native HeaderMutation and HeaderToMetadata without generic matcher wrapper; all responses converted",
       "policy_sha256": "09004915e66de7a92104321b4798a1a7e4e790bbbb571676e5e7a9e7a2962b22",
       "integration": "Eleven two-worker checks passed, including 2000 complete-metric fast replies, changing delays, later response-filter waiting, local replies, opaque upstream fields and streaming",
-      "throughput": "Seven-round guarded comparison queued after Nginx cold-format comparison",
+      "throughput": {
+        "raw_directory": "server-timing-envoy-unwrapped-native-capacity-20261009T142920Z",
+        "completed_samples": 63,
+        "status": "failed",
+        "acceptance": {
+          "threshold_percent": 10.0,
+          "metric": "peak_throughput",
+          "throughput_point_estimate_pass": false,
+          "baseline_throughput_spread_percent": 2.4618029059000457,
+          "status": "failed",
+          "confidence": {
+            "method": "paired_round_bootstrap",
+            "rounds": 7,
+            "draws": 5000,
+            "seed": 0,
+            "one_sided_level": 0.95,
+            "upper_loss_percent": 15.039561039197247
+          }
+        }
+      },
       "envoy_rebuild": false,
       "image_changes": false,
       "shipped": false,
@@ -3824,6 +4044,36 @@
         "source_sha256": "f730617d402fe2c7dafa5b629125a3d2b7466749bbba63b3ea5ece8f4e091829",
         "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06"
       }
+    },
+    "envoy_native_cel_select": {
+      "scope": "Stock native HeaderMutation with CEL selecting complete TLS/plaintext fields and regex fallback for missing intervals",
+      "policy_sha256": "27f8e397c134affd296a8db6e468a7111d86a4642200107e4df99bf65347e65a",
+      "integration": "Eleven two-worker checks passed, including 2000 complete-metric fast replies, changed delays, local responses, streaming and later response-filter waiting",
+      "preflight": {
+        "raw_directory": "server-timing-envoy-native-cel-select-preflight-20261009",
+        "validated_endpoints": 9,
+        "samples": 0
+      },
+      "throughput": "No acceptance run; diagnostic CPU profiles were interrupted by Android compilation and cannot establish a throughput result",
+      "shipped": false,
+      "envoy_rebuild": false
+    },
+    "envoy_lua_ffi_single": {
+      "scope": "One response-only builtin LuaJIT/FFI filter; native route and local-reply formatters supply request start and available intervals; no proxy rebuild",
+      "policy_sha256": "a2e79a1c292a2a32cfd5a97ba116646bdc1817f671b47f9b8ac499146cf13d18",
+      "lua_sha256": "851c7a08f9a0f1c3db2ca9e4257fa81480c19ae8cce150e95c3814e1c1a678d1",
+      "integration": "Eleven two-worker checks passed, including 2000 complete-metric fast replies, changed delays, local replies, TLS/plaintext, streaming and later response-filter waiting",
+      "preflight": {
+        "raw_directory": "server-timing-lua-ffi-single-preflight-20261009",
+        "validated_endpoints": 9,
+        "source_sha256": "62405b73a330af0ea9a7e8f1efddeaa307ea5cfd28a28acdf830ac389764d8e7",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+        "samples": 0
+      },
+      "throughput": "Seven-round guarded comparison queued after the compact Nginx comparison",
+      "shipped": false,
+      "envoy_rebuild": false,
+      "image_changes": false
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",
@@ -3865,6 +4115,25 @@
       "wasmtime": "Failed to load the same no-op module",
       "wamr": "Failed to load the same no-op module",
       "scope": "Stock image capability validation only; zero throughput samples"
+    }
+  },
+  "cpu_profile_diagnostics": {
+    "stock_envoy_sha256": "559bfa7d3d5eacfc7360d0cf400c7f0dee581b27462dc3278116f993c54a2205",
+    "builtin_profiler_probe": {
+      "raw_directory": "server-timing-stock-cpu-profiler-probe-20261009",
+      "http_status": 500,
+      "message": "failure to start the profiler"
+    },
+    "perf": {
+      "event": "cpu-clock:u",
+      "frequency_hz": 199,
+      "call_graph": "dwarf,8192",
+      "raw_directories": [
+        "server-timing-perf-profiles-20261009",
+        "server-timing-perf-cel-select-20261009"
+      ],
+      "scope": "Diagnostic symbolized profiles of the unchanged stock binary; profiling and compilation exclude these runs from throughput acceptance",
+      "inference": "Unconditional conversion exercises regex and metadata handling on ordinary responses; formatting and allocations appear in sampled stacks. CEL profiling overlapped Android compilation and cannot rank candidate throughput."
     }
   }
 }

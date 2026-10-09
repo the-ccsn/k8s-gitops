@@ -9,9 +9,11 @@ data:
     \    temporary.write_bytes(gzip.decompress(pathlib.Path('/seed/data.db.gz').read_bytes()))\n\
     \    temporary.chmod(0o600)\n    temporary.replace(database)\nif not (root/'config.json').exists():\n\
     \    (root/'config.json').write_bytes(pathlib.Path('/seed/config.json').read_bytes())\n\
-    \    (root/'config.json').chmod(0o600)\nsettings={\n    'site_url':os.environ['SITE_URL'],\n\
-    \    'sso_login_enabled':'true','sso_login_platform':'OIDC',\n    'sso_client_id':pathlib.Path('/oidc/clientId').read_text().strip(),\n\
-    \    'sso_client_secret':pathlib.Path('/oidc/clientSecret').read_text().strip(),\n\
+    \    (root/'config.json').chmod(0o600)\nconfig=json.loads((root/'config.json').read_text())\n\
+    config['site_url']=os.environ['SITE_URL']\n(root/'config.json').write_text(json.dumps(config)+'\\\
+    n')\nsettings={\n    'site_url':os.environ['SITE_URL'],\n    'sso_login_enabled':'true','sso_login_platform':'OIDC',\n\
+    \    'sso_client_id':pathlib.Path('/oidc/clientId').read_text().strip(),\n   \
+    \ 'sso_client_secret':pathlib.Path('/oidc/clientSecret').read_text().strip(),\n\
     \    'sso_endpoint_name':'https://login.ccsn.dev/oidc',\n    'sso_oidc_username_key':'sub','sso_extra_scopes':'email',\n\
     \    'sso_auto_register':os.environ['SSO_AUTO_REGISTER'],\n    'sso_default_dir':'/','sso_default_permission':'256',\n\
     \    'sso_compatibility_mode':'false'}\nconnection=sqlite3.connect(database)\n\

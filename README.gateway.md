@@ -306,7 +306,11 @@ upper bound of 9.66%, failing the independent 5% gate. No runtime change
 is shipped. The O3 native Nginx candidate passed ten integration checks. Its guarded
 seven-round point loss was 3.16%, a 5.63% gain over the retained maps/njs
 configuration, but high-concurrency variation raised the 95% upper loss
-to 9.55%; its 5% acceptance remains inconclusive. A duplicate-port fixture failed
+to 9.55%. A fourteen-round guarded replication then passed the 5% gate:
+point loss 4.03%, 95% upper loss 4.46%, and baseline peak range 3.33%.
+Its [native module source](scripts/network/native/nginx/ngx_http_ccsn_server_timing_module.c)
+is available for review; packaging and the production configuration switch
+remain pending. A duplicate-port fixture failed
 preflight before any load; port allocation now holds every reservation until
 all roles have distinct ports, and seventeen benchmark regressions pass.
 
@@ -320,7 +324,19 @@ Four explicit formatting/capacity checks, ten integration checks with two worker
 (including 2,000 sustained full-metric replies), and all nine fixture preflights
 passed. Thirteen preflight containers were stopped. Its capacity comparison,
 a fourteen-round Nginx precision replication, and a fresh fallback comparison
-are queued after the continuous compiler-idle window. None is shipped or accepted.
+were queued after the continuous compiler-idle window. The C ABI template
+comparison completed seven guarded rounds but still lost 12.60%, with a 95%
+upper loss of 13.64%; it is rejected. Nginx passed as recorded above. The
+fallback comparison then lost 11.49%, with a 95% upper loss of 12.34%; it
+is also rejected. A response-only Lua candidate caches at most 32 exact native
+timing tuples per worker while the native filter calculates elapsed time
+on every response. Twelve two-worker integration checks and all nine fixture
+preflights passed, including changed durations, cache eviction, 2,000 sustained
+complete-metric replies, and streaming. Its guarded seven-round comparison
+is queued after a fresh compiler-idle window. No candidate is
+shipped. Wasmtime and WAMR failed to load the complete module during
+configuration validation on the stock image. A 501-byte no-op module also
+failed on both while passing V8 validation; neither has throughput data.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

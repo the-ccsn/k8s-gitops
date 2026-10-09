@@ -2782,6 +2782,158 @@
       },
       "completed_samples": 63,
       "limitations": "Failed the independent 10% throughput gate; native dynamic-module filter was not enabled by a proxy rebuild"
+    },
+    {
+      "name": "nginx_cold_format",
+      "kind": "Standalone Nix module with general formatter kept outside common filter frame; compiler hardening retained",
+      "shipped": false,
+      "raw_directory": "server-timing-nginx-cold-format-capacity-20261009T132758Z",
+      "source_sha256": "44cb6d89f39ac597546efc2f661c12c63b2de5b2ba19b84590b62aa7f4509429",
+      "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+      "parameters": {
+        "rounds": 14,
+        "duration": 6,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "nginx"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "on"
+        ],
+        "throughput_budgets_percent": {
+          "nginx": 5.0,
+          "envoy": 10.0
+        },
+        "confidence_method": "paired_round_bootstrap_95pct",
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "1.14 1.12 1.15 1/2527 45204",
+        "commit": "dafaae22ce8a2b385a10048a63486be25f1fd8c3",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "nginx": {
+          "capacity_off": {
+            "rps": 37208.015,
+            "proxy_cpu_us_per_request": 18.003588321515753,
+            "proxy_anon_mib": 5.25,
+            "client_cpu_cores": 0.32092994344680464,
+            "rps_range": [
+              36281.62,
+              37713.19
+            ],
+            "samples": 14,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 37208.015,
+                "rps_range": [
+                  36281.62,
+                  37713.19
+                ],
+                "samples": 14
+              },
+              "64": {
+                "rps": 33374.354999999996,
+                "rps_range": [
+                  31701.24,
+                  43237.87
+                ],
+                "samples": 14
+              },
+              "256": {
+                "rps": 33760.445,
+                "rps_range": [
+                  27036.34,
+                  41560.47
+                ],
+                "samples": 14
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 35625.024999999994,
+            "proxy_cpu_us_per_request": 17.986658137704595,
+            "proxy_anon_mib": 7.353515625,
+            "client_cpu_cores": 0.3197251673064926,
+            "rps_range": [
+              33691.02,
+              39856.28
+            ],
+            "samples": 14,
+            "connections": 256,
+            "curve": {
+              "16": {
+                "rps": 35606.33,
+                "rps_range": [
+                  34331.78,
+                  36157.94
+                ],
+                "samples": 14
+              },
+              "64": {
+                "rps": 32755.329999999998,
+                "rps_range": [
+                  31508.91,
+                  41873.62
+                ],
+                "samples": 14
+              },
+              "256": {
+                "rps": 35625.024999999994,
+                "rps_range": [
+                  33691.02,
+                  39856.28
+                ],
+                "samples": 14
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -4.254432815080311,
+            "proxy_cpu_us_per_request": -0.09403783017480905,
+            "proxy_anon_mib": 40.06696428571428,
+            "client_cpu_cores": -0.3754015992938231
+          },
+          "acceptance": {
+            "threshold_percent": 5.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": true,
+            "baseline_throughput_spread_percent": 3.8474774856976377,
+            "status": "inconclusive",
+            "confidence": {
+              "method": "paired_round_bootstrap",
+              "rounds": 14,
+              "draws": 5000,
+              "seed": 0,
+              "one_sided_level": 0.95,
+              "upper_loss_percent": 5.285259743482074
+            }
+          },
+          "extra_header_bytes": 178
+        }
+      },
+      "completed_samples": 84,
+      "limitations": "Point estimate within 5%, confidence upper bound outside 5%; no acceptance claimed"
     }
   ],
   "invalid_runs": [
@@ -3482,7 +3634,143 @@
       "module_bytes": 15248,
       "shipped": false,
       "integration": "Eleven two-worker checks passed, including reload, retries, long intervals, local replies, opaque upstream headers, TLS, streaming and 212 fast/changing-delay responses",
-      "throughput": "Fourteen-round guarded comparison queued after the Envoy upstream-only comparison",
+      "throughput": {
+        "raw_directory": "server-timing-nginx-cold-format-capacity-20261009T132758Z",
+        "samples": 84,
+        "source_sha256": "44cb6d89f39ac597546efc2f661c12c63b2de5b2ba19b84590b62aa7f4509429",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+        "parameters": {
+          "rounds": 14,
+          "duration": 6,
+          "rate": 2000,
+          "cpus": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ],
+          "scenarios": [
+            "nginx"
+          ],
+          "connections": [
+            16,
+            64,
+            256
+          ],
+          "modes": [
+            "off",
+            "on"
+          ],
+          "throughput_budgets_percent": {
+            "nginx": 5.0,
+            "envoy": 10.0
+          },
+          "confidence_method": "paired_round_bootstrap_95pct",
+          "require_idle_builds": true
+        },
+        "results": {
+          "capacity_off": {
+            "rps": 37208.015,
+            "proxy_cpu_us_per_request": 18.003588321515753,
+            "proxy_anon_mib": 5.25,
+            "client_cpu_cores": 0.32092994344680464,
+            "rps_range": [
+              36281.62,
+              37713.19
+            ],
+            "samples": 14,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 37208.015,
+                "rps_range": [
+                  36281.62,
+                  37713.19
+                ],
+                "samples": 14
+              },
+              "64": {
+                "rps": 33374.354999999996,
+                "rps_range": [
+                  31701.24,
+                  43237.87
+                ],
+                "samples": 14
+              },
+              "256": {
+                "rps": 33760.445,
+                "rps_range": [
+                  27036.34,
+                  41560.47
+                ],
+                "samples": 14
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 35625.024999999994,
+            "proxy_cpu_us_per_request": 17.986658137704595,
+            "proxy_anon_mib": 7.353515625,
+            "client_cpu_cores": 0.3197251673064926,
+            "rps_range": [
+              33691.02,
+              39856.28
+            ],
+            "samples": 14,
+            "connections": 256,
+            "curve": {
+              "16": {
+                "rps": 35606.33,
+                "rps_range": [
+                  34331.78,
+                  36157.94
+                ],
+                "samples": 14
+              },
+              "64": {
+                "rps": 32755.329999999998,
+                "rps_range": [
+                  31508.91,
+                  41873.62
+                ],
+                "samples": 14
+              },
+              "256": {
+                "rps": 35625.024999999994,
+                "rps_range": [
+                  33691.02,
+                  39856.28
+                ],
+                "samples": 14
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -4.254432815080311,
+            "proxy_cpu_us_per_request": -0.09403783017480905,
+            "proxy_anon_mib": 40.06696428571428,
+            "client_cpu_cores": -0.3754015992938231
+          },
+          "acceptance": {
+            "threshold_percent": 5.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": true,
+            "baseline_throughput_spread_percent": 3.8474774856976377,
+            "status": "inconclusive",
+            "confidence": {
+              "method": "paired_round_bootstrap",
+              "rounds": 14,
+              "draws": 5000,
+              "seed": 0,
+              "one_sided_level": 0.95,
+              "upper_loss_percent": 5.285259743482074
+            }
+          },
+          "extra_header_bytes": 178
+        }
+      },
       "arm64_package": {
         "module_sha256": "7441b6d3b4c35d77f812449b6020e6681d4d7f0ae40f9269448d01cb3f4ac28d",
         "module_bytes": 69184,
@@ -3518,6 +3806,23 @@
         "source_sha256": "6ad8bcfafce53b9f67a0f1f33adce22717c544d65f1c91684e3c4ecf52a6506b",
         "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
         "samples": 0
+      }
+    },
+    "native_nginx_compact_single_attempt": {
+      "scope": "Hardened standalone Nginx module; common filter frame isolated; omit redundant attempt-1 suffix only for a single upstream state, retain all retry attempt labels and metrics",
+      "source_sha256": "55b947e4434d77586902cc0e0ecf91d24f1fb1092406a26f83a91d3a7cb758e7",
+      "module_sha256": "3238f9d78c26426215a4c5266b9223a7c6c9961658ada858d13aefe03b57c522",
+      "module_bytes": 15248,
+      "compiler_hardening_retained": true,
+      "shipped": false,
+      "integration": "Eleven two-worker checks passed, including 212 fast/changing-delay replies, real zero, long durations, retries with attempt-2 label, streaming, local replies and reload",
+      "throughput": "Fourteen-round, 12-second guarded comparison queued after unwrapped native Envoy",
+      "preflight": {
+        "raw_directory": "server-timing-nginx-compact-single-attempt-preflight-20261009",
+        "validated_endpoints": 6,
+        "samples": 0,
+        "source_sha256": "f730617d402fe2c7dafa5b629125a3d2b7466749bbba63b3ea5ece8f4e091829",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06"
       }
     }
   },

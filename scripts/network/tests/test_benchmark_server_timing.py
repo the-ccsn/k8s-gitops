@@ -1,7 +1,10 @@
 """Ensure capacity experiments cannot accept incomplete timing responses."""
 import importlib.util
 import unittest
+import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 spec = importlib.util.spec_from_file_location(
     "benchmark_server_timing", Path(__file__).resolve().parents[1] / "benchmark_server_timing.py"
@@ -48,6 +51,33 @@ class BenchmarkTimingValidationTest(unittest.TestCase):
             benchmark.validate_timing("chain", "on", [
                 ("Server-Timing", CHAIN_TIMING), ("x-ccsn-envoy-timing", "private")
             ])
+
+
+class BenchmarkEnvironmentValidationTest(unittest.TestCase):
+    def test_detects_builds_without_blocking_normal_apps(self):
+        with patch.object(benchmark, "command", return_value="chrome\nsoong_build\nrustc\nclang-21\n"):
+            self.assertEqual(benchmark.active_builds(), ["clang-21", "rustc", "soong_build"])
+
+    def test_build_interference_persists_invalidation_and_prevents_report(self):
+        run = benchmark.Benchmark.__new__(benchmark.Benchmark)
+        run.args = SimpleNamespace(require_idle_builds=True)
+        run.state = {"samples": []}
+        run.persist = Mock()
+        with patch.object(benchmark, "active_builds", return_value=["soong_build"]):
+            with self.assertRaisesRegex(RuntimeError, "invalidated by build"):
+                run.require_idle()
+        run.persist.assert_called_once()
+        with self.assertRaisesRegex(RuntimeError, "cannot be used for acceptance"):
+            run.report()
+
+    def test_manual_invalidation_marker_prevents_report(self):
+        run = benchmark.Benchmark.__new__(benchmark.Benchmark)
+        run.state = {"samples": []}
+        with tempfile.TemporaryDirectory(dir=benchmark.ROOT.parent / "task-logs") as directory:
+            run.output = Path(directory)
+            (run.output / "invalid.json").write_text('{"reason":"Concurrent compilation"}')
+            with self.assertRaisesRegex(RuntimeError, "cannot be used for acceptance"):
+                run.report()
 
 
 if __name__ == "__main__":

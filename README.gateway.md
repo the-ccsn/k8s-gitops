@@ -181,7 +181,8 @@ capacity estimate or an HTTP/2/3 benchmark.
 nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
   scripts/network/benchmark_server_timing.py \
   --output ../task-logs/server-timing-benchmark \
-  --stage capacity --connections 16 64 256 --rounds 3 --duration 4
+  --stage capacity --connections 16 64 256 --rounds 3 --duration 4 \
+  --require-idle-builds
 ```
 
 The harness needs at least six available physical cores. `--connections`
@@ -193,9 +194,17 @@ use a different output directory when changing parameters. `--stage capacity`,
 `--stage latency`, and `--stage report` select individual stages. Test containers
 are stopped and retained for inspection; no cluster configuration is changed.
 
+For the 1% acceptance run, wait for local compilation to finish and use
+`--require-idle-builds`. It checks for build activity before and during load,
+persists invalidation if a build starts, and refuses to report or resume that
+invocation as an acceptance run. Retained `invalid.json` markers also prevent
+reporting. Other host interference still needs to be excluded separately.
+
 `--modes off on static` adds a constant-metric header control to separate header
 costs from timing computation. Header byte counts are recorded for each mode;
 static durations need not have exactly the same string length as measured ones.
+The Envoy static control appends its complete metric list as one header field,
+matching the current feature's own header layout.
 `reference` mode runs a previous implementation with
 `--reference-envoy-policy` and `--reference-nginx-timing-dir`; it uses the same
 hop descriptions as the candidate for comparable header sizes.
@@ -206,6 +215,24 @@ the tested connection counts. CPU/request is diagnostic data and is not an
 acceptance gate. Equal-rate latency runs are optional.
 A point estimate within the budget is not a statistical pass: an isolated host
 and enough repeatable samples are needed to establish a 1% limit.
+
+Further native probes are recorded in
+[the native probe summary](scripts/network/benchmarks/server-timing-native-probes-2026-10-09.json).
+An empty shared-library filter on the pinned Istio image lost 5.8% at 64
+connections across five alternating rounds, with a 0.32% baseline range. It
+emits no Envoy timings and is only a diagnostic wrapper-cost control.
+It is not a feature acceptance run or a shipped implementation.
+
+A native Nginx prototype reads upstream states directly, caches descriptions,
+and appends to an existing opaque timing header. Its candidates passed eight
+local integration checks; the cached-description sweep still lost 3.9%.
+Reusing the existing header improved a later fixed-connection point estimate
+by 1.2%, below that run's 5.3% baseline range. Neither establishes a stable
+improvement or meets the budget. A subsequent cached-template screen and an
+Envoy static-header screen were invalidated by Android compilation.
+The cached-template candidate and a single native Envoy formatter remain
+under investigation; their throughput acceptance is pending. Prototype
+binaries and raw outputs are retained locally and are not deployed.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

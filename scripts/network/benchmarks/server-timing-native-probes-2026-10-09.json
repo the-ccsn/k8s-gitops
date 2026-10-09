@@ -1,0 +1,430 @@
+{
+  "date": "2026-10-09",
+  "acceptance": "not_passed",
+  "purpose": "Exploratory native implementation and wrapper controls; no production implementation changed",
+  "experiments": [
+    {
+      "name": "envoy_empty_shared_library",
+      "kind": "Diagnostic only: no timing metrics, never a feature acceptance run",
+      "shipped": false,
+      "raw_directory": "server-timing-native-investigation/noop-benchmark",
+      "source_sha256": "1de8752ed43325f76d4ffd1a55eee5239505c52e5377b6353fe191d539ac103b",
+      "parameters": {
+        "rounds": 5,
+        "duration": 5,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "envoy"
+        ],
+        "connections": [
+          64
+        ],
+        "modes": [
+          "off",
+          "on"
+        ]
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.43 0.59 1.73 2/8266 1859081",
+        "commit": "7dccd6a57cc9b889fcf925ede39d7fb59339292d",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "envoy": {
+          "capacity_off": {
+            "rps": 13252.03,
+            "proxy_cpu_us_per_request": 68.49521534694368,
+            "proxy_anon_mib": 15.58984375,
+            "client_cpu_cores": 0.13643036252421736,
+            "rps_range": [
+              13237.5,
+              13279.54
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "64": {
+                "rps": 13252.03,
+                "rps_range": [
+                  13237.5,
+                  13279.54
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 12485.89,
+            "proxy_cpu_us_per_request": 73.04771007566707,
+            "proxy_anon_mib": 15.73046875,
+            "client_cpu_cores": 0.12821493167173215,
+            "rps_range": [
+              12456.69,
+              12526.81
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "64": {
+                "rps": 12485.89,
+                "rps_range": [
+                  12456.69,
+                  12526.81
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -5.7813029400024085,
+            "proxy_cpu_us_per_request": 6.64644195315538,
+            "proxy_anon_mib": 0.9020295665246758,
+            "client_cpu_cores": -6.021702721069088
+          },
+          "acceptance": {
+            "threshold_percent": 1,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 0.3172344161611532,
+            "status": "failed"
+          },
+          "extra_header_bytes": 0
+        }
+      },
+      "limitations": "Exploratory point estimates; capacity improvements below observed variation do not establish stable gains or a 1% bound"
+    },
+    {
+      "name": "nginx_cached_descriptions",
+      "kind": "Native full-metric candidate, peak over 16/64/256 connections",
+      "shipped": false,
+      "raw_directory": "server-timing-throughput-nginx-cached",
+      "source_sha256": "0bed5652749c37c2cb2c4f580d89bd11ad20257f5308c5243b7130cdbb7e9cf8",
+      "parameters": {
+        "rounds": 3,
+        "duration": 5,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "nginx"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "static",
+          "on"
+        ]
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.76 0.74 1.63 1/8298 1861786",
+        "commit": "7dccd6a57cc9b889fcf925ede39d7fb59339292d",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "nginx": {
+          "capacity_off": {
+            "rps": 36813.74,
+            "proxy_cpu_us_per_request": 17.970300457530612,
+            "proxy_anon_mib": 5.23828125,
+            "client_cpu_cores": 0.3034566043525584,
+            "rps_range": [
+              36091.81,
+              37134.18
+            ],
+            "samples": 3,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 36813.74,
+                "rps_range": [
+                  36091.81,
+                  37134.18
+                ],
+                "samples": 3
+              },
+              "64": {
+                "rps": 33928.53,
+                "rps_range": [
+                  32024.44,
+                  42531.77
+                ],
+                "samples": 3
+              },
+              "256": {
+                "rps": 31514.78,
+                "rps_range": [
+                  30364.58,
+                  40472.57
+                ],
+                "samples": 3
+              }
+            }
+          },
+          "capacity_static": {
+            "rps": 35196.18,
+            "proxy_cpu_us_per_request": 19.253298482868345,
+            "proxy_anon_mib": 5.2421875,
+            "client_cpu_cores": 0.30450816546083814,
+            "rps_range": [
+              34771.45,
+              35308.65
+            ],
+            "samples": 3,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 35196.18,
+                "rps_range": [
+                  34771.45,
+                  35308.65
+                ],
+                "samples": 3
+              },
+              "64": {
+                "rps": 31604.35,
+                "rps_range": [
+                  31439.74,
+                  36547.18
+                ],
+                "samples": 3
+              },
+              "256": {
+                "rps": 34239.31,
+                "rps_range": [
+                  33878.67,
+                  34419.09
+                ],
+                "samples": 3
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 35384.91,
+            "proxy_cpu_us_per_request": 19.088797829650144,
+            "proxy_anon_mib": 5.267578125,
+            "client_cpu_cores": 0.3083441440935079,
+            "rps_range": [
+              35202.09,
+              35698.98
+            ],
+            "samples": 3,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 35384.91,
+                "rps_range": [
+                  35202.09,
+                  35698.98
+                ],
+                "samples": 3
+              },
+              "64": {
+                "rps": 31706.59,
+                "rps_range": [
+                  31329.33,
+                  32837.23
+                ],
+                "samples": 3
+              },
+              "256": {
+                "rps": 34197.13,
+                "rps_range": [
+                  33894.91,
+                  39865.21
+                ],
+                "samples": 3
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -3.881241080096709,
+            "proxy_cpu_us_per_request": 6.224143968894058,
+            "proxy_anon_mib": 0.5592841163311046,
+            "client_cpu_cores": 1.6106223001398634
+          },
+          "static_throughput_change_percent": -4.393902928634796,
+          "acceptance": {
+            "threshold_percent": 1,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 2.831469989194259,
+            "status": "failed"
+          },
+          "extra_header_bytes": 194
+        }
+      },
+      "limitations": "Exploratory point estimates; capacity improvements below observed variation do not establish stable gains or a 1% bound"
+    },
+    {
+      "name": "nginx_append_existing_header",
+      "kind": "Native full-metric candidate, fixed 16-connection screening",
+      "shipped": false,
+      "raw_directory": "server-timing-throughput-nginx-append",
+      "source_sha256": "42e0e04183663ac42e8e8a722bbb3dc3e07f25e96bf34b2c59b68415a1778d92",
+      "parameters": {
+        "rounds": 7,
+        "duration": 4,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "nginx"
+        ],
+        "connections": [
+          16
+        ],
+        "modes": [
+          "off",
+          "reference",
+          "on"
+        ]
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.64 4.06 3.75 5/7835 1872872",
+        "commit": "7dccd6a57cc9b889fcf925ede39d7fb59339292d",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "nginx": {
+          "capacity_off": {
+            "rps": 37235.07,
+            "proxy_cpu_us_per_request": 17.933978288161878,
+            "proxy_anon_mib": 5.23046875,
+            "client_cpu_cores": 0.30719385239550095,
+            "rps_range": [
+              36160.07,
+              38133.24
+            ],
+            "samples": 7,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 37235.07,
+                "rps_range": [
+                  36160.07,
+                  38133.24
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_reference": {
+            "rps": 35047.82,
+            "proxy_cpu_us_per_request": 19.38770155818307,
+            "proxy_anon_mib": 5.24609375,
+            "client_cpu_cores": 0.29779373986438723,
+            "rps_range": [
+              33539.06,
+              35669.46
+            ],
+            "samples": 7,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 35047.82,
+                "rps_range": [
+                  33539.06,
+                  35669.46
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 35471.86,
+            "proxy_cpu_us_per_request": 19.12616690629665,
+            "proxy_anon_mib": 5.234375,
+            "client_cpu_cores": 0.30115171794619233,
+            "rps_range": [
+              34788.66,
+              36472.98
+            ],
+            "samples": 7,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 35471.86,
+                "rps_range": [
+                  34788.66,
+                  36472.98
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -4.735347617179175,
+            "proxy_cpu_us_per_request": 6.64765284633877,
+            "proxy_anon_mib": 0.07468259895444529,
+            "client_cpu_cores": -1.9668800017291987
+          },
+          "throughput_change_from_reference_percent": 1.209889801990549,
+          "acceptance": {
+            "threshold_percent": 1,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 5.299224628824381,
+            "status": "failed"
+          },
+          "extra_header_bytes": 178
+        }
+      },
+      "limitations": "Exploratory point estimates; capacity improvements below observed variation do not establish stable gains or a 1% bound"
+    }
+  ],
+  "invalid_runs": [
+    {
+      "raw_directory": "server-timing-throughput-envoy-static-single",
+      "reason": "Concurrent Android soong_build; disabled capacity collapsed by more than 50%"
+    },
+    {
+      "raw_directory": "server-timing-throughput-nginx-template",
+      "reason": "Concurrent Android ninja/rustc; throughput drift invalidated the invocation"
+    }
+  ],
+  "next_candidates": {
+    "nginx_cached_template": {
+      "status": "Eight local integration checks passed; throughput screening invalidated by external compilation; no capacity conclusion"
+    },
+    "envoy_native_formatter": {
+      "status": "Native formatting core checks passed; pinned Istio Envoy build in progress; no proxy integration or throughput conclusion"
+    }
+  },
+  "harness_sha256": "a3330e1cd768ed585d9ec2f15c3a7cafbf9b82fbb992f415bb6711f9b8ed9f6f"
+}

@@ -33,6 +33,14 @@ NGINX_DIR = ROOT / "infra/configs/base/i319-reroute"
 ENVOY_IMAGE = "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless"
 
 
+def active_builds() -> list[str]:
+    """Process names only: avoid reading arguments or environment variables."""
+    names = command("ps", "-eo", "comm=").splitlines()
+    return sorted({name.strip() for name in names if name.strip() in {
+        "soong_ui", "soong_build", "ninja", "rustc", "cc1", "cc1plus",
+    } or name.strip().startswith("clang")})
+
+
 def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]]) -> None:
     """Reject candidates that gain capacity by omitting or corrupting metrics."""
     if any(key.lower() == "x-ccsn-envoy-timing" for key, _ in headers):
@@ -94,6 +102,8 @@ class Benchmark:
         self.output.mkdir(parents=True, exist_ok=True)
         self.path = self.output / "state.json"
         self.state = json.loads(self.path.read_text()) if self.path.exists() else {"samples": [], "containers": {}}
+        if self.state.get("invalid") or (self.output / "invalid.json").exists():
+            raise ValueError("This invocation was invalidated; use a new output directory")
         if args.stage == "report":
             return
         self.timing_dir = args.nginx_timing_dir.resolve()
@@ -113,6 +123,8 @@ class Benchmark:
             raise ValueError("Select six distinct physical cores")
         config = {"rounds": args.rounds, "duration": args.duration, "rate": args.rate, "cpus": selected_cpus,
                   "scenarios": args.scenarios, "connections": args.connections, "modes": args.modes}
+        if getattr(args, "require_idle_builds", False):
+            config["require_idle_builds"] = True
         if "config" in self.state and self.state["config"] != config:
             raise ValueError("Existing run parameters differ; select another output directory")
         self.state["config"] = config
@@ -145,6 +157,15 @@ class Benchmark:
 
     def persist(self) -> None:
         save(self.path, self.state)
+
+    def require_idle(self) -> None:
+        if not getattr(self.args, "require_idle_builds", False):
+            return
+        builds = active_builds()
+        if builds:
+            self.state["invalid"] = {"reason": "Concurrent build activity", "process_names": builds}
+            self.persist()
+            raise RuntimeError(f"Benchmark invalidated by build activity: {', '.join(builds)}; wait for completion and use a new output directory")
 
     def container(self, role: str, cpu: int, image: str, entrypoint: str, args: list[str]) -> str:
         self.state["role_cpus"][role] = cpu
@@ -216,7 +237,8 @@ http {{
         elif mode == "static":
             hop = f"benchmark-{role.replace('_static', '_on')}"
             names = ["upstream_tcp", *(["upstream_tls"] if tls else []), "upstream_headers", "upstream_pool", "request_receive"]
-            values = [f'envoy_headers;dur=0;desc="{hop}"', ",".join(f'envoy_{name};dur=0;desc="{hop}"' for name in names)]
+            values = [",".join([f'envoy_headers;dur=0;desc="{hop}"',
+                                *(f'envoy_{name};dur=0;desc="{hop}"' for name in names)])]
             route["response_headers_to_add"] = [{"header": {"key": "server-timing", "value": value},
                                                  "append_action": "APPEND_IF_EXISTS_OR_ADD"} for value in values]
         filters.append({"name": "envoy.filters.http.router", "typed_config": {
@@ -335,9 +357,11 @@ http {{
         key = f"{stage}_{scenario}_{mode}_{round_number}_c{connections}"
         if any(item["key"] == key for item in self.state["samples"]):
             return
+        self.require_idle()
         endpoint = self.state["endpoints"][f"{scenario}_{mode}"]
         prefix = self.output / key
         command("taskset", "-c", self.client_cpus, "wrk", "-t2", f"-c{connections}", "-d2s", endpoint["url"])
+        self.require_idle()
         roles = endpoint["roles"] + ["backend"]
         if stage == "capacity":
             args = ["taskset", "-c", self.client_cpus, "wrk", "-t2", f"-c{connections}", f"-d{self.args.duration}s", "--latency", endpoint["url"]]
@@ -351,10 +375,14 @@ http {{
         usage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
         memory_samples = []
         started = time.monotonic()
+        last_idle_check = started
         with prefix.with_suffix(".log").open("wb") as logfile:
             process = subprocess.Popen(args, stdout=logfile, stderr=subprocess.STDOUT)
             try:
                 while process.poll() is None:
+                    if time.monotonic() - last_idle_check >= 1:
+                        self.require_idle()
+                        last_idle_check = time.monotonic()
                     memory_samples.append(self.counters(roles))
                     time.sleep(0.2)
             except BaseException:
@@ -369,6 +397,7 @@ http {{
             if process.returncode:
                 raise RuntimeError(f"Load generator failed; inspect {prefix}.log")
         elapsed = time.monotonic() - started
+        self.require_idle()
         after = self.counters(roles)
         usage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
         log = prefix.with_suffix(".log").read_text()
@@ -417,6 +446,8 @@ http {{
                         self.sample(scenario, mode, stage, round_number, connections)
 
     def report(self) -> None:
+        if self.state.get("invalid") or (self.output / "invalid.json").exists():
+            raise RuntimeError("This invocation was invalidated; its raw samples cannot be used for acceptance")
         summary = {"environment": self.state["environment"], "config": self.state["config"], "source_sha256": self.state.get("source_sha256"), "results": {}}
         for scenario in self.state["config"].get("scenarios", ["nginx", "envoy", "chain"]):
             entry = {}
@@ -493,6 +524,8 @@ def main() -> None:
     parser.add_argument("--cpus", type=int, nargs=6, help="Distinct physical cores: Nginx, outer Envoy, inner Envoy, backend, two clients")
     parser.add_argument("--modes", choices=["off", "on", "static", "reference"], nargs="+", default=["off", "on"], help="Static uses constant metrics; reference runs the previous implementation")
     parser.add_argument("--rounds", type=int, default=3)
+    parser.add_argument("--require-idle-builds", action="store_true",
+                        help="Invalidate the invocation if build activity appears before or during load")
     parser.add_argument("--duration", type=int, default=12)
     parser.add_argument("--rate", type=int, default=2000)
     args = parser.parse_args()

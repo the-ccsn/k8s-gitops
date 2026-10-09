@@ -93,6 +93,29 @@ class BenchmarkEnvironmentValidationTest(unittest.TestCase):
                 run.report()
 
 
+class BenchmarkThroughputBudgetTest(unittest.TestCase):
+    def test_component_budgets_apply_independently(self):
+        baseline = {"rps": 1000, "rps_range": [995, 1005]}
+        config = {"throughput_budgets_percent": {"nginx": 5, "envoy": 10}}
+        for scenario, loss, expected in [("nginx", 4, True), ("nginx", 6, False),
+                                         ("envoy", 9, True), ("envoy", 11, False)]:
+            with self.subTest(scenario=scenario, loss=loss):
+                result = benchmark.throughput_acceptance(scenario, loss, baseline, config)
+                self.assertEqual(result["throughput_point_estimate_pass"], expected)
+                self.assertNotEqual(result["status"], "passed")
+
+    def test_historical_runs_retain_original_gate(self):
+        result = benchmark.throughput_acceptance("nginx", 4, {"rps": 1000, "rps_range": [1000, 1000]}, {})
+        self.assertEqual(result["threshold_percent"], 1)
+        self.assertEqual(result["status"], "failed")
+
+    def test_chain_has_no_invented_combined_gate(self):
+        result = benchmark.throughput_acceptance("chain", 20, {"rps": 1000, "rps_range": [1000, 1000]},
+                                                 {"throughput_budgets_percent": {"nginx": 5, "envoy": 10}})
+        self.assertEqual(result["status"], "diagnostic")
+        self.assertNotIn("threshold_percent", result)
+
+
 class BenchmarkNativeReferenceTest(unittest.TestCase):
     def test_native_reference_loads_its_own_binary(self):
         with tempfile.TemporaryDirectory(dir=benchmark.ROOT.parent / "task-logs") as directory:

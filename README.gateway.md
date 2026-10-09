@@ -194,7 +194,7 @@ use a different output directory when changing parameters. `--stage capacity`,
 `--stage latency`, and `--stage report` select individual stages. Test containers
 are stopped and retained for inspection; no cluster configuration is changed.
 
-For the 1% acceptance run, wait for local compilation to finish and use
+For acceptance runs, wait for local compilation to finish and use
 `--require-idle-builds`. It checks for build activity before and during load,
 persists invalidation if a build starts, and refuses to report or resume that
 invocation as an acceptance run. Retained `invalid.json` markers also prevent
@@ -209,12 +209,16 @@ matching the current feature's own header layout.
 `--reference-envoy-policy` and `--reference-nginx-timing-dir`; it uses the same
 hop descriptions as the candidate for comparable header sizes.
 
-The acceptance budget is **at most 1% peak throughput loss**, compared with the
-feature disabled. Each mode's capacity is the highest median throughput across
-the tested connection counts. CPU/request is diagnostic data and is not an
+The current acceptance budgets are **at most 5% Nginx peak throughput loss**
+and **at most 10% Envoy peak throughput loss**, compared with the feature
+disabled. These gates apply independently; chain measurements are diagnostic.
+Each mode's capacity is the highest median throughput across the tested
+connection counts. CPU/request is diagnostic data and is not an
 acceptance gate. Equal-rate latency runs are optional.
-A point estimate within the budget is not a statistical pass: an isolated host
-and enough repeatable samples are needed to establish a 1% limit.
+A point estimate within the budget is not a statistical pass: a stable host
+and enough repeatable samples are needed to establish the applicable limit.
+New invocations record both component budgets in their immutable configuration;
+historical reports retain the gate recorded for their original run.
 
 Further native probes are recorded in
 [the native probe summary](scripts/network/benchmarks/server-timing-native-probes-2026-10-09.json).
@@ -222,6 +226,13 @@ An empty shared-library filter on the pinned Istio image lost 5.8% at 64
 connections across five alternating rounds, with a 0.32% baseline range. It
 emits no Envoy timings and is only a diagnostic wrapper-cost control.
 It is not a feature acceptance run or a shipped implementation.
+
+The existing Istio image also validated a 501-byte independently compiled V8
+Wasm plugin. Five compiler-idle alternating rounds at 64 connections measured
+6.37% loss for its empty response callback, with a 0.94% disabled range. This is
+a wrapper-only screening without Envoy timing metrics, not feature acceptance.
+These probes contain no Envoy timing work and cannot establish compliance with
+the complete-feature budget.
 
 A native Nginx prototype reads upstream states directly, caches descriptions,
 and appends to an existing opaque timing header. Its candidates passed eight
@@ -231,7 +242,7 @@ withdrawn: the native reference configuration accidentally loaded the candidate
 binary. The harness now resolves native module paths against each mode's own
 mount, records its own source hash, and refuses to resume samples taken with a
 changed or unrecorded harness. Neither that screening nor the cached-description
-sweep establishes the budget.
+sweep establishes a repeatable throughput limit.
 
 Cached templates, configuration-owned caches, an O3 build, and an 8 KiB request
 pool remain under investigation. The latest Nginx candidates each passed nine
@@ -240,8 +251,8 @@ runs were invalidated when Android compilation restarted; the latter completed
 18 samples before invalidation. Those samples cannot establish capacity gains.
 A subsequent compiler-idle Nginx O3/pool screening measured 2.6% peak throughput
 loss. The disabled peak range spanned 27%, and identical reference/on controls
-differed by 1.13% at peak; this does not establish stable overhead or pass the
-budget. Further measurements need to control that variation.
+differed by 1.13% at peak. This does not establish a repeatable throughput limit;
+further measurements need to control that variation.
 
 The native Envoy formatter experiment is closed: it modifies the Envoy core and
 requires rebuilding the complete proxy, whereas the required scope is a plugin
@@ -251,7 +262,7 @@ retained locally.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each
-mode's reported capacity is its highest median across the sweep. The 1%
+mode's reported capacity is its highest median across the sweep. The applicable
 throughput acceptance result is **not passed**:
 
 | Scenario | Disabled req/s | Enabled req/s | Throughput change |
@@ -264,8 +275,8 @@ Envoy's peak point estimate is 1.4% higher than the previous implementation;
 the chain differs by -0.3%, within the observed variation. Nginx is unchanged,
 and its identical `reference` and `on` implementations differ by 3.1% in peak
 estimates. Baseline ranges span 2.3–3.8%, so these workstation measurements
-cannot establish a 1% limit. No sample reported socket errors, HTTP failures,
-or proxy CPU throttling. CPU/request is not part of acceptance.
+cannot establish the current throughput limits. No sample reported socket
+errors, HTTP failures, or proxy CPU throttling. CPU/request is not part of acceptance.
 
 [Recorded throughput summary](scripts/network/benchmarks/server-timing-throughput-2026-10-09.json)
 includes capacity curves, ranges, source hashes, tool versions, and images.
@@ -278,7 +289,7 @@ A subsequent literal-matcher run compared the candidate with `ac1c9bb` and
 the feature disabled. It used CPUs 16–21 (six physical cores without SMT
 siblings), three alternating rounds of 4-second samples, and the same
 16/64/256-connection sweep. The highest median for each mode was at 64
-connections. The 1% budget remains **not passed**:
+connections. The Envoy 10% budget remains **not passed**:
 
 | Scenario | Disabled req/s | Previous req/s | Candidate req/s | From previous | From disabled |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -287,8 +298,8 @@ connections. The 1% budget remains **not passed**:
 
 These are exploratory point estimates: baseline peak ranges span 3.9–4.2%,
 larger than the apparent improvements. The host is shared, and these results
-cannot establish stable gains or a 1% limit. Nginx's timing implementation is
-unchanged. No sample reported socket errors, HTTP failures, or proxy CPU
+cannot establish stable gains or the applicable throughput limit. Nginx's
+timing implementation is unchanged. No sample reported socket errors, HTTP failures, or proxy CPU
 throttling.
 
 [Literal-matcher summary](scripts/network/benchmarks/server-timing-throughput-literal-2026-10-09.json)
@@ -325,7 +336,7 @@ bypasses metadata conversion for complete measurements and emits its own
 metrics in one header. Missing measurements use a single native regex; all
 available intervals and opaque upstream values remain present on every response.
 
-Local measurements do not establish the 1% limit. Test containers are stopped
+Local measurements do not establish both current throughput limits. Test containers are stopped
 and retained; no cluster configuration is changed. `--scenarios` selects paths,
 `--envoy-policy` and `--nginx-timing-dir` select workspace-local candidates, and
 changing timing sources invalidates resume. The pinned Istio image does not

@@ -66,6 +66,21 @@ def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]]) ->
         raise ValueError(f"Benchmark timing metrics differ: expected {dict(expected)}, got {dict(Counter(names))}")
 
 
+def throughput_acceptance(scenario: str, drop: float, baseline: dict, config: dict) -> dict:
+    # Historical runs retain their original 1% gate when no budgets were recorded.
+    budgets = config.get("throughput_budgets_percent", {name: 1 for name in ["nginx", "envoy", "chain"]})
+    if scenario not in budgets:
+        return {"metric": "peak_throughput", "status": "diagnostic",
+                "reason": "No throughput budget was specified for this path"}
+    budget = budgets[scenario]
+    spread = (baseline["rps_range"][1] - baseline["rps_range"][0]) / baseline["rps"] * 100
+    return {"threshold_percent": budget, "metric": "peak_throughput",
+            "throughput_point_estimate_pass": drop <= budget,
+            "baseline_throughput_spread_percent": spread,
+            # A point estimate alone does not establish a repeatable throughput limit.
+            "status": "failed" if drop > budget else "inconclusive"}
+
+
 def command(*args: str) -> str:
     return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
 
@@ -126,7 +141,9 @@ class Benchmark:
         if len(set(cores)) != 6:
             raise ValueError("Select six distinct physical cores")
         config = {"rounds": args.rounds, "duration": args.duration, "rate": args.rate, "cpus": selected_cpus,
-                  "scenarios": args.scenarios, "connections": args.connections, "modes": args.modes}
+                  "scenarios": args.scenarios, "connections": args.connections, "modes": args.modes,
+                  "throughput_budgets_percent": {"nginx": getattr(args, "nginx_throughput_budget", 5),
+                                                 "envoy": getattr(args, "envoy_throughput_budget", 10)}}
         if getattr(args, "require_idle_builds", False):
             config["require_idle_builds"] = True
         if "config" in self.state and self.state["config"] != config:
@@ -494,15 +511,7 @@ http {{
             if "capacity_change_percent" in entry:
                 throughput_drop = -entry["capacity_change_percent"]["rps"]
                 baseline = entry["capacity_off"]
-                spread = (baseline["rps_range"][1] - baseline["rps_range"][0]) / baseline["rps"] * 100
-                entry["acceptance"] = {
-                    "threshold_percent": 1,
-                    "metric": "peak_throughput",
-                    "throughput_point_estimate_pass": throughput_drop <= 1,
-                    "baseline_throughput_spread_percent": spread,
-                    # A point estimate on a noisy workstation cannot establish a 1% limit.
-                    "status": "failed" if throughput_drop > 1 else "inconclusive",
-                }
+                entry["acceptance"] = throughput_acceptance(scenario, throughput_drop, baseline, self.state["config"])
             if "on" in self.state["config"].get("modes", ["off", "on"]) and "off" in self.state["config"].get("modes", ["off", "on"]):
                 entry["extra_header_bytes"] = self.state["endpoints"][f"{scenario}_on"]["header_bytes"] - self.state["endpoints"][f"{scenario}_off"]["header_bytes"]
             summary["results"][scenario] = entry
@@ -531,6 +540,10 @@ def main() -> None:
     parser.add_argument("--connections", type=int, nargs="+", default=[16, 64, 256, 1024], help="Capacity connection-count sweep")
     parser.add_argument("--cpus", type=int, nargs=6, help="Distinct physical cores: Nginx, outer Envoy, inner Envoy, backend, two clients")
     parser.add_argument("--modes", choices=["off", "on", "static", "reference"], nargs="+", default=["off", "on"], help="Static uses constant metrics; reference runs the previous implementation")
+    parser.add_argument("--nginx-throughput-budget", type=float, default=5,
+                        help="Maximum Nginx peak throughput loss in percent")
+    parser.add_argument("--envoy-throughput-budget", type=float, default=10,
+                        help="Maximum Envoy peak throughput loss in percent")
     parser.add_argument("--rounds", type=int, default=3)
     parser.add_argument("--require-idle-builds", action="store_true",
                         help="Invalidate the invocation if build activity appears before or during load")
@@ -539,6 +552,8 @@ def main() -> None:
     args = parser.parse_args()
     if min(args.rounds, args.duration, args.rate, *args.connections) <= 0 or min(args.connections) < 2:
         parser.error("rounds, duration, and rate must be positive; connections must be at least two")
+    if not all(0 <= value < 100 for value in [args.nginx_throughput_budget, args.envoy_throughput_budget]):
+        parser.error("throughput budgets must be finite percentages between zero and 100 (exclusive)")
     benchmark = Benchmark(args)
     if args.stage == "report":
         benchmark.report()

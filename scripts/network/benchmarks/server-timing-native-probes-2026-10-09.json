@@ -587,6 +587,216 @@
         }
       },
       "limitations": "No compiler interference was detected, but disabled peak throughput spanned 27% and identical reference/on controls differed by 1.13% at peak. The 2.61% loss point estimate exceeds the budget; this screening does not establish a stable feature overhead."
+    },
+    {
+      "name": "envoy_empty_wasm_v8",
+      "kind": "Diagnostic only: no-op Wasm response callback on the existing Istio image; no Envoy timing metrics; never a feature acceptance run",
+      "shipped": false,
+      "raw_directory": "server-timing-wasm-plugin-probe/noop-benchmark",
+      "module_sha256": "2d944b57e99e815fd01e22e2e1e031bb77a115f36abae14cb73c5fa5daf5ced0",
+      "module_bytes": 501,
+      "parameters": {
+        "rounds": 5,
+        "duration": 5,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "envoy"
+        ],
+        "connections": [
+          64
+        ],
+        "modes": [
+          "off",
+          "on"
+        ],
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "1.25 2.23 3.74 1/7065 2362679",
+        "commit": "aba03781852fd6c10c6e946979c82169421ccac1",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "harness_sha256": "b03a2bc17dd6baf1c3631a6f29de4d9df8874763fe0e30f65a83a52987c487ad",
+      "source_sha256": "a816905c94b9966b2c22820c930695a8e51c8635fb05ae5a9a573216f959609c",
+      "results": {
+        "envoy": {
+          "capacity_off": {
+            "rps": 13274.28,
+            "proxy_cpu_us_per_request": 68.25103219243657,
+            "proxy_anon_mib": 15.6484375,
+            "client_cpu_cores": 0.15993548399979823,
+            "rps_range": [
+              13199.07,
+              13323.8
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "64": {
+                "rps": 13274.28,
+                "rps_range": [
+                  13199.07,
+                  13323.8
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 12428.98,
+            "proxy_cpu_us_per_request": 73.25581990688148,
+            "proxy_anon_mib": 19.765625,
+            "client_cpu_cores": 0.15023615287754916,
+            "rps_range": [
+              12417.24,
+              12440.57
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "64": {
+                "rps": 12428.98,
+                "rps_range": [
+                  12417.24,
+                  12440.57
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -6.367953666790227,
+            "proxy_cpu_us_per_request": 7.332911391484465,
+            "proxy_anon_mib": 26.31053419870195,
+            "client_cpu_cores": -6.064527320442103
+          },
+          "acceptance": {
+            "threshold_percent": 1,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 0.9396366507260624,
+            "status": "failed"
+          },
+          "extra_header_bytes": 0
+        }
+      },
+      "limitations": "Five alternating rounds at fixed 64 connections; wrapper-only screening, not a connection sweep or Server-Timing acceptance. No compiler interference detected. The no-op already loses 6.37% with a 0.94% disabled range."
+    },
+    {
+      "name": "envoy_empty_native_header_mutation",
+      "kind": "Diagnostic only: empty stock HeaderMutation on the existing Istio image; no Envoy timing metrics; never a feature acceptance run",
+      "shipped": false,
+      "raw_directory": "server-timing-wasm-plugin-probe/native-empty-benchmark",
+      "parameters": {
+        "rounds": 5,
+        "duration": 5,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "envoy"
+        ],
+        "connections": [
+          64
+        ],
+        "modes": [
+          "off",
+          "on"
+        ],
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.62 1.44 3.00 1/7018 2366060",
+        "commit": "aba03781852fd6c10c6e946979c82169421ccac1",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "harness_sha256": "b03a2bc17dd6baf1c3631a6f29de4d9df8874763fe0e30f65a83a52987c487ad",
+      "source_sha256": "f5ad0163a79709c1623c8d45ff3a11f6280247eb3a781c95997a97c7a4e1aa94",
+      "results": {
+        "envoy": {
+          "capacity_off": {
+            "rps": 13317.08,
+            "proxy_cpu_us_per_request": 67.91356807932384,
+            "proxy_anon_mib": 15.56640625,
+            "client_cpu_cores": 0.15909474214540983,
+            "rps_range": [
+              13258.55,
+              13381.82
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "64": {
+                "rps": 13317.08,
+                "rps_range": [
+                  13258.55,
+                  13381.82
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 12968.25,
+            "proxy_cpu_us_per_request": 69.98483572030328,
+            "proxy_anon_mib": 15.56640625,
+            "client_cpu_cores": 0.15670040395023901,
+            "rps_range": [
+              12939.93,
+              13029.58
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "64": {
+                "rps": 12968.25,
+                "rps_range": [
+                  12939.93,
+                  13029.58
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -2.619418070628099,
+            "proxy_cpu_us_per_request": 3.049858370804759,
+            "proxy_anon_mib": 0.0,
+            "client_cpu_cores": -1.504976319696627
+          },
+          "acceptance": {
+            "threshold_percent": 1,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 0.9256533714598127,
+            "status": "failed"
+          },
+          "extra_header_bytes": 0
+        }
+      },
+      "limitations": "Five alternating rounds at fixed 64 connections. No compiler interference detected. The empty native filter lost 2.62% with a 0.93% disabled range; this isolates framework overhead and does not measure complete timing work."
     }
   ],
   "invalid_runs": [
@@ -614,6 +824,17 @@
         "soong_ui"
       ],
       "completed_samples": 18,
+      "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-native-concat-throughput",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "clang++-real",
+        "ninja",
+        "soong_ui"
+      ],
+      "completed_samples": 0,
       "acceptance": "invalid; no throughput conclusion"
     }
   ],
@@ -646,8 +867,22 @@
       "source_sha256": "5f8c01672458ee5b06455023d97107512edaba68e0b2e90ff73d9f0ade316d42",
       "module_sha256": "6b403db1bcb39ac24851c005358a5d8148a261f2f2fb42e39b81e88296521aa6",
       "shipped": false
+    },
+    "envoy_wasm_v8": {
+      "status": "Stock image configuration validation passed for a 501-byte independently compiled Wasm module. A five-round no-op response callback screening lost 6.37%; no full-metric candidate is shipped.",
+      "shipped": false
+    },
+    "envoy_native_concat": {
+      "status": "Eight integration checks passed on the existing Istio image. Capacity comparison invalidated by renewed Android compilation; guarded fresh Envoy/Nginx comparisons queued after a continuous idle window.",
+      "shipped": false
     }
   },
   "harness_sha256": "b03a2bc17dd6baf1c3631a6f29de4d9df8874763fe0e30f65a83a52987c487ad",
-  "reference_harness_correction": "Native reference mode now loads its own mounted binary. New invocations record the harness hash and reject resumes with missing or changed harness identity."
+  "reference_harness_correction": "Native reference mode now loads its own mounted binary. New invocations record the harness hash and reject resumes with missing or changed harness identity.",
+  "plugin_scope": "Use existing Istio/Envoy binary interfaces (native filters or Wasm); no full proxy recompilation.",
+  "current_acceptance_budgets_percent": {
+    "nginx": 5,
+    "envoy": 10
+  },
+  "historical_gates": "Each experiment retains its original recorded acceptance gate; current budgets do not retroactively reclassify historical runs."
 }

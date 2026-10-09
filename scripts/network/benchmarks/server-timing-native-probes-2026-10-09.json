@@ -394,7 +394,6 @@
             "proxy_anon_mib": 0.07468259895444529,
             "client_cpu_cores": -1.9668800017291987
           },
-          "throughput_change_from_reference_percent": 1.209889801990549,
           "acceptance": {
             "threshold_percent": 1,
             "metric": "peak_throughput",
@@ -402,10 +401,14 @@
             "baseline_throughput_spread_percent": 5.299224628824381,
             "status": "failed"
           },
-          "extra_header_bytes": 178
+          "extra_header_bytes": 178,
+          "withdrawn_reference_comparison": {
+            "previously_reported_change_percent": 1.209889801990549,
+            "reason": "Reference loaded the candidate binary instead of the cached-description binary"
+          }
         }
       },
-      "limitations": "Exploratory point estimates; capacity improvements below observed variation do not establish stable gains or a 1% bound"
+      "limitations": "The reference module-load file pointed to /module/server-timing.so, so reference loaded the on binary. The reported improvement over the previous candidate is withdrawn. The off/on screening remains exploratory and does not establish a 1% bound."
     }
   ],
   "invalid_runs": [
@@ -416,6 +419,24 @@
     {
       "raw_directory": "server-timing-throughput-nginx-template",
       "reason": "Concurrent Android ninja/rustc; throughput drift invalidated the invocation"
+    },
+    {
+      "raw_directory": "server-timing-throughput-nginx-template-idle",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "soong_ui"
+      ],
+      "completed_samples": 1,
+      "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-throughput-nginx-o3-pool-idle",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "soong_ui"
+      ],
+      "completed_samples": 18,
+      "acceptance": "invalid; no throughput conclusion"
     }
   ],
   "next_candidates": {
@@ -423,8 +444,31 @@
       "status": "Eight local integration checks passed; throughput screening invalidated by external compilation; no capacity conclusion"
     },
     "envoy_native_formatter": {
-      "status": "Native formatting core checks passed; pinned Istio Envoy build in progress; no proxy integration or throughput conclusion"
+      "status": "Standalone formatting checks and the formatter library build passed; complete Istio proxy build and proxy integration pending; no throughput conclusion",
+      "istio_source": "959dc66ceeb630a80b6fd7bba6a7de1bf469944d",
+      "envoy_source": "c90c9e9ba9b26d6a40717689269fc0c3c9c5702d",
+      "patch_sha256": "f393effebac6bbbe527851ac576cbc69a6b0b07c2175c36c963a85776dd65a90",
+      "shipped": false
+    },
+    "nginx_scoped_template": {
+      "status": "Nine integration checks passed, including configuration reload; throughput acceptance pending",
+      "source_sha256": "5f8c01672458ee5b06455023d97107512edaba68e0b2e90ff73d9f0ade316d42",
+      "module_sha256": "adfcdf4048635aff6bf098810f67b7b46563c118bd289f1e63de34ae3efc027a",
+      "shipped": false
+    },
+    "nginx_o3_template": {
+      "status": "Nine integration checks passed, including configuration reload; throughput acceptance pending",
+      "source_sha256": "5f8c01672458ee5b06455023d97107512edaba68e0b2e90ff73d9f0ade316d42",
+      "module_sha256": "6b403db1bcb39ac24851c005358a5d8148a261f2f2fb42e39b81e88296521aa6",
+      "shipped": false
+    },
+    "nginx_o3_pool_8k": {
+      "status": "Nine integration checks passed, including configuration reload; throughput acceptance pending",
+      "source_sha256": "5f8c01672458ee5b06455023d97107512edaba68e0b2e90ff73d9f0ade316d42",
+      "module_sha256": "6b403db1bcb39ac24851c005358a5d8148a261f2f2fb42e39b81e88296521aa6",
+      "shipped": false
     }
   },
-  "harness_sha256": "a3330e1cd768ed585d9ec2f15c3a7cafbf9b82fbb992f415bb6711f9b8ed9f6f"
+  "harness_sha256": "a3330e1cd768ed585d9ec2f15c3a7cafbf9b82fbb992f415bb6711f9b8ed9f6f",
+  "reference_harness_correction": "Native reference mode now loads its own mounted binary. New invocations record the harness hash and reject resumes with missing or changed harness identity."
 }

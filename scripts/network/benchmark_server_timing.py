@@ -106,6 +106,10 @@ class Benchmark:
             raise ValueError("This invocation was invalidated; use a new output directory")
         if args.stage == "report":
             return
+        harness_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        if self.state["samples"] and self.state.get("harness_sha256") != harness_hash:
+            raise ValueError("Benchmark harness changed or was not recorded; use a new output directory")
+        self.state["harness_sha256"] = harness_hash
         self.timing_dir = args.nginx_timing_dir.resolve()
         if not self.timing_dir.is_relative_to(ROOT.parent):
             raise ValueError("Candidate Nginx sources must remain inside the workspace")
@@ -186,7 +190,9 @@ class Benchmark:
     def nginx(self, role: str, listen: int, upstream: int, mode: str, cpu: int) -> str:
         enabled = mode in {"on", "reference"}
         directory, mount = (self.reference_dir, "/reference") if mode == "reference" else (self.timing_dir, "/module")
-        module = f"include {mount}/module-load.conf;" if (directory / "module-load.conf").exists() else "load_module /usr/lib/nginx/modules/ngx_http_js_module.so;"
+        module_config = directory / "module-load.conf"
+        module = (module_config.read_text().replace("/module/", f"{mount}/") if module_config.exists()
+                  else "load_module /usr/lib/nginx/modules/ngx_http_js_module.so;")
         imports = f"include {mount}/server-timing-http.conf;" if (directory / "server-timing-http.conf").exists() else f"js_import server_timing from {mount}/server-timing.js; include {mount}/server-timing-maps.conf;"
         if mode == "static":
             hop = f"benchmark-{role.replace('_static', '_on')}"
@@ -448,7 +454,9 @@ http {{
     def report(self) -> None:
         if self.state.get("invalid") or (self.output / "invalid.json").exists():
             raise RuntimeError("This invocation was invalidated; its raw samples cannot be used for acceptance")
-        summary = {"environment": self.state["environment"], "config": self.state["config"], "source_sha256": self.state.get("source_sha256"), "results": {}}
+        summary = {"environment": self.state["environment"], "config": self.state["config"],
+                   "source_sha256": self.state.get("source_sha256"),
+                   "harness_sha256": self.state.get("harness_sha256"), "results": {}}
         for scenario in self.state["config"].get("scenarios", ["nginx", "envoy", "chain"]):
             entry = {}
             for stage in ["capacity", "latency"]:

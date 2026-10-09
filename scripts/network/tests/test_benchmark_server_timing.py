@@ -1,5 +1,6 @@
 """Ensure capacity experiments cannot accept incomplete timing responses."""
 import importlib.util
+import json
 import unittest
 import tempfile
 from pathlib import Path
@@ -54,6 +55,18 @@ class BenchmarkTimingValidationTest(unittest.TestCase):
 
 
 class BenchmarkEnvironmentValidationTest(unittest.TestCase):
+    def test_resume_rejects_missing_or_changed_harness_identity(self):
+        with tempfile.TemporaryDirectory(dir=benchmark.ROOT.parent / "task-logs") as directory:
+            output = Path(directory)
+            for identity in [None, "another-harness"]:
+                state = {"samples": [{"key": "existing-sample"}], "containers": {}}
+                if identity is not None:
+                    state["harness_sha256"] = identity
+                (output / "state.json").write_text(json.dumps(state))
+                with self.subTest(identity=identity):
+                    with self.assertRaisesRegex(ValueError, "harness changed or was not recorded"):
+                        benchmark.Benchmark(SimpleNamespace(output=output, stage="capacity"))
+
     def test_detects_builds_without_blocking_normal_apps(self):
         with patch.object(benchmark, "command", return_value="chrome\nsoong_build\nrustc\nclang-21\n"):
             self.assertEqual(benchmark.active_builds(), ["clang-21", "rustc", "soong_build"])
@@ -78,6 +91,25 @@ class BenchmarkEnvironmentValidationTest(unittest.TestCase):
             (run.output / "invalid.json").write_text('{"reason":"Concurrent compilation"}')
             with self.assertRaisesRegex(RuntimeError, "cannot be used for acceptance"):
                 run.report()
+
+
+class BenchmarkNativeReferenceTest(unittest.TestCase):
+    def test_native_reference_loads_its_own_binary(self):
+        with tempfile.TemporaryDirectory(dir=benchmark.ROOT.parent / "task-logs") as directory:
+            output = Path(directory)
+            run = benchmark.Benchmark.__new__(benchmark.Benchmark)
+            run.output = output
+            run.timing_dir = output / "candidate"
+            run.reference_dir = output / "previous"
+            run.nginx_image = "nginx:test"
+            run.container = Mock()
+            for source in [run.timing_dir, run.reference_dir]:
+                source.mkdir()
+                (source / "module-load.conf").write_text("load_module /module/server-timing.so;\n")
+            run.nginx("nginx_reference", 18080, 19090, "reference", 16)
+            run.nginx("nginx_on", 18081, 19090, "on", 16)
+            self.assertIn("load_module /reference/server-timing.so;", (output / "nginx_reference.conf").read_text())
+            self.assertIn("load_module /module/server-timing.so;", (output / "nginx_on.conf").read_text())
 
 
 if __name__ == "__main__":

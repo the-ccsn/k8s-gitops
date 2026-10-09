@@ -226,13 +226,21 @@ It is not a feature acceptance run or a shipped implementation.
 A native Nginx prototype reads upstream states directly, caches descriptions,
 and appends to an existing opaque timing header. Its candidates passed eight
 local integration checks; the cached-description sweep still lost 3.9%.
-Reusing the existing header improved a later fixed-connection point estimate
-by 1.2%, below that run's 5.3% baseline range. Neither establishes a stable
-improvement or meets the budget. A subsequent cached-template screen and an
-Envoy static-header screen were invalidated by Android compilation.
-The cached-template candidate and a single native Envoy formatter remain
-under investigation; their throughput acceptance is pending. Prototype
-binaries and raw outputs are retained locally and are not deployed.
+The earlier reported 1.2% improvement from reusing the existing header is
+withdrawn: the native reference configuration accidentally loaded the candidate
+binary. The harness now resolves native module paths against each mode's own
+mount, records its own source hash, and refuses to resume samples taken with a
+changed or unrecorded harness. Neither that screening nor the cached-description
+sweep establishes the budget.
+
+Cached templates, configuration-owned caches, an O3 build, and an 8 KiB request
+pool remain under investigation. The latest Nginx candidates each passed nine
+integration checks, including configuration reload. Guarded template and O3/pool
+runs were invalidated when Android compilation restarted; the latter completed
+18 samples before invalidation. Those samples cannot establish capacity gains.
+The single native Envoy formatter compiled against the pinned Istio Envoy source;
+its full proxy build and integration checks are pending. Prototype binaries and
+raw outputs are retained locally and are not deployed.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

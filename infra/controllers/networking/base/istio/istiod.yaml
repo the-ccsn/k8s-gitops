@@ -5,6 +5,10 @@ kind: HelmRelease
 metadata:
   name: istiod
   namespace: istio-system
+  annotations:
+    image-lock/extra-images: >-
+      docker.io/istio/proxyv2:1.31.1-distroless@sha256:15e6087b4033bc6cfbcddc4b47d93cb0c2ec6f1a4730c349ee1f3308108e4acf
+      docker.io/library/busybox:1.37.0@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e
 spec:
   dependsOn:
     - name: istio-base
@@ -14,10 +18,17 @@ spec:
     kind: OCIRepository
     name: helm-chart-istiod
     namespace: istio-system
-  # https://github.com/istio/istio/blob/1.27.0/manifests/charts/istio-control/istio-discovery/values.yaml
+  valuesFrom:
+    - kind: ConfigMap
+      name: istio-server-timing
+      valuesKey: server-timing-values.yaml
+  # https://github.com/istio/istio/blob/1.31.1/manifests/charts/istio-control/istio-discovery/values.yaml
   values:
     profile: ambient
     global:
+      hub: docker.io/istio
+      tag: "1.31.1"
+      variant: distroless
       # Used to locate istiod.
       istioNamespace: istio-system
       # enable pod disruption budget for the control plane, which is used to

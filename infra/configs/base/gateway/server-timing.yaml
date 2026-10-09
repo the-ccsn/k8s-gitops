@@ -1,115 +1,44 @@
 apiVersion: v1
 kind: List
 items:
-  # Root-namespace policy covers HTTP gateways and sidecars in every namespace.
-  - apiVersion: networking.istio.io/v1alpha3
-    kind: EnvoyFilter
-    metadata:
-      name: server-timing
-      namespace: istio-system
-    spec:
-      priority: -10
-      configPatches: &serverTimingPatches
-        # Snapshot only this proxy's timing points at response headers.
-        - applyTo: ROUTE_CONFIGURATION
-          patch:
-            operation: MERGE
-            value:
-              response_headers_to_add:
-                - header:
-                    key: x-ccsn-envoy-timing
-                    # Keep the separator with the optional metrics, so an empty
-                    # result does not leave a trailing comma in Server-Timing.
-                    value: ',envoy_upstream_tcp;dur=%COMMON_DURATION(US_CX_BEG:US_CX_END:ms)%;desc="%HOSTNAME%",envoy_upstream_tls;dur=%COMMON_DURATION(US_CX_END:US_HS_END:ms)%;desc="%HOSTNAME%",envoy_upstream_headers;dur=%COMMON_DURATION(US_TX_BEG:US_RX_BEG:ms)%;desc="%HOSTNAME%",envoy_upstream_pool;dur=%UPSTREAM_CONNECTION_POOL_READY_DURATION%;desc="%HOSTNAME%",envoy_request_receive;dur=%REQUEST_DURATION%;desc="%HOSTNAME%"'
-                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
-        - applyTo: HTTP_FILTER
-          match:
-            listener:
-              filterChain:
-                filter:
-                  name: envoy.filters.network.http_connection_manager
-          patch:
-            # Run first on requests and last on responses, including local replies.
-            operation: INSERT_FIRST
-            value:
-              name: ccsn.server_timing
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.header_mutation.v3.HeaderMutation
-                mutations:
-                  request_mutations:
-                    - remove: x-ccsn-envoy-timing
-                  response_mutations:
-                    - append:
-                        header:
-                          key: server-timing
-                          value: 'envoy_headers;dur=%DURATION%;desc="%HOSTNAME%"%COALESCE({"operators":[{"command":"RESP","param":"x-ccsn-envoy-timing"},{"command":"DYNAMIC_METADATA","param":"ccsn.server_timing:metrics"}]})%'
-                        append_action: APPEND_IF_EXISTS_OR_ADD
-                    # Also remove helpers on denials before the converter executes.
-                    - remove: x-ccsn-envoy-timing
-        - applyTo: HTTP_FILTER
-          match:
-            listener:
-              filterChain:
-                filter:
-                  name: envoy.filters.network.http_connection_manager
-                  subFilter:
-                    name: ccsn.server_timing
-          patch:
-            operation: INSERT_AFTER
-            value:
-              name: ccsn.server_timing_upstream
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.common.matching.v3.ExtensionWithMatcher
-                # Bypass conversion when every duration is available. The final
-                # mutation copies our helper directly and always removes it.
-                xds_matcher:
-                  matcher_list:
-                    matchers:
-                      - predicate:
-                          not_matcher:
-                            single_predicate:
-                              input:
-                                name: envoy.matching.inputs.response_headers
-                                typed_config:
-                                  "@type": type.googleapis.com/envoy.type.matcher.v3.HttpResponseHeaderMatchInput
-                                  header_name: x-ccsn-envoy-timing
-                              value_match:
-                                # Header formatters omit missing duration values;
-                                # use a literal search instead of scanning with RE2.
-                                contains: ";dur=;"
-                        on_match:
-                          action:
-                            name: skip
-                            typed_config:
-                              "@type": type.googleapis.com/envoy.extensions.filters.common.matcher.action.v3.SkipFilter
-                extension_config:
-                  name: ccsn.server_timing_upstream
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
-                    response_rules:
-                      - header: x-ccsn-envoy-timing
-                        remove: true
-                        on_header_present:
-                          metadata_namespace: ccsn.server_timing
-                          key: metrics
-                          type: STRING
-                          regex_value_rewrite:
-                            # Each optional metric owns its leading separator,
-                            # including the first one and an entirely empty list.
-                            pattern:
-                              google_re2: {}
-                              regex: ',envoy_[a-z_]+;dur=-?;desc="[^"]*"'
-                            substitution: ""
-  # Istio 1.30 waypoints require explicit policy attachment.
-  - apiVersion: networking.istio.io/v1alpha3
-    kind: EnvoyFilter
-    metadata:
-      name: waypoint-server-timing
-      namespace: istio-system
-    spec:
-      priority: -10
-      targetRefs:
-        - group: gateway.networking.k8s.io
-          kind: GatewayClass
-          name: istio-waypoint
-      configPatches: *serverTimingPatches
+- apiVersion: networking.istio.io/v1alpha3
+  kind: EnvoyFilter
+  metadata:
+    name: server-timing
+    namespace: istio-system
+  spec:
+    priority: -10
+    configPatches: &id001
+    - applyTo: HTTP_FILTER
+      match:
+        proxy:
+          metadata:
+            CCSN_SERVER_TIMING: 49e1d724-87d6dbdd
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: ccsn.server_timing
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.dynamic_modules.v3.DynamicModuleFilter
+            dynamic_module_config:
+              module:
+                local:
+                  filename: /etc/istio/server-timing/server-timing.so
+              do_not_close: true
+            filter_name: server-timing
+- apiVersion: networking.istio.io/v1alpha3
+  kind: EnvoyFilter
+  metadata:
+    name: waypoint-server-timing
+    namespace: istio-system
+  spec:
+    priority: -10
+    targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: GatewayClass
+      name: istio-waypoint
+    configPatches: *id001

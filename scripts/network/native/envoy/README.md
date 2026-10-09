@@ -1,36 +1,22 @@
-# Native Envoy Server-Timing candidate
+# Native Envoy Server-Timing plugin
 
-This policy uses the stock HeaderMutation filter and builtin CEL formatter.
-Native route formatters provide one helper containing the available upstream
-TCP/TLS/header/pool and request-receive intervals. The response mutation runs
-late in the encoder chain and measures elapsed time with `%DURATION%`.
-Complete TLS intervals are copied directly. Missing intervals are filtered by
-a regex fallback; real zero remains present. The private helper is removed and
-existing upstream Server-Timing fields remain opaque. The proxy does not
-buffer streaming bodies or inspect another proxy's metrics.
+The three C/C++ files use the stock dynamic-module filter loader and pinned public
+StreamInfo interfaces. There is no Go runtime and no Envoy rebuild. The ELF
+build-ID guard rejects incompatible proxies before accessing C++ interfaces.
 
-The root and waypoint attachments share the same patches. Eleven two-worker
-checks and nine strict fixture preflights passed on the pinned stock Istio
-proxy, covering TLS/plaintext, local responses, 2,000 fast replies, changed
-durations, later response-filter waiting, and streaming. No proxy compilation
-or separately compiled plugin is required. This directory is not referenced
-by the production kustomization. Throughput acceptance is pending.
+The pinned Istio 1.31.1 package passed the 10% throughput gate: HTTP loss
+4.88% (95% upper bound 5.07%) and upstream TLS loss 4.37% (upper 4.75%).
+Both AMD64 and ARM64 passed 13 two-worker integration checks; ARM64 uses QEMU
+for functionality only. Raw samples and package hashes are in the benchmark catalog.
 
-The policy removes the second helper used by the earlier CEL experiment,
-avoiding duplicated native interval and hostname formatting. Run the guarded
-comparison after local compilation stops:
+`build.py --external SDK_SOURCES --generated SDK_PROTO_HEADERS --output OUTPUT`
+compiles only three translation units. Use Clang 21 with libc++ headers;
+`--flags` accepts explicit cross-compiler and linker flags. `--stage verify`
+checks the output independently. The SDK must match the pinned Envoy revision
+`ae1505b84c97a618838ea3d22b8f5a6f872826f9`; the script never runs a proxy build.
 
-```sh
-nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
-  scripts/network/benchmark_server_timing.py --stage capacity \
-  --output ../task-logs/server-timing-native-cel-capacity \
-  --envoy-policy scripts/network/native/envoy/policy.yaml \
-  --reference-envoy-policy infra/configs/base/gateway/server-timing.yaml \
-  --scenarios envoy --modes off reference on --connections 16 64 256 \
-  --rounds 7 --duration 6 --require-idle-builds \
-  --nginx-throughput-budget 5 --envoy-throughput-budget 10
-```
-
-Use a fresh output directory for changed inputs. Complete curves, frozen
-identities, and historical experiments are recorded in
-`../../benchmarks/server-timing-native-probes-2026-10-09.json`.
+`prepare_runtime.py --chart PINNED_ISTIOD_CHART --output VALUES --loader-output LOADER`
+verifies module identities and generates the four stock injection templates.
+A node DaemonSet installs an immutable versioned module once. Proxies mount it
+read-only; the filter matches their module-version metadata. Existing proxies
+join after their next rollout. No registry publication or request scripts are required.

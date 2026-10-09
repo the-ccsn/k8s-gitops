@@ -9,9 +9,12 @@ spec:
   dependsOn:
     - name: istio-base
     - name: istiod
+    - name: istio-cni
   releaseName: ztunnel
   interval: 30m
   chartRef:
     kind: OCIRepository
     name: helm-chart-ztunnel
     namespace: istio-system
+  values:
+    image: ghcr.io/the-ccsn/ztunnel:1.31.1-ccsn-chacha20-31f6cb6bb606cef858c3db5abc3578df313ad45d@sha256:7a630dcd49cf6095bc001e16aff2992d5c299d585fbb8eaa5e2c19c589da6dc9

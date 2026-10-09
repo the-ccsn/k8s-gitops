@@ -31,7 +31,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 NGINX_DIR = ROOT / "infra/configs/base/i319-reroute"
-ENVOY_IMAGE = "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless"
+ENVOY_IMAGE = "mirror.gcr.io/istio/proxyv2:1.31.1-distroless@sha256:bdf5cb574340307f60438d5ebc3ba71a785e0b53bc3b7c5d02af9f0f975d04d4"
 
 
 def active_builds() -> list[str]:
@@ -42,18 +42,26 @@ def active_builds() -> list[str]:
     } or name.strip().startswith("clang")})
 
 
-def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]]) -> None:
+def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]],
+                    upstream_protocol: str = "tls") -> None:
     """Reject candidates that gain capacity by omitting or corrupting metrics."""
-    if any(key.lower() == "x-ccsn-envoy-timing" for key, _ in headers):
+    if any(key.lower() in {"x-ccsn-envoy-timing", "x-ccsn-envoy-plain-timing"} for key, _ in headers):
         raise ValueError("Private timing helper leaked into a benchmark response")
     timing = ",".join(value for key, value in headers if key.lower() == "server-timing")
-    # This fixture's descriptions are DNS hostnames; its backend emits app;dur=1.
+    # Compact names preserve the same six measurements. Descriptions are DNS
+    # hostnames, which can use either token or quoted-string syntax.
+    aliases = {"envoy_tcp": "envoy_upstream_tcp", "envoy_tls": "envoy_upstream_tls",
+               "envoy_ttfb": "envoy_upstream_headers", "envoy_pool": "envoy_upstream_pool",
+               "envoy_receive": "envoy_request_receive",
+               "e_hdr": "envoy_headers", "e_tcp": "envoy_upstream_tcp",
+               "e_tls": "envoy_upstream_tls", "e_ttfb": "envoy_upstream_headers",
+               "e_pool": "envoy_upstream_pool", "e_rx": "envoy_request_receive"}
     names = []
     for metric in timing.split(","):
-        match = re.fullmatch(r'\s*([a-z_]+);dur=([0-9]+(?:\.[0-9]+)?)(?:;desc="[^"]*")?\s*', metric)
+        match = re.fullmatch(r'\s*([a-z_]+);dur=([0-9]+(?:\.[0-9]+)?)(?:;desc=(?:"[^"]*"|[a-zA-Z0-9._-]+))?\s*', metric)
         if match is None:
             raise ValueError(f"Invalid benchmark timing metric: {metric!r}")
-        names.append(match[1])
+        names.append(aliases.get(match[1], match[1]))
     expected = Counter({"app": 1})
     if mode != "off":
         if scenario in {"nginx", "chain"}:
@@ -62,7 +70,7 @@ def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]]) ->
             hops = 2 if scenario == "chain" else 1
             expected.update({name: hops for name in ["envoy_headers", "envoy_upstream_tcp",
                             "envoy_upstream_headers", "envoy_upstream_pool", "envoy_request_receive"]})
-            expected["envoy_upstream_tls"] = 1
+            expected["envoy_upstream_tls"] = int(upstream_protocol == "tls")
     if Counter(names) != expected:
         raise ValueError(f"Benchmark timing metrics differ: expected {dict(expected)}, got {dict(Counter(names))}")
 
@@ -149,6 +157,8 @@ def physical_cpus() -> list[int]:
 class Benchmark:
     def __init__(self, args: argparse.Namespace):
         self.args = args
+        self.envoy_image = getattr(args, "envoy_image", ENVOY_IMAGE)
+        self.upstream_protocol = getattr(args, "envoy_upstream_protocol", "tls")
         self.output = args.output.resolve()
         if not self.output.is_relative_to(ROOT.parent):
             raise ValueError("Artifacts must remain inside the workspace")
@@ -180,6 +190,9 @@ class Benchmark:
             raise ValueError("Select six distinct physical cores")
         config = {"rounds": args.rounds, "duration": args.duration, "rate": args.rate, "cpus": selected_cpus,
                   "scenarios": args.scenarios, "connections": args.connections, "modes": args.modes,
+                  "envoy_upstream_protocol": self.upstream_protocol,
+                  "envoy_image": self.envoy_image,
+                  "diagnostic": bool(getattr(args, "diagnostic", False)),
                   "throughput_budgets_percent": {"nginx": getattr(args, "nginx_throughput_budget", 5),
                                                  "envoy": getattr(args, "envoy_throughput_budget", 10)},
                   "confidence_method": "paired_round_bootstrap_95pct"}
@@ -188,11 +201,21 @@ class Benchmark:
         if "config" in self.state and self.state["config"] != config:
             raise ValueError("Existing run parameters differ; select another output directory")
         self.state["config"] = config
+        if config["diagnostic"]:
+            self.state["diagnostic"] = True
         policy = args.envoy_policy.resolve()
         if not policy.is_relative_to(ROOT.parent):
             raise ValueError("Candidate policy must remain inside the workspace")
         sources = [policy, *sorted(p for p in self.timing_dir.iterdir()
                    if p.name.startswith("server-timing") or p.name == "module-load.conf")]
+        self.envoy_module = None
+        if "/etc/istio/server-timing/server-timing.so" in policy.read_text():
+            architecture = {"x86_64": "amd64", "aarch64": "arm64"}[os.uname().machine]
+            self.envoy_module = (getattr(args, "envoy_module", None) or ROOT /
+                                 f"infra/controllers/networking/base/istio/server-timing-{architecture}.module").resolve()
+            if not self.envoy_module.is_relative_to(ROOT.parent) or not self.envoy_module.is_file():
+                raise ValueError("The native Envoy plugin must exist inside the workspace")
+            sources.append(self.envoy_module)
         if "reference" in args.modes:
             sources += [reference_policy, *sorted(p for p in self.reference_dir.iterdir()
                         if p.name.startswith("server-timing") or p.name == "module-load.conf")]
@@ -206,7 +229,7 @@ class Benchmark:
         self.patches = yaml.safe_load(policy.read_text())["items"][0]["spec"]["configPatches"]
         self.reference_patches = yaml.safe_load(reference_policy.read_text())["items"][0]["spec"]["configPatches"]
         self.state.setdefault("environment", {
-            "nginx_image": self.nginx_image, "envoy_image": ENVOY_IMAGE,
+            "nginx_image": self.nginx_image, "envoy_image": self.envoy_image,
             "cpu_model": next(line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines() if line.startswith("model name")),
             "initial_load": Path("/proc/loadavg").read_text().strip(),
             "commit": command("git", "-C", str(ROOT), "rev-parse", "HEAD").strip(),
@@ -235,10 +258,13 @@ class Benchmark:
                 command("podman", "start", name)
             return role
         name = f"ccsn-timing-bench-{role}-{self.state['run_id']}"
+        native_mount = (["--volume", f"{self.envoy_module}:/etc/istio/server-timing/server-timing.so:ro"]
+                        if self.envoy_module is not None else [])
         command("podman", "run", "--detach", "--name", name, "--hostname", f"benchmark-{role.replace('_reference', '_on')}",
                 "--user", "0", "--network", "host",
                 "--entrypoint", entrypoint, "--volume", f"{self.output}:/bench:ro",
-                "--volume", f"{self.timing_dir}:/module:ro", "--volume", f"{self.reference_dir}:/reference:ro", image, *args)
+                "--volume", f"{self.timing_dir}:/module:ro", "--volume", f"{self.reference_dir}:/reference:ro",
+                *native_mount, image, *args)
         self.state["containers"][role] = name
         self.persist()
         return role
@@ -247,8 +273,14 @@ class Benchmark:
         enabled = mode in {"on", "reference"}
         directory, mount = (self.reference_dir, "/reference") if mode == "reference" else (self.timing_dir, "/module")
         module_config = directory / "module-load.conf"
-        module = (module_config.read_text().replace("/module/", f"{mount}/") if module_config.exists()
-                  else "load_module /usr/lib/nginx/modules/ngx_http_js_module.so;")
+        architecture = {"x86_64": "amd64", "aarch64": "arm64"}.get(os.uname().machine)
+        native_module = directory / f"server-timing-{architecture}.module"
+        if module_config.exists():
+            module = module_config.read_text().replace("/module/", f"{mount}/")
+        elif native_module.exists():
+            module = f"load_module {mount}/{native_module.name};"
+        else:
+            module = "load_module /usr/lib/nginx/modules/ngx_http_js_module.so;"
         imports = f"include {mount}/server-timing-http.conf;" if (directory / "server-timing-http.conf").exists() else f"js_import server_timing from {mount}/server-timing.js; include {mount}/server-timing-maps.conf;"
         if mode == "static":
             hop = f"benchmark-{role.replace('_static', '_on')}"
@@ -329,7 +361,7 @@ http {{
                 if patch["applyTo"] == "NETWORK_FILTER":
                     hcm.update(copy.deepcopy(patch["patch"]["value"]["typed_config"]))
         (self.output / f"{role}.yaml").write_text(yaml.safe_dump(bootstrap))
-        return self.container(role, cpu, ENVOY_IMAGE, "/usr/local/bin/envoy", ["-c", f"/bench/{role}.yaml",
+        return self.container(role, cpu, self.envoy_image, "/usr/local/bin/envoy", ["-c", f"/bench/{role}.yaml",
                               "--disable-hot-restart", "--concurrency", "1", "-l", "error"])
 
     def prepare(self) -> None:
@@ -364,8 +396,11 @@ http {{
 """)
         self.container("backend", self.cpus[3], self.nginx_image, "nginx", ["-c", "/bench/backend.conf", "-g", "daemon off;"])
         self.state["endpoints"] = {}
+        upstream_tls = self.upstream_protocol == "tls"
         for mode in self.args.modes:
-            inner = self.envoy(f"envoy_{mode}", ports[f"envoy_{mode}"], ports["backend_tls"], mode, self.cpus[2], tls=True)
+            inner = self.envoy(f"envoy_{mode}", ports[f"envoy_{mode}"],
+                               ports["backend_tls" if upstream_tls else "backend"],
+                               mode, self.cpus[2], tls=upstream_tls)
             outer = self.envoy(f"outer_{mode}", ports[f"outer_{mode}"], ports[f"envoy_{mode}"], mode, self.cpus[1])
             nginx = self.nginx(f"nginx_{mode}", ports[f"nginx_{mode}"], ports["backend"], mode, self.cpus[0])
             chain = self.nginx(f"chain_{mode}", ports[f"chain_{mode}"], ports[f"outer_{mode}"], mode, self.cpus[0])
@@ -383,7 +418,7 @@ http {{
                         response = conn.getresponse()
                         assert response.status == 200 and len(response.read()) == 256
                         scenario, mode = key.rsplit("_", 1)
-                        validate_timing(scenario, mode, response.getheaders())
+                        validate_timing(scenario, mode, response.getheaders(), self.upstream_protocol)
                         endpoint["header_bytes"] = sum(len(k.encode()) + len(v.encode()) + 4 for k, v in response.getheaders())
                         endpoint["server_timing"] = response.getheader("Server-Timing")
                     break
@@ -578,10 +613,16 @@ def main() -> None:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--envoy-policy", type=Path, default=ROOT / "infra/configs/base/gateway/server-timing.yaml",
                         help="Optional candidate policy inside the workspace")
+    parser.add_argument("--envoy-module", type=Path, help="Optional native plugin; defaults to the verified architecture package")
+    parser.add_argument("--envoy-image", default=ENVOY_IMAGE, help="Pinned proxy image or immutable cached image ID")
+    parser.add_argument("--envoy-upstream-protocol", choices=["tls", "plain"], default="tls",
+                        help="Benchmark TLS or plaintext upstreams independently")
     parser.add_argument("--nginx-timing-dir", type=Path, default=NGINX_DIR)
     parser.add_argument("--reference-envoy-policy", type=Path, help="Previous implementation for reference mode")
     parser.add_argument("--reference-nginx-timing-dir", type=Path, help="Previous Nginx implementation for reference mode")
     parser.add_argument("--stage", choices=["all", "prepare", "capacity", "latency", "report"], default="all")
+    parser.add_argument("--diagnostic", action="store_true",
+                        help="Collect optimization evidence without qualifying the run for acceptance")
     parser.add_argument("--scenarios", choices=["nginx", "envoy", "chain"], nargs="+", default=["nginx", "envoy", "chain"])
     parser.add_argument("--connections", type=int, nargs="+", default=[16, 64, 256, 1024], help="Capacity connection-count sweep")
     parser.add_argument("--cpus", type=int, nargs=6, help="Distinct physical cores: Nginx, outer Envoy, inner Envoy, backend, two clients")

@@ -4,7 +4,7 @@ metadata:
   name: i319-reroute-nginx-config
 data:
   nginx.conf: |
-    load_module /usr/lib/nginx/modules/ngx_http_js_module.so;
+    load_module /etc/nginx/native-modules/ngx_http_ccsn_server_timing_module.so;
 
     # Enable PCRE JIT for maximum regex performance
     pcre_jit on;
@@ -17,8 +17,7 @@ data:
     }
 
     http {
-        js_import server_timing from /etc/nginx/server-timing/server-timing.js;
-        include /etc/nginx/server-timing/server-timing-maps.conf;
+        include /etc/nginx/server-timing/server-timing-http.conf;
 
         # Disable access log for gigabit throughput
         access_log off;

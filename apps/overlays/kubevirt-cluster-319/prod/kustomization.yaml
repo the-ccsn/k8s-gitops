@@ -11,6 +11,7 @@ resources:
   - ./../../../base/headlamp/
   - ./../../../base/flux-operator/
   - ./../../../base/vaultwarden/
+  - ./../../../base/openlist/
 # Apply after commonLabels to preserve the adapter's existing selector.
 patchesJson6902:
   - target:

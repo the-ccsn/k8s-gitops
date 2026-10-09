@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: omv-seaweedfs-s3-campus
+  namespace: prod
+  labels:
+    app.kubernetes.io/name: omv-seaweedfs-s3
+spec:
+  secretName: omv-seaweedfs-s3-campus-tls
+  issuerRef:
+    name: letsencrypt-infra
+    kind: ClusterIssuer
+  dnsNames:
+    - s3.ccsn.dev
+    - s3.319.ccsn.dev
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always

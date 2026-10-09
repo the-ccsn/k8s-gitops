@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- helm-repository.yaml
+- bootstrap-config.yaml
+- openlist-private-identity.yaml
+- openlist-private-seed.yaml
+- openlist-private-helm-release.yaml
+- openlist-public-identity.yaml
+- openlist-public-seed.yaml
+- openlist-public-helm-release.yaml
+- public-dns.yaml

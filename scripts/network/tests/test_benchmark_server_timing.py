@@ -38,6 +38,50 @@ class BenchmarkTimingValidationTest(unittest.TestCase):
     def test_accepts_real_zeros_and_omits_plaintext_tls(self):
         benchmark.validate_timing("chain", "on", [("Server-Timing", CHAIN_TIMING)])
 
+    def test_plaintext_chain_requires_every_available_interval(self):
+        plaintext = CHAIN_TIMING.replace(',envoy_upstream_tls;dur=0;desc="inner"', "")
+        benchmark.validate_timing("chain", "on", [("Server-Timing", plaintext)], "plain")
+        for invalid in [CHAIN_TIMING,
+                        plaintext.replace(',envoy_request_receive;dur=0;desc="inner"', "")]:
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(ValueError, "metrics differ"):
+                    benchmark.validate_timing("chain", "on", [("Server-Timing", invalid)], "plain")
+
+    def test_tls_upstream_requires_a_real_handshake_interval(self):
+        missing_tls = CHAIN_TIMING.replace(',envoy_upstream_tls;dur=0;desc="inner"', "")
+        with self.assertRaisesRegex(ValueError, "metrics differ"):
+            benchmark.validate_timing("chain", "on", [("Server-Timing", missing_tls)], "tls")
+
+    def test_compact_metrics_retain_all_measurements_and_hops(self):
+        compact = CHAIN_TIMING
+        for old, new in [("envoy_upstream_tcp", "envoy_tcp"),
+                         ("envoy_upstream_tls", "envoy_tls"),
+                         ("envoy_upstream_headers", "envoy_ttfb"),
+                         ("envoy_upstream_pool", "envoy_pool"),
+                         ("envoy_request_receive", "envoy_receive")]:
+            compact = compact.replace(old, new)
+        compact = compact.replace('desc="inner"', 'desc=inner').replace('desc="outer"', 'desc=outer')
+        benchmark.validate_timing("chain", "on", [("Server-Timing", compact)])
+        for invalid in [compact.replace(',envoy_ttfb;dur=0;desc=outer', ""),
+                        compact + ',envoy_upstream_tcp;dur=0;desc=outer',
+                        compact + ',envoy_tls;dur=0;desc=outer']:
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(ValueError, "metrics differ"):
+                    benchmark.validate_timing("chain", "on", [("Server-Timing", invalid)])
+
+        short = compact
+        for old, new in [("envoy_headers", "e_hdr"), ("envoy_tcp", "e_tcp"),
+                         ("envoy_tls", "e_tls"), ("envoy_ttfb", "e_ttfb"),
+                         ("envoy_pool", "e_pool"), ("envoy_receive", "e_rx")]:
+            short = short.replace(old, new)
+        benchmark.validate_timing("chain", "on", [("Server-Timing", short)])
+        for invalid in [short.replace(',e_rx;dur=0;desc=outer', ""),
+                        short + ',envoy_request_receive;dur=0;desc=outer',
+                        short + ',e_tls;dur=0;desc=outer']:
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(ValueError, "metrics differ"):
+                    benchmark.validate_timing("chain", "on", [("Server-Timing", invalid)])
+
     def test_rejects_empty_duration_from_failed_conversion(self):
         malformed = CHAIN_TIMING + ',envoy_upstream_tls;dur=;desc="outer"'
         with self.assertRaisesRegex(ValueError, "Invalid benchmark timing"):
@@ -49,10 +93,12 @@ class BenchmarkTimingValidationTest(unittest.TestCase):
             benchmark.validate_timing("chain", "on", [("Server-Timing", incomplete)])
 
     def test_rejects_private_helper_leak(self):
-        with self.assertRaisesRegex(ValueError, "helper leaked"):
-            benchmark.validate_timing("chain", "on", [
-                ("Server-Timing", CHAIN_TIMING), ("x-ccsn-envoy-timing", "private")
-            ])
+        for helper in ["x-ccsn-envoy-timing", "x-ccsn-envoy-plain-timing"]:
+            with self.subTest(helper=helper):
+                with self.assertRaisesRegex(ValueError, "helper leaked"):
+                    benchmark.validate_timing("chain", "on", [
+                        ("Server-Timing", CHAIN_TIMING), (helper, "private")
+                    ])
 
 
 class BenchmarkEnvironmentValidationTest(unittest.TestCase):

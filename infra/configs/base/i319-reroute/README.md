@@ -104,12 +104,11 @@ timeouts. Reload or roll out the Nginx Deployment when changing its ConfigMaps.
 
 All production, staging, and infrastructure HTTP/HTTPS proxy locations append
 Nginx's own `Server-Timing` metrics while preserving upstream metrics unchanged.
-Single upstream attempts use native lazy maps and `add_header`; njs handles
-retries and partial measurements. The njs module is already included in the
-pinned Nginx image. A generated, hashed ConfigMap triggers a Deployment rollout
-when timing configuration or the fallback module changes.
-See [Server Timing](../../../../README.gateway.md#server-timing) for metric
-definitions, limitations, and local verification commands.
+A native module reports header time and available upstream connect/header
+intervals, including real zero values and retry attempts. It appends its own
+field without reading or changing upstream fields. Hash-named ConfigMaps
+trigger rollouts; the startup container selects the local architecture and
+Nginx mounts its module read-only.
 
 K3s CoreDNS imports the overlay's `coredns-custom` ConfigMap. Its `local.override`
 forwards `.local` queries to the OpenWrt DNS server at `192.168.1.1`; other

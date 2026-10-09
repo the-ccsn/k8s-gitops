@@ -1,0 +1,6 @@
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - kind: HelmRelease
+        group: helm.toolkit.fluxcd.io
+        path: spec/valuesFrom/name

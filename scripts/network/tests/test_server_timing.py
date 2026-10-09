@@ -8,6 +8,8 @@ from __future__ import annotations
 import copy
 import http.client
 import json
+import os
+import platform
 import re
 import socket
 import ssl
@@ -23,12 +25,23 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 NGINX_DIR = ROOT / "infra/configs/base/i319-reroute"
+MODULE_DIR = ROOT / "infra/controllers/networking/base/istio"
 ENVOY_POLICY = ROOT / "infra/configs/base/gateway/server-timing.yaml"
-ENVOY_IMAGE = "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless"
+ENVOY_IMAGES = {
+    "amd64": "mirror.gcr.io/istio/proxyv2:1.31.1-distroless@sha256:bdf5cb574340307f60438d5ebc3ba71a785e0b53bc3b7c5d02af9f0f975d04d4",
+    "arm64": "mirror.gcr.io/istio/proxyv2:1.31.1-distroless@sha256:cd6b1a2f3a96aac17a1cf3faa5efd4ea51aae88231e2fabc7c84c019a3994ddb",
+}
+ENVOY_IMAGE = os.environ.get("TIMING_TEST_ENVOY_IMAGE") or ENVOY_IMAGES[
+    os.environ.get("TIMING_TEST_ENVOY_ARCH") or
+    {"x86_64": "amd64", "aarch64": "arm64"}[platform.machine()]]
 
 
 def run(*args: str) -> str:
-    return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+    try:
+        return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as error:
+        print(error.output)
+        raise
 
 
 def free_port() -> int:
@@ -39,26 +52,87 @@ def free_port() -> int:
 
 class Backend(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+    response_wait_started = threading.Event()
+
+    def setup(self) -> None:
+        super().setup()
+        self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
     def do_GET(self) -> None:
-        # Make upstream waiting distinguishable from connect/handshake time.
-        time.sleep(0.08)
+        if self.path == "/delay":
+            self.response_wait_started.set()
+        delay = int(self.headers.get("x-test-delay", "0"))
+        if delay: time.sleep(delay / 1000)
+        # Fast responses exercise the cached formatting path.
+        if self.path != "/fast":
+            time.sleep(0.08)
         self.send_response(503 if self.path == "/error" else 200)
         self.send_header("Server-Timing", 'app;dur=7;desc="query, render"')
         self.send_header("Server-Timing", "opaque_layer;dur=9")
         self.send_header("Content-Length", "2")
+        self.send_header("x-test-upstream-connection", str(self.client_address[1]))
         self.end_headers()
+        if self.path == "/fast":
+            self.wfile.write(b"ok")
+            return
         self.wfile.write(b"o")
         self.wfile.flush()
         if self.path == "/stream":
             time.sleep(1.5)
         self.wfile.write(b"k")
+        if self.path == "/response-delay":
+            self.rfile.read(int(self.headers.get("Content-Length", "0")))
 
     def log_message(self, *_args: object) -> None:
         pass
 
 
 class ServerTimingIntegrationTest(unittest.TestCase):
+    def test_request_receive_becomes_available_during_response_delay(self):
+        Backend.response_wait_started.clear()
+        with closing(http.client.HTTPConnection("127.0.0.1", self.inner_port, timeout=2)) as connection:
+            connection.putrequest("GET", "/response-delay")
+            connection.putheader("Content-Length", "2")
+            connection.endheaders(b"x")
+            self.assertTrue(Backend.response_wait_started.wait(1), "Late response filter never started")
+            connection.send(b"k")
+            response = connection.getresponse()
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.read(), b"ok")
+            timing = response.getheader("Server-Timing")
+            received = re.search(r"e_rx;dur=([0-9.]+)", timing)
+            self.assertIsNotNone(received, timing)
+            self.assertGreaterEqual(float(received.group(1)), 50, timing)
+            self.assertIsNone(response.getheader("x-ccsn-envoy-timing"))
+
+
+    def test_sustained_fast_responses_preserve_all_metrics(self):
+        for port in [self.inner_port, self.outer_port]:
+            with closing(http.client.HTTPConnection("127.0.0.1", port, timeout=2)) as connection:
+                for _ in range(1000):
+                    connection.request("GET", "/fast")
+                    response = connection.getresponse()
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(response.read(), b"ok")
+                    timing = response.getheader("Server-Timing")
+                    for metric in ["e_hdr", "e_tcp", "e_ttfb", "e_pool", "e_rx"]:
+                        self.assertEqual(timing.count(metric + ";"), 1 if port == self.inner_port else 2)
+                    self.assertEqual(timing.count("e_tls;"), 1)
+                    self.assertNotIn(";dur=;", timing)
+                    self.assertIsNone(response.getheader("x-ccsn-envoy-timing"))
+
+    def test_changed_intervals_are_measured_on_each_response(self):
+        with closing(http.client.HTTPConnection("127.0.0.1", self.inner_port, timeout=2)) as connection:
+            for delay in [0, 2, 17, 31, 1, 0, 12, 8]:
+                connection.request("GET", "/fast", headers={"x-test-delay": str(delay)})
+                response = connection.getresponse()
+                self.assertEqual(response.read(), b"ok")
+                timing = response.getheader("Server-Timing")
+                duration = float(re.search(r"e_ttfb;dur=([0-9.]+)", timing).group(1))
+                self.assertGreaterEqual(duration, max(delay - 2, 0), timing)
+                self.assertEqual(timing.count("e_ttfb;"), 1)
+                self.assertIsNone(response.getheader("x-ccsn-envoy-timing"))
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.containers: list[str] = []
@@ -102,6 +176,12 @@ class ServerTimingIntegrationTest(unittest.TestCase):
         command = ["podman", "run", "--detach", "--name", name, "--hostname", f"timing-{role}",
                    "--user", "0", "--network", "host", "--entrypoint", entrypoint,
                    "--volume", f"{cls.artifacts}:/test:ro"]
+        if role.startswith("nginx") and os.environ.get("TIMING_TEST_NGINX_ARCH"):
+            command.extend(["--arch", os.environ["TIMING_TEST_NGINX_ARCH"]])
+        if image == ENVOY_IMAGE:
+            architecture = os.environ.get("TIMING_TEST_ENVOY_ARCH") or {"x86_64": "amd64", "aarch64": "arm64"}[platform.machine()]
+            command.extend(["--arch", architecture, "--volume",
+                            f"{MODULE_DIR / ('server-timing-' + architecture + '.module')}:/etc/istio/server-timing/server-timing.so:ro"])
         for mount in mounts or []:
             command.extend(["--volume", mount])
         run(*command, image, *args)
@@ -113,8 +193,10 @@ class ServerTimingIntegrationTest(unittest.TestCase):
             {"match": {"path": "/local"}, "direct_response": {"status": 403}},
             {"match": {"prefix": "/"}, "route": {"cluster": "backend"}},
         ]}]}
-        route.update(copy.deepcopy(cls.patches[0]["patch"]["value"]))
-        filters = [copy.deepcopy(cls.patches[1]["patch"]["value"]), {
+        for patch in cls.patches:
+            if patch["applyTo"] == "ROUTE_CONFIGURATION":
+                route.update(copy.deepcopy(patch["patch"]["value"]))
+        filters = [*(copy.deepcopy(patch["patch"]["value"]) for patch in cls.patches if patch["applyTo"] == "HTTP_FILTER"), {
             "name": "test.local_reply",
             "typed_config": {
                 "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua",
@@ -135,7 +217,7 @@ function envoy_on_response(handle)
 end
 """},
             },
-        }, *(copy.deepcopy(patch["patch"]["value"]) for patch in cls.patches[2:]), {
+        }, {
             "name": "envoy.filters.http.router",
             "typed_config": {"@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"},
         }]
@@ -156,6 +238,10 @@ end
                 "stat_prefix": "test", "route_config": route, "http_filters": filters,
             }}]}],
         }]}}
+        hcm = bootstrap["static_resources"]["listeners"][0]["filter_chains"][0]["filters"][0]["typed_config"]
+        for patch in cls.patches:
+            if patch["applyTo"] == "NETWORK_FILTER":
+                hcm.update(copy.deepcopy(patch["patch"]["value"]["typed_config"]))
         if tls:
             listener = copy.deepcopy(bootstrap["static_resources"]["listeners"][0])
             listener["name"] = "https"
@@ -172,15 +258,22 @@ end
             bootstrap["static_resources"]["listeners"].append(listener)
         (cls.artifacts / f"{role}.yaml").write_text(yaml.safe_dump(bootstrap))
         cls.container(role, ENVOY_IMAGE, "/usr/local/bin/envoy", ["-c", f"/test/{role}.yaml",
-                      "--disable-hot-restart", "--concurrency", "1", "-l", "error"])
+                      "--disable-hot-restart", "--concurrency", os.environ.get("TIMING_TEST_WORKERS", "1"), "-l", "error"])
 
     @classmethod
     def start_nginx(cls, backend_port: int) -> None:
         cls.nginx_image = yaml.safe_load((NGINX_DIR / "deployment.yaml").read_text())["spec"]["template"]["spec"]["containers"][0]["image"]
+        if os.environ.get("TIMING_TEST_NGINX_ARCH") == "arm64":
+            cls.nginx_image = "nginx:mainline-alpine@sha256:7dd09a6c4f8cab9a2d2cb98fb39790f220e8bc2ea106b2cebde64b90405e0be8"
         main = yaml.safe_load((NGINX_DIR / "nginx-config.yaml").read_text())["data"]["nginx.conf"]
         (cls.artifacts / "nginx.conf").write_text(main)
         (cls.artifacts / "nginx-servers").mkdir()
-        # Reuse the production module/import and location handler, change only listeners/backends.
+        architecture = os.environ.get("TIMING_TEST_NGINX_ARCH") or {
+            "x86_64": "amd64", "aarch64": "arm64",
+        }[platform.machine()]
+        module = NGINX_DIR / f"server-timing-{architecture}.module"
+        cls.native_mounts = [f"{module}:/etc/nginx/native-modules/ngx_http_ccsn_server_timing_module.so:ro"]
+        # Reuse the production module and location handler; change listeners/backends.
         (cls.artifacts / "nginx-servers/test.conf").write_text(f"""
 upstream test_retry {{
     server 127.0.0.1:{free_port()};
@@ -211,6 +304,7 @@ server {{
 }}
 """)
         cls.container("nginx", cls.nginx_image, "nginx", ["-c", "/test/nginx.conf", "-g", "daemon off;"], [
+            *cls.native_mounts,
             f"{NGINX_DIR}:/etc/nginx/server-timing:ro",
             f"{cls.artifacts / 'nginx-servers'}:/etc/nginx/conf.d:ro",
         ])
@@ -244,31 +338,29 @@ server {{
     def test_each_proxy_works_independently(self) -> None:
         _, nginx = self.fetch(self.nginx_port, "/standalone")
         self.assertIn("nginx_upstream_headers", nginx)
-        # The fallback formats decimals; integer milliseconds demonstrate that
-        # the normal response used the native map instead of creating njs state.
         self.assertRegex(nginx, r"nginx_headers;dur=[0-9]+;")
         self.assertRegex(nginx, r"nginx_upstream_headers;dur=[0-9]+;")
-        self.assertNotIn("envoy_", nginx)
+        self.assertNotIn("e_hdr;", nginx)
         _, envoy = self.fetch(self.inner_port)
-        self.assertIn("envoy_upstream_headers", envoy)
+        self.assertIn("e_ttfb", envoy)
         self.assertNotIn("nginx_", envoy)
 
     def test_chain_preserves_all_hops_and_tls(self) -> None:
         _, timing = self.fetch(self.nginx_port)
         for metric in ['app;dur=7;desc="query, render"', "opaque_layer;dur=9", "nginx_upstream_connect", "nginx_upstream_headers",
-                       "envoy_upstream_tcp", "envoy_upstream_tls", "envoy_upstream_headers", "envoy_headers"]:
+                       "e_tcp", "e_tls", "e_ttfb", "e_hdr"]:
             self.assertIn(metric, timing)
-        self.assertEqual(timing.count("envoy_upstream_headers;"), 2)
-        self.assertIn('desc="timing-inner"', timing)
-        self.assertIn('desc="timing-outer"', timing)
+        self.assertEqual(timing.count("e_ttfb;"), 2)
+        self.assertIn('desc=timing-inner', timing)
+        self.assertIn('desc=timing-outer', timing)
         self.assertNotIn("forged", timing)
-        self.assertNotIn('envoy_upstream_tls;dur=;desc="timing-outer"', timing)
-        self.assertNotRegex(timing, r'envoy_upstream_tls;[^,]*desc="timing-outer"')
+        self.assertNotIn('e_tls;dur=;desc=timing-outer', timing)
+        self.assertNotRegex(timing, r'e_tls;[^,]*desc=timing-outer')
         self.assertNotIn("dur=-", timing)
         self.assertNotIn("dur=;", timing)
         # Both native total durations and seconds-to-milliseconds maps must
         # reflect the 80 ms backend wait, rather than completion-only zeros.
-        for metric in ["nginx_headers", "nginx_upstream_headers", "envoy_headers", "envoy_upstream_headers"]:
+        for metric in ["nginx_headers", "nginx_upstream_headers", "e_hdr", "e_ttfb"]:
             durations = re.findall(metric + r";dur=([0-9.]+)", timing)
             self.assertTrue(durations)
             self.assertTrue(all(70 <= float(value) < 1000 for value in durations), durations)
@@ -280,13 +372,13 @@ server {{
             self.assertEqual(actual, status)
             self.assertIn("nginx_headers", timing)
             if path != "/nginx-local":
-                self.assertIn("envoy_headers", timing)
+                self.assertIn("e_hdr", timing)
 
     def test_elapsed_headers_include_response_filter_wait(self) -> None:
         status, timing = self.fetch(self.inner_port, "/response-delay")
         self.assertEqual(status, 200)
-        elapsed = float(re.search(r"envoy_headers;dur=([0-9.]+)", timing).group(1))
-        upstream = float(re.search(r"envoy_upstream_headers;dur=([0-9.]+)", timing).group(1))
+        elapsed = float(re.search(r"e_hdr;dur=([0-9.]+)", timing).group(1))
+        upstream = float(re.search(r"e_ttfb;dur=([0-9.]+)", timing).group(1))
         self.assertGreaterEqual(elapsed, 140, timing)
         self.assertGreaterEqual(upstream, 70, timing)
         self.assertGreaterEqual(elapsed - upstream, 60, timing)
@@ -304,6 +396,10 @@ server {{
             hosts.update(re.findall(r"server ([a-z0-9.-]+):\d+;", text))
         name = f"ccsn-server-timing-nginx-config-{self.run_id}"
         command = ["podman", "run", "--name", name, "--user", "0", "--entrypoint", "nginx"]
+        if os.environ.get("TIMING_TEST_NGINX_ARCH"):
+            command.extend(["--arch", os.environ["TIMING_TEST_NGINX_ARCH"]])
+        for mount in self.native_mounts:
+            command.extend(["--volume", mount])
         for host in sorted(hosts):
             command.extend(["--add-host", f"{host}:127.0.0.1"])
         command.extend([
@@ -326,15 +422,19 @@ server {{
 
     def test_upstream_tls_and_connection_reuse(self) -> None:
         context = ssl.create_default_context(cafile=str(self.artifacts / "tls.crt"))
+        identities = []
         with closing(http.client.HTTPSConnection("localhost", self.tls_port, context=context, timeout=5)) as conn:
             for _ in range(2):
                 conn.request("GET", "/")
                 response = conn.getresponse()
                 timing = response.getheader("Server-Timing")
                 self.assertEqual(response.status, 200)
-                self.assertIn("envoy_upstream_pool;", timing)
-                self.assertIn("envoy_upstream_tls;", timing)
+                self.assertIn("e_pool;", timing)
+                self.assertIn("e_tls;", timing)
+                identities.append(response.getheader("x-test-upstream-connection"))
                 response.read()
+        self.assertIsNotNone(identities[0])
+        self.assertEqual(identities[0], identities[1], "Upstream TLS connection was not reused")
 
     def test_local_reply_before_request_body_omits_all_unavailable_timings(self) -> None:
         with closing(http.client.HTTPConnection("127.0.0.1", self.inner_port, timeout=5)) as conn:
@@ -346,8 +446,8 @@ server {{
             response = conn.getresponse()
             self.assertEqual(response.status, 403)
             timing = response.getheader("Server-Timing")
-            self.assertIn("envoy_headers;", timing)
-            self.assertEqual(timing.count("envoy_"), 1)
+            self.assertIn("e_hdr;", timing)
+            self.assertEqual(timing.count("e_"), 1)
             self.assertNotIn("__end", timing)
             self.assertNotIn("dur=;", timing)
             self.assertFalse(timing.rstrip().endswith(","), timing)
@@ -363,6 +463,31 @@ server {{
             self.assertIn("nginx_headers", response.getheader("Server-Timing"))
             self.assertEqual(response.read(), b"ok")
 
+
+original_backend_get = Backend.do_GET
+peer_timing = 'e_tls;dur=;desc="peer-layer"'
+opaque_timing = 'alien_layer;dur=;desc="comma, opaque"'
+def with_opaque_peer(self):
+    if self.path != "/opaque-peer": return original_backend_get(self)
+    self.send_response(200)
+    self.send_header("Server-Timing", peer_timing)
+    self.send_header("Server-Timing", opaque_timing)
+    self.send_header("Content-Length", "2")
+    self.end_headers()
+    self.wfile.write(b"ok")
+Backend.do_GET = with_opaque_peer
+
+def test_opaque_peer_fields_are_not_repaired(self):
+    for port in [self.inner_port, self.outer_port, self.nginx_port]:
+        with closing(http.client.HTTPConnection("127.0.0.1", port, timeout=2)) as connection:
+            connection.request("GET", "/opaque-peer")
+            response = connection.getresponse()
+            self.assertEqual(response.read(), b"ok")
+            values = [v for k, v in response.getheaders() if k.lower() == "server-timing"]
+            self.assertIn(peer_timing, values)
+            self.assertIn(opaque_timing, values)
+            self.assertNotIn('e_tls;dur=;desc=timing-outer', ",".join(values))
+ServerTimingIntegrationTest.test_opaque_peer_fields_are_not_repaired = test_opaque_peer_fields_are_not_repaired
 
 if __name__ == "__main__":
     unittest.main()

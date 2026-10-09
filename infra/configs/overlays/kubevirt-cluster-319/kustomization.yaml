@@ -16,6 +16,7 @@ resources:
   - ./cloudflare-operator/
   - ./i319-reroute/
   - ./coredns-custom.yaml
+  - ./seaweedfs-s3/
 
 patches:
   - target:

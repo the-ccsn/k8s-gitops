@@ -13,6 +13,9 @@ namespace: i319-reroute
 configMapGenerator:
   - name: i319-reroute-server-timing
     files:
-      - server-timing.js
-      - server-timing-maps.conf
       - server-timing-headers.conf
+      - server-timing-http.conf
+  - name: i319-reroute-server-timing-module
+    files:
+      - nginx-timing-amd64.so=server-timing-amd64.module
+      - nginx-timing-arm64.so=server-timing-arm64.module

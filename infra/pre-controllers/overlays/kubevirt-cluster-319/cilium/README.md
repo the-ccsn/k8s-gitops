@@ -179,3 +179,23 @@ done
 ```
 
 The key idea is to sync neighbor entries from BGP route changes. That way VIPs can be advertised to the upstream router without proxying the entire IP block with `ndppd`.
+
+## BPF masquerade address selection
+
+The common module declares `snat0` as a static networkd dummy device, with the node IPv4 `/32`
+and its usable public IPv6 `/128`. Cilium uses `derive-masq-ip-addr-from-device: snat0` to
+select those sources while traffic still leaves through `ovsbr1`. This avoids masquerading to
+kube-vip service addresses attached to the same bridge. Update `egressIPv6` if the campus
+public prefix changes. The node transport ULA and SLAAC configuration remain in place.
+
+Upstream tracking: [Cilium #38376](https://github.com/cilium/cilium/issues/38376) was closed by
+stale automation without implementing preferred-address selection;
+[#17158](https://github.com/cilium/cilium/issues/17158) tracks routing-based BPF SNAT selection.
+PR #43996 is already included in 1.19.4 and only fixes public/private category priority.
+
+Roll out Nix hosts sequentially, checking API readiness after each host. Verify `snat0` has
+both addresses, the Ambient probe source remains local, and the NIC/OVS/IPv6 MTUs are 9000
+before changing Cilium. The initial Helm rollout uses OnDelete; evict one agent at a time
+and gate each node on Ambient/non-Ambient dual-stack traffic, probes and public egress.
+Existing Pod interfaces retain their original MTU until they are recreated. After all three
+agents pass, restore RollingUpdate with maxUnavailable=1 in GitOps.

@@ -1,5 +1,4 @@
-# FIXME: gcr.io/istio-release is retiring
-# should be replaced with registry.istio.io/release mirror/equivalent
+# Istio 1.31+ publishes official OCI charts to GHCR.
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -11,9 +10,9 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.nju.edu.cn/istio-release/charts/base
+  url: oci://ghcr.io/istio/release/charts/base
   ref:
-    tag: "1.30.0-rc.0"
+    tag: "1.31.1"
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -25,9 +24,9 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.nju.edu.cn/istio-release/charts/cni
+  url: oci://ghcr.io/istio/release/charts/cni
   ref:
-    tag: "1.30.0-rc.0"
+    tag: "1.31.1"
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -39,9 +38,9 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.nju.edu.cn/istio-release/charts/ztunnel
+  url: oci://ghcr.io/istio/release/charts/ztunnel
   ref:
-    tag: "1.30.0-rc.0"
+    tag: "1.31.1"
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -53,6 +52,6 @@ spec:
   layerSelector:
     mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
     operation: copy
-  url: oci://gcr.nju.edu.cn/istio-release/charts/istiod
+  url: oci://ghcr.io/istio/release/charts/istiod
   ref:
-    tag: "1.30.0-rc.0"
+    tag: "1.31.1"

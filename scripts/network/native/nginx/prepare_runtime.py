@@ -70,7 +70,8 @@ def prepare(args):
             raise ValueError(f"The {arch} module differs from the verified package")
         blobs[f"nginx-timing-{arch}.so"] = blob
     files = ["kustomization.yaml", "nginx-config.yaml", "nginx-subconfig.yaml",
-             "deployment.yaml", "service.yaml", "cert.yaml", "server-timing-headers.conf"]
+             "deployment.yaml", "service.yaml", "cert.yaml", "server-timing-headers.conf",
+             "server-timing-http.conf"]
     inputs = {name: digest((BASE / name).read_bytes()) for name in files}
     inputs.update({name: digest(blob) for name, blob in blobs.items()})
     inputs["prepare_runtime.py"] = digest(Path(__file__).read_bytes())
@@ -89,46 +90,14 @@ def prepare(args):
         (args.output / name).write_bytes(blob)
 
     deployment = yaml.safe_load((BASE / "deployment.yaml").read_text())
-    pod = deployment["spec"]["template"]["spec"]
-    nginx = pod["containers"][0]
-    if nginx["image"] != IMAGE:
-        raise ValueError("The Nginx image changed; verify and record new compatible packages first")
-    pod["initContainers"] = [{
-        "name": "server-timing-module", "image": IMAGE,
-        "command": ["sh", "-eu", "-c"], "args": [INIT_SCRIPT],
-        "volumeMounts": [
-            {"name": "server-timing-binaries", "mountPath": "/binaries", "readOnly": True},
-            {"name": "server-timing-module", "mountPath": "/selected"},
-        ],
-    }]
-    pod["volumes"].extend([
-        {"name": "server-timing-binaries", "configMap": {"name": "i319-reroute-server-timing-module"}},
-        {"name": "server-timing-module", "emptyDir": {}},
-    ])
-    nginx["volumeMounts"].append({"name": "server-timing-module",
-                                  "mountPath": "/etc/nginx/native-modules", "readOnly": True})
-    config = yaml.safe_load((BASE / "nginx-config.yaml").read_text())
-    main = config["data"]["nginx.conf"]
-    main = main.replace("load_module /usr/lib/nginx/modules/ngx_http_js_module.so;",
-                        f"load_module /etc/nginx/native-modules/{MODULE};")
-    main = main.replace("js_import server_timing from /etc/nginx/server-timing/server-timing.js;\n"
-                        "    include /etc/nginx/server-timing/server-timing-maps.conf;",
-                        "ccsn_server_timing on;")
-    if "js_import" in main or "server-timing-maps.conf" in main:
-        raise ValueError("The base timing configuration changed; update the preparation step")
-    config["data"]["nginx.conf"] = main
+    nginx = deployment["spec"]["template"]["spec"]["containers"][0]
+    require(nginx["image"] == IMAGE, "Verify new compatible packages before changing Nginx")
     kustomization = yaml.safe_load((BASE / "kustomization.yaml").read_text())
     generator = next(item for item in kustomization["configMapGenerator"]
-                     if item["name"] == "i319-reroute-server-timing")
-    generator["files"] = ["server-timing-headers.conf"]
-    kustomization["configMapGenerator"].append({
-        "name": "i319-reroute-server-timing-module", "files": list(blobs),
-    })
-    for name, value in (("deployment.yaml", deployment), ("nginx-config.yaml", config),
-                        ("kustomization.yaml", kustomization)):
-        (args.output / name).write_text(yaml.dump(value, Dumper=LiteralDumper, sort_keys=False))
-    (args.output / "server-timing-headers.conf").write_text(
-        "add_header_inherit merge;\nccsn_server_timing on;\n")
+                     if item["name"] == "i319-reroute-server-timing-module")
+    generator["files"] = list(blobs)
+    (args.output / "kustomization.yaml").write_text(
+        yaml.dump(kustomization, Dumper=LiteralDumper, sort_keys=False))
     state["stage"] = "prepared"
     save(state_path, state)
     print(f"Prepared runtime bundle: {args.output}")
@@ -169,7 +138,12 @@ def verify(args):
     config = next(item for item in resources if item["kind"] == "ConfigMap"
                   and "nginx.conf" in item.get("data", {}))["data"]["nginx.conf"]
     require(f"load_module /etc/nginx/native-modules/{MODULE};" in config, "Module is not loaded")
-    require("ccsn_server_timing on;" in config and "js_import" not in config, "Native timing is not enabled")
+    timing_config = next(item for item in resources if item["kind"] == "ConfigMap"
+                         and "server-timing-http.conf" in item.get("data", {}))["data"]
+    require("include /etc/nginx/server-timing/server-timing-http.conf;" in config
+            and "js_import" not in config
+            and "ccsn_server_timing on;" in timing_config["server-timing-http.conf"],
+            "Native timing is not enabled")
     state["stage"] = "verified"
     save(args.output / "manifest-sources.json", state)
     print("Verified both binary hashes, generated rollout reference, init image, and native timing configuration")

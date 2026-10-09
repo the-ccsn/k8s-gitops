@@ -1,0 +1,8 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: openlist
+  namespace: prod
+spec:
+  interval: 12h
+  url: https://openlistteam.github.io/OpenList-Helm

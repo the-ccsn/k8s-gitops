@@ -80,6 +80,18 @@ spec:
               - op: add
                 path: /spec/progressDeadlineSeconds
                 value: 1200
+              - op: add
+                path: /spec/template/spec/volumes/-
+                value:
+                  name: seaweedfs-s3-direct-dns
+                  configMap:
+                    name: seaweedfs-s3-direct-dns
+              - op: add
+                path: /spec/template/spec/containers/0/volumeMounts/-
+                value:
+                  name: seaweedfs-s3-direct-dns
+                  mountPath: /etc/s3-direct-dns
+                  readOnly: true
           - target:
               version: v1
               kind: ConfigMap
@@ -88,6 +100,7 @@ spec:
               - op: replace
                 path: /data/Corefile
                 value: |
+                  import /etc/s3-direct-dns/*.server
                   .:1053 {
                       # Only address queries should use Gateway records.
                       view addresses {

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openlist-bootstrap
+  namespace: prod
+data:
+  bootstrap.py: "import gzip,json,os,pathlib,sqlite3\nroot=pathlib.Path('/data')\n\
+    database=root/'data.db'\nif not database.exists():\n    temporary=root/'data.db.seed'\n\
+    \    temporary.write_bytes(gzip.decompress(pathlib.Path('/seed/data.db.gz').read_bytes()))\n\
+    \    temporary.chmod(0o600)\n    temporary.replace(database)\nif not (root/'config.json').exists():\n\
+    \    (root/'config.json').write_bytes(pathlib.Path('/seed/config.json').read_bytes())\n\
+    \    (root/'config.json').chmod(0o600)\nsettings={\n    'site_url':os.environ['SITE_URL'],\n\
+    \    'sso_login_enabled':'true','sso_login_platform':'OIDC',\n    'sso_client_id':pathlib.Path('/oidc/clientId').read_text().strip(),\n\
+    \    'sso_client_secret':pathlib.Path('/oidc/clientSecret').read_text().strip(),\n\
+    \    'sso_endpoint_name':'https://login.ccsn.dev/oidc',\n    'sso_oidc_username_key':'sub','sso_extra_scopes':'email',\n\
+    \    'sso_auto_register':os.environ['SSO_AUTO_REGISTER'],\n    'sso_default_dir':'/','sso_default_permission':'256',\n\
+    \    'sso_compatibility_mode':'false'}\nconnection=sqlite3.connect(database)\n\
+    for key,value in settings.items():\n    result=connection.execute('update x_setting_items\
+    \ set value=? where key=?',(value,key))\n    if not result.rowcount:\n       \
+    \ connection.execute('insert into x_setting_items (key,value,type,\"group\",flag,\"\
+    index\") values (?,?,?,7,1,0)',(key,value,'string'))\nassert connection.execute('pragma\
+    \ integrity_check').fetchone()[0]=='ok'\nconnection.commit()\nconnection.close()\n\
+    print('Copied migration state if needed and configured native OIDC without exposing\
+    \ credentials.')\n"

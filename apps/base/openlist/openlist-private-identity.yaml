@@ -1,0 +1,49 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: openlist-private
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: OpenList Private
+    type: Traditional
+    description: Native OIDC for alist.ccsn.dev
+    isThirdParty: false
+    redirectUris:
+    - https://alist.ccsn.dev/api/auth/sso_callback?method=sso_get_token
+    - https://alist.ccsn.dev/api/auth/sso_callback?method=get_sso_id
+    postLogoutRedirectUris:
+    - https://alist.ccsn.dev/
+    corsAllowedOrigins: []
+    customClientMetadataExtra: '{"idTokenTtl":3600,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Secret
+metadata:
+  name: openlist-private-credential
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: GitOps
+    applicationIdRef:
+      name: openlist-private
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+  writeConnectionSecretToRef:
+    name: openlist-private-oidc

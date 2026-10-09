@@ -1,0 +1,72 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openlist-public
+  namespace: prod
+spec:
+  releaseName: openlist-public
+  interval: 30m
+  timeout: 15m
+  chart:
+    spec:
+      chart: openlist
+      version: 0.1.1
+      sourceRef:
+        kind: HelmRepository
+        name: openlist
+  values:
+    fullnameOverride: openlist-public
+    replicaCount: 1
+    image:
+      registry: docker.ccsn.dev
+      repository: openlistteam/openlist
+      tag: v4.2.6@sha256:c555c6e1c8af2aead38ed12ec761ac077fdf046d19cf033414be8e056aec6b64
+    persistence:
+      storageClass: longhorn-backup
+      size: 5Gi
+      accessMode: ReadWriteOnce
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: openlist-public
+        patch: "- op: add\n  path: /spec/strategy\n  value:\n    type: Recreate\n\
+          - op: add\n  path: /spec/template/spec/automountServiceAccountToken\n  value:\
+          \ false\n- op: add\n  path: /spec/template/spec/securityContext/runAsUser\n\
+          \  value: 1001\n- op: add\n  path: /spec/template/spec/securityContext/runAsGroup\n\
+          \  value: 1001\n- op: add\n  path: /spec/template/spec/securityContext/runAsNonRoot\n\
+          \  value: true\n- op: add\n  path: /spec/template/spec/securityContext/seccompProfile\n\
+          \  value:\n    type: RuntimeDefault\n- op: add\n  path: /spec/template/spec/containers/0/resources\n\
+          \  value:\n    requests:\n      cpu: 100m\n      memory: 128Mi\n    limits:\n\
+          \      memory: 1Gi\n- op: add\n  path: /spec/template/spec/containers/0/securityContext\n\
+          \  value:\n    allowPrivilegeEscalation: false\n    readOnlyRootFilesystem:\
+          \ true\n    capabilities:\n      drop:\n      - ALL\n- op: add\n  path:\
+          \ /spec/template/spec/containers/0/volumeMounts/-\n  value:\n    name: temporary\n\
+          \    mountPath: /tmp\n- op: add\n  path: /spec/template/spec/containers/0/readinessProbe\n\
+          \  value:\n    httpGet:\n      path: /ping\n      port: 5244\n    periodSeconds:\
+          \ 5\n    timeoutSeconds: 3\n- op: add\n  path: /spec/template/spec/containers/0/livenessProbe\n\
+          \  value:\n    httpGet:\n      path: /ping\n      port: 5244\n    periodSeconds:\
+          \ 15\n    timeoutSeconds: 3\n- op: add\n  path: /spec/template/spec/containers/0/startupProbe\n\
+          \  value:\n    httpGet:\n      path: /ping\n      port: 5244\n    periodSeconds:\
+          \ 5\n    failureThreshold: 60\n- op: add\n  path: /spec/template/spec/volumes/-\n\
+          \  value:\n    name: seed\n    secret:\n      secretName: openlist-public-seed\n\
+          \      defaultMode: 288\n- op: add\n  path: /spec/template/spec/volumes/-\n\
+          \  value:\n    name: oidc\n    secret:\n      secretName: openlist-public-oidc\n\
+          \      defaultMode: 288\n- op: add\n  path: /spec/template/spec/volumes/-\n\
+          \  value:\n    name: bootstrap\n    configMap:\n      name: openlist-bootstrap\n\
+          - op: add\n  path: /spec/template/spec/volumes/-\n  value:\n    name: temporary\n\
+          \    emptyDir:\n      sizeLimit: 1Gi\n- op: add\n  path: /spec/template/spec/initContainers\n\
+          \  value:\n  - name: bootstrap\n    image: docker.ccsn.dev/library/python:3.13-alpine\n\
+          \    command:\n    - python3\n    - /bootstrap/bootstrap.py\n    env:\n\
+          \    - name: SITE_URL\n      value: https://share.ccsn.dev\n    - name:\
+          \ SSO_AUTO_REGISTER\n      value: 'true'\n    securityContext:\n      allowPrivilegeEscalation:\
+          \ false\n      readOnlyRootFilesystem: true\n      capabilities:\n     \
+          \   drop:\n        - ALL\n    resources:\n      requests:\n        cpu:\
+          \ 20m\n        memory: 32Mi\n      limits:\n        memory: 128Mi\n    volumeMounts:\n\
+          \    - name: openlist-data\n      mountPath: /data\n    - name: seed\n \
+          \     mountPath: /seed\n      readOnly: true\n    - name: oidc\n      mountPath:\
+          \ /oidc\n      readOnly: true\n    - name: bootstrap\n      mountPath: /bootstrap\n\
+          \      readOnly: true\n    - name: temporary\n      mountPath: /tmp\n"

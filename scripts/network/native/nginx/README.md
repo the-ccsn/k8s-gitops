@@ -16,8 +16,22 @@ The disabled peak range was 3.33%. Raw-source and harness identities and
 complete curves are recorded in `../../benchmarks/server-timing-native-probes-2026-10-09.json`.
 
 This remains a candidate: the production manifests still use maps and njs.
-No module binary is included or deployed. Build the dynamic module against the
-pinned image's Nginx version and compatible configure flags; the Nginx addon
-entrypoint is `config`. Use `--add-dynamic-module=<this directory>` and the
-`make -f objs/Makefile modules` target to build the module alone. Verify the
-result against the intended image and architecture before packaging it.
+No module binary is included or deployed. The `config` addon entrypoint was
+independently rebuilt against the pinned Nginx 1.29.8 source and passed all ten
+integration checks. Its executable section matches the accepted candidate.
+
+Build the module alone using the pinned source and flake inputs:
+
+```sh
+nix build .#nginx-server-timing-module --out-link ./nginx-timing-result
+```
+
+The output is `nginx-timing-result/lib/nginx/modules/ngx_http_ccsn_server_timing_module.so`.
+The package builds only the dynamic module target with O3 and compatibility
+enabled; it rejects a runtime library dependency. It retains Nix compiler
+hardening, so its executable section differs from the accepted candidate.
+Ten package integration checks passed; a separate guarded fourteen-round
+throughput comparison is pending. Acceptance is not transferred between binaries.
+Native builds are exposed
+for x86_64 Linux and aarch64 Linux. Verify the package against the intended
+image and architecture before packaging it.

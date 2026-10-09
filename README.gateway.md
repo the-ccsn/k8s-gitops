@@ -309,8 +309,16 @@ configuration, but high-concurrency variation raised the 95% upper loss
 to 9.55%. A fourteen-round guarded replication then passed the 5% gate:
 point loss 4.03%, 95% upper loss 4.46%, and baseline peak range 3.33%.
 Its [native module source](scripts/network/native/nginx/ngx_http_ccsn_server_timing_module.c)
-is available for review; packaging and the production configuration switch
-remain pending. A duplicate-port fixture failed
+is available for review; runtime delivery and the production configuration switch
+remain pending. Its standalone addon entrypoint rebuilt successfully and
+passed ten integration checks; the executable section matches the accepted
+candidate. `nix build .#nginx-server-timing-module` now builds only the dynamic
+module from pinned source and flake inputs. This 15,192-byte package also passed
+ten integration checks and six fixture preflights. Its compiler hardening
+changes the executable section, so a separate fourteen-round throughput
+comparison is queued after the Envoy comparison and a fresh compiler-idle
+window; the earlier acceptance is not transferred to this binary.
+A duplicate-port fixture failed
 preflight before any load; port allocation now holds every reservation until
 all roles have distinct ports, and seventeen benchmark regressions pass.
 

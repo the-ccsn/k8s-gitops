@@ -2572,6 +2572,90 @@
         "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
         "stopped_containers": 13
       }
+    },
+    "native_nginx_pinned_nix_package": {
+      "scope": "Pinned Nix standalone Nginx dynamic module package; no proxy binary is built",
+      "source_archive_sha256": "7f1b985dace8fe706dfc288b83927c928f0ae60bcb7507c2d4e0025eca7280c3",
+      "source_sha256": "5f8c01672458ee5b06455023d97107512edaba68e0b2e90ff73d9f0ade316d42",
+      "module_sha256": "25c53a6289891d71117496e576fcbdb5f19630d46a577d9ff60c8831704f485d",
+      "module_bytes": 15192,
+      "compiler": "Clang 21.1.8 with Nix stdenv hardening and O3",
+      "architecture": "x86_64-linux",
+      "runtime_library_dependencies": [],
+      "integration": "Ten checks passed with two Envoy workers, including Nginx reload, opaque upstream headers, retries, errors, streaming, all production locations, and later response-filter waits",
+      "native_addon_rebuild": {
+        "integration_checks": 10,
+        "executable_text_matches_accepted_candidate": true,
+        "module_sha256": "13a1c0febea5b5b76b4ff8dc1566d7ce7fab226cf99d7239a004d5159126f095"
+      },
+      "package_executable_text_matches_accepted_candidate": false,
+      "throughput": "Pending separate guarded precision comparison; previous candidate acceptance is not transferred",
+      "shipped": false,
+      "arm64_runtime_verified": false,
+      "preflight": {
+        "raw_directory": "server-timing-nginx-nix-package-preflight-20261009",
+        "endpoints": {
+          "nginx_off": {
+            "url": "http://127.0.0.1:53957/",
+            "roles": [
+              "nginx_off"
+            ],
+            "header_bytes": 156,
+            "server_timing": "app;dur=1"
+          },
+          "envoy_off": {
+            "url": "http://127.0.0.1:57633/",
+            "roles": [
+              "envoy_off"
+            ],
+            "header_bytes": 159,
+            "server_timing": "app;dur=1"
+          },
+          "chain_off": {
+            "url": "http://127.0.0.1:34331/",
+            "roles": [
+              "chain_off",
+              "outer_off",
+              "envoy_off"
+            ],
+            "header_bytes": 190,
+            "server_timing": "app;dur=1"
+          },
+          "nginx_on": {
+            "url": "http://127.0.0.1:40089/",
+            "roles": [
+              "nginx_on"
+            ],
+            "header_bytes": 334,
+            "server_timing": "app;dur=1,nginx_headers;dur=0;desc=\"benchmark-nginx_on\", nginx_upstream_connect;dur=0;desc=\"benchmark-nginx_on attempt 1\", nginx_upstream_headers;dur=0;desc=\"benchmark-nginx_on attempt 1\""
+          },
+          "envoy_on": {
+            "url": "http://127.0.0.1:59121/",
+            "roles": [
+              "envoy_on"
+            ],
+            "header_bytes": 484,
+            "server_timing": "app;dur=1, envoy_headers;dur=1;desc=\"benchmark-envoy_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tls;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_pool;dur=1;desc=\"benchmark-envoy_on\",envoy_request_receive;dur=0;desc=\"benchmark-envoy_on\""
+          },
+          "chain_on": {
+            "url": "http://127.0.0.1:40881/",
+            "roles": [
+              "chain_on",
+              "outer_on",
+              "envoy_on"
+            ],
+            "header_bytes": 967,
+            "server_timing": "app;dur=1,nginx_headers;dur=0;desc=\"benchmark-chain_on\", nginx_upstream_connect;dur=0;desc=\"benchmark-chain_on attempt 1\", nginx_upstream_headers;dur=1;desc=\"benchmark-chain_on attempt 1\", envoy_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tls;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-envoy_on\",envoy_request_receive;dur=0;desc=\"benchmark-envoy_on\", envoy_headers;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-outer_on\",envoy_request_receive;dur=0;desc=\"benchmark-outer_on\""
+          }
+        },
+        "samples": 0,
+        "source_sha256": "9f706256f12dbfd33034914285f7bcea80a50b0472117432b8f29b3055599100",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+        "stopped_containers": 9
+      },
+      "status": "Nix build, ten package integration checks, and six fixture preflights passed; fourteen-round capacity comparison queued after the live Envoy controller",
+      "build_command": "nix build .#nginx-server-timing-module",
+      "definition": "scripts/network/native/nginx/default.nix"
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",

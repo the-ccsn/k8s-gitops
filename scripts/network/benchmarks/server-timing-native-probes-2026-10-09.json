@@ -981,6 +981,198 @@
       },
       "completed_samples": 45,
       "limitations": "Five alternating rounds over 16/64/256 connections, after ten continuous compiler-idle minutes; during-load guard found no compilation. Candidate lost 13.52% from disabled and 1.49% against retained production configuration. The 10% point gate failed; five rounds cannot establish bootstrap acceptance."
+    },
+    {
+      "name": "envoy_native_capi",
+      "kind": "Complete standalone C ABI plugin on the stock Istio binary",
+      "shipped": false,
+      "raw_directory": "server-timing-envoy-capi-capacity-20261009T074100Z",
+      "source_sha256": "3c1a97060919316f621722f2afbec858f16bc90408836d21f7a8b5b750ba1af9",
+      "harness_sha256": "5009675bf4f670ccfaedbdcc4778a2a006328f8e040521eaf1fc6da3af171912",
+      "parameters": {
+        "rounds": 7,
+        "duration": 6,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "envoy"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "reference",
+          "on"
+        ],
+        "throughput_budgets_percent": {
+          "nginx": 5.0,
+          "envoy": 10.0
+        },
+        "confidence_method": "paired_round_bootstrap_95pct",
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.38 0.75 1.32 1/6936 2484109",
+        "commit": "1910e79d379c0c6982b7e8a30120403c345350f5",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "envoy": {
+          "capacity_off": {
+            "rps": 12969.29,
+            "proxy_cpu_us_per_request": 69.99400867267083,
+            "proxy_anon_mib": 25.96875,
+            "client_cpu_cores": 0.1554628409065695,
+            "rps_range": [
+              12905.11,
+              13285.99
+            ],
+            "samples": 7,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 12517.67,
+                "rps_range": [
+                  12481.47,
+                  12921.64
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 12969.29,
+                "rps_range": [
+                  12905.11,
+                  13285.99
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 12447.98,
+                "rps_range": [
+                  11570.22,
+                  12515.52
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_reference": {
+            "rps": 11524.94,
+            "proxy_cpu_us_per_request": 79.48835335587368,
+            "proxy_anon_mib": 26.515625,
+            "client_cpu_cores": 0.14224962257075366,
+            "rps_range": [
+              11375.6,
+              11709.31
+            ],
+            "samples": 7,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 11210.19,
+                "rps_range": [
+                  11115.5,
+                  11395.84
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 11524.94,
+                "rps_range": [
+                  11375.6,
+                  11709.31
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 11015.77,
+                "rps_range": [
+                  10608.24,
+                  11123.56
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 11351.31,
+            "proxy_cpu_us_per_request": 80.89266272535706,
+            "proxy_anon_mib": 26.953125,
+            "client_cpu_cores": 0.14127629510144352,
+            "rps_range": [
+              11258.21,
+              11602.36
+            ],
+            "samples": 7,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 11074.23,
+                "rps_range": [
+                  11042.58,
+                  11280.65
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 11351.31,
+                "rps_range": [
+                  11258.21,
+                  11602.36
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 10820.67,
+                "rps_range": [
+                  10770.05,
+                  10931.1
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -12.475470900874308,
+            "proxy_cpu_us_per_request": 15.570838503698404,
+            "proxy_anon_mib": 3.790613718411562,
+            "client_cpu_cores": -9.125361226128536
+          },
+          "throughput_change_from_reference_percent": -1.5065588193951651,
+          "acceptance": {
+            "threshold_percent": 10.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 2.9367837406673702,
+            "status": "failed",
+            "confidence": {
+              "method": "paired_round_bootstrap",
+              "rounds": 7,
+              "draws": 5000,
+              "seed": 0,
+              "one_sided_level": 0.95,
+              "upper_loss_percent": 13.142568070135995
+            }
+          },
+          "extra_header_bytes": 325
+        }
+      },
+      "completed_samples": 63,
+      "limitations": "Seven complete alternating rounds at 16/64/256 connections, after a ten-minute idle window and with the during-load compiler guard. Disabled peak range was 2.94%. Full plugin lost 12.48%; one-sided 95% paired-round upper loss was 13.14%, above the 10% gate. It was 1.51% slower than the retained policy and is rejected."
     }
   ],
   "invalid_runs": [
@@ -1035,6 +1227,15 @@
       "reason": "Interrupted to lengthen the idle window; incomplete capacity sweep",
       "completed_samples": 0,
       "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-nginx-current-capacity-20261009T075354Z",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "soong_ui"
+      ],
+      "completed_samples": 21,
+      "acceptance": "invalid; no throughput conclusion"
     }
   ],
   "next_candidates": {
@@ -1088,7 +1289,7 @@
       "module_bytes": 16632,
       "policy_sha256": "1f212fd6b3307fdf829d90b30ebc2cec7fc6696e85ed4ec7ec645f15361be21d",
       "integration": "Nine complete integration checks passed with two workers on the stock Istio image, including elapsed time spent in another response filter",
-      "throughput": "pending; earlier capacity controller deliberately stopped before any sample to correct response-filter elapsed timing",
+      "throughput": "Rejected: seven-round valid guarded peak loss 12.48%, 95% upper loss 13.14%, 1.51% slower than retained policy",
       "elapsed_headers": "Computed at the final response callback from the native request start timestamp; unavailable local-response timestamps use the public request.time property",
       "packaging": {
         "image_id": "455f6b50d03bff1ee402b481d48d2af9ec0bee64d8fbbc2db44499fedd6cce61",
@@ -1102,7 +1303,7 @@
         "deployed": false
       },
       "shipped": false,
-      "status": "Nine integration checks passed with two workers on both the stock mounted-plugin image and the locally packaged image without a plugin mount. Includes elapsed time spent in later response filters. Seven-round full capacity comparison is waiting for the compiler-idle window; no Envoy rebuild, publication, deployment, or production policy change.",
+      "status": "Nine integration checks and all nine fixture preflights passed; seven-round capacity comparison failed the 10% gate. Local plugin/image remain unshipped and unpublished.",
       "benchmark_preflight": {
         "kind": "Response preflight only; no throughput samples or acceptance claim",
         "raw_directory": "server-timing-capi-preflight-20261009",
@@ -1187,6 +1388,27 @@
           }
         },
         "retained_stopped_containers": 13
+      }
+    },
+    "envoy_wasm_full": {
+      "scope": "Standalone 5055-byte Proxy-Wasm module for the existing stock Istio V8 runtime",
+      "source_sha256": "aaab581a8dcc580064a1118f377246909e62a7a54e24a22a65be904818d5c84e",
+      "module_sha256": "31a122bc10882f19350e1b5c1d5b209aff84a875addfd44e21e6d538ff734f99",
+      "module_bytes": 5055,
+      "policy_sha256": "0285aafe11d435a0b46f66e604ea6102cd6a3ebed87cb3964d5e5baab012a0a5",
+      "inline_policy_sha256": "b20ecdb93ac249e435a8272406d4b80045e44c8f4e7d51d5f98663b10552d2ae",
+      "integration": "Eleven integration checks passed with two workers on the stock image: existing nine cases, cold local identities, and 4000 sustained full-metric responses",
+      "body_callbacks": false,
+      "image_changes": false,
+      "throughput": "pending",
+      "shipped": false,
+      "inline_integration": "All eleven checks passed with two workers, inline bytecode, and no plugin mount on the unchanged stock image",
+      "benchmark_preflight": {
+        "raw_directory": "server-timing-wasm-full-preflight-20261009",
+        "validated_endpoints": 9,
+        "throughput_samples": 0,
+        "source_sha256": "92142529a160e873b3fa6f2c9c282effae56136295fa9bb580a4fe5944a7a343",
+        "harness_sha256": "5009675bf4f670ccfaedbdcc4778a2a006328f8e040521eaf1fc6da3af171912"
       }
     }
   },

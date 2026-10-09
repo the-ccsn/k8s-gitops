@@ -285,9 +285,22 @@ After fixing configuration lifetime and including later response-filter waits,
 it passed all nine stock-image integration checks with two workers. A local
 package preserves the stock image's four layers and adds only the `.so` file;
 the same nine checks passed without a plugin volume mount. It has not been
-published or deployed. Its full-feature capacity comparison and a separate
-production Nginx comparison are queued with seven paired rounds, the compiler-idle guard, and
-independent 5%/10% budgets. The plugin is not shipped; its throughput is pending.
+published or deployed. Its guarded seven-round capacity comparison completed
+63 samples across 16/64/256 connections. Peak throughput loss was 12.48%, with
+a one-sided 95% upper loss bound of 13.14%, failing the 10% gate. It was 1.51%
+slower than the retained policy and is rejected. The retained policy lost
+11.14% in the same comparison. A subsequent production Nginx comparison was
+invalidated when compilation resumed after 21 samples; it has no acceptance result.
+
+A complete 5,055-byte V8 Wasm candidate now uses the same native intervals and
+appends opaque upstream fields without registering body callbacks. Eleven
+integration checks passed on the stock image, including cold local replies,
+response-filter waits, streaming, and 4,000 consecutive full-metric responses.
+The same checks passed with inline bytecode and no plugin file mount, avoiding
+an image change. All nine capacity fixture endpoints passed response preflight.
+Its seven-round capacity comparison and a fresh production Nginx comparison
+are queued after the compiler-idle window. No Wasm candidate is shipped or
+accepted before a valid throughput result.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

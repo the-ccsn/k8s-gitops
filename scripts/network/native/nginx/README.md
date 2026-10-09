@@ -30,10 +30,39 @@ The output is `nginx-timing-result/lib/nginx/modules/ngx_http_ccsn_server_timing
 The package builds only the dynamic module target with O3 and compatibility
 enabled; it rejects a runtime library dependency. It retains Nix compiler
 hardening, so its executable section differs from the accepted candidate.
-Ten package integration checks passed; a separate guarded fourteen-round
-throughput comparison is pending. Acceptance is not transferred between binaries.
+Ten package integration checks passed. Its separate guarded fourteen-round
+comparison lost 1.31%, with a one-sided 95% upper loss of 5.62%; this is
+inconclusive for the 5% gate. Acceptance is not transferred between binaries.
 Native builds are exposed for x86_64 Linux and aarch64 Linux. Both packages
 built successfully and passed ten integration checks each on their pinned
 stock images. ARM64 validation used local QEMU and does not establish ARM64
 throughput acceptance. Flake evaluation passed for both systems. Verify the
 package against the intended image and architecture before packaging it.
+
+Prepare a separate runtime bundle for review, using both verified packages:
+
+```sh
+uv run --with pyyaml python scripts/network/native/nginx/prepare_runtime.py \
+  --stage prepare --output ./nginx-timing-runtime \
+  --amd64 ./nginx-timing-result/lib/nginx/modules/ngx_http_ccsn_server_timing_module.so \
+  --arm64 ./nginx-timing-arm64-result/lib/nginx/modules/ngx_http_ccsn_server_timing_module.so
+nix run nixpkgs#kustomize -- build ./nginx-timing-runtime > ./nginx-timing-runtime.yaml
+uv run --with pyyaml python scripts/network/native/nginx/prepare_runtime.py \
+  --stage verify --output ./nginx-timing-runtime --rendered ./nginx-timing-runtime.yaml
+```
+
+Build the second package with
+`nix build .#packages.aarch64-linux.nginx-server-timing-module --out-link ./nginx-timing-arm64-result`.
+The preparer verifies recorded binary hashes and ELF architectures, preserves
+the base manifests, and resumes only with identical inputs. A hash-named
+ConfigMap contains both modules. An init container using the same pinned stock
+image selects the node architecture and copies its module into an emptyDir;
+Nginx loads that module from a read-only mount. No registry publication is
+required. Only the header include remains in the timing configuration.
+
+The actual init selection and new mount passed eleven integration checks per
+architecture, including reload and 212 fast or changing-delay responses.
+Repeated preparation rendered identical manifests; independent verification
+rejected a changed binary and a writable module mount. These are functional
+checks, and the runtime bundle remains unshipped while throughput acceptance
+is unresolved.

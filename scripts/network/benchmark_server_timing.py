@@ -5,7 +5,7 @@ nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
 
 Each proxy has one worker pinned to its own physical core. Containers are
 stopped after each invocation and retained for inspection. Results/configs
-are persisted after each sample. --stage selects capacity, latency, or report.
+are persisted after each sample. --stage selects prepare, capacity, latency, or report.
 """
 from __future__ import annotations
 
@@ -571,7 +571,7 @@ def main() -> None:
     parser.add_argument("--nginx-timing-dir", type=Path, default=NGINX_DIR)
     parser.add_argument("--reference-envoy-policy", type=Path, help="Previous implementation for reference mode")
     parser.add_argument("--reference-nginx-timing-dir", type=Path, help="Previous Nginx implementation for reference mode")
-    parser.add_argument("--stage", choices=["all", "capacity", "latency", "report"], default="all")
+    parser.add_argument("--stage", choices=["all", "prepare", "capacity", "latency", "report"], default="all")
     parser.add_argument("--scenarios", choices=["nginx", "envoy", "chain"], nargs="+", default=["nginx", "envoy", "chain"])
     parser.add_argument("--connections", type=int, nargs="+", default=[16, 64, 256, 1024], help="Capacity connection-count sweep")
     parser.add_argument("--cpus", type=int, nargs=6, help="Distinct physical cores: Nginx, outer Envoy, inner Envoy, backend, two clients")
@@ -596,6 +596,8 @@ def main() -> None:
         return
     try:
         benchmark.prepare()
+        if args.stage == "prepare":
+            return
         for stage in (["capacity", "latency"] if args.stage == "all" else [args.stage]):
             benchmark.measure(stage)
         benchmark.report()

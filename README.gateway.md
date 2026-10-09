@@ -372,6 +372,12 @@ changing timing sources invalidates resume. The pinned Istio image does not
 include the dynamic HTTP module extension, as verified with configuration
 validation; loading a native Envoy module would require a different proxy image.
 
+`--stage prepare` validates the response headers for every selected mode's
+standalone and chain paths, verifies the fixture's CPU affinity, and stops the
+retained containers without generating load or a throughput report. The
+standalone C ABI candidate passed this preflight for all nine disabled,
+reference, and enabled endpoints; capacity acceptance remains pending.
+
 ## Core Components
 
 * **Cloudflare Tunnel:** Secures external IPv4/general traffic. Terminates TLS before forwarding to the local network.

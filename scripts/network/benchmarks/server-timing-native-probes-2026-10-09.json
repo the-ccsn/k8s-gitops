@@ -1102,7 +1102,92 @@
         "deployed": false
       },
       "shipped": false,
-      "status": "Nine integration checks passed with two workers on both the stock mounted-plugin image and the locally packaged image without a plugin mount. Includes elapsed time spent in later response filters. Seven-round full capacity comparison is waiting for the compiler-idle window; no Envoy rebuild, publication, deployment, or production policy change."
+      "status": "Nine integration checks passed with two workers on both the stock mounted-plugin image and the locally packaged image without a plugin mount. Includes elapsed time spent in later response filters. Seven-round full capacity comparison is waiting for the compiler-idle window; no Envoy rebuild, publication, deployment, or production policy change.",
+      "benchmark_preflight": {
+        "kind": "Response preflight only; no throughput samples or acceptance claim",
+        "raw_directory": "server-timing-capi-preflight-20261009",
+        "source_sha256": "3c1a97060919316f621722f2afbec858f16bc90408836d21f7a8b5b750ba1af9",
+        "harness_sha256": "5009675bf4f670ccfaedbdcc4778a2a006328f8e040521eaf1fc6da3af171912",
+        "environment": {
+          "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+          "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+          "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+          "initial_load": "0.90 1.13 1.66 1/6939 2461738",
+          "commit": "9f20c58c4e1f80463117be9a623678ed077c6811",
+          "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+          "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+        },
+        "parameters": {
+          "rounds": 7,
+          "duration": 6,
+          "rate": 2000,
+          "cpus": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21
+          ],
+          "scenarios": [
+            "envoy"
+          ],
+          "connections": [
+            16,
+            64,
+            256
+          ],
+          "modes": [
+            "off",
+            "reference",
+            "on"
+          ],
+          "throughput_budgets_percent": {
+            "nginx": 5.0,
+            "envoy": 10.0
+          },
+          "confidence_method": "paired_round_bootstrap_95pct"
+        },
+        "validated_endpoints": {
+          "nginx_off": {
+            "header_bytes": 156,
+            "server_timing": "app;dur=1"
+          },
+          "envoy_off": {
+            "header_bytes": 159,
+            "server_timing": "app;dur=1"
+          },
+          "chain_off": {
+            "header_bytes": 190,
+            "server_timing": "app;dur=1"
+          },
+          "nginx_reference": {
+            "header_bytes": 359,
+            "server_timing": "app;dur=1, nginx_headers;dur=0000;desc=\"benchmark-nginx_on\", nginx_upstream_connect;dur=0000;desc=\"benchmark-nginx_on attempt 1\", nginx_upstream_headers;dur=0000;desc=\"benchmark-nginx_on attempt 1\""
+          },
+          "envoy_reference": {
+            "header_bytes": 484,
+            "server_timing": "app;dur=1, envoy_headers;dur=1;desc=\"benchmark-envoy_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tls;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_pool;dur=1;desc=\"benchmark-envoy_on\",envoy_request_receive;dur=0;desc=\"benchmark-envoy_on\""
+          },
+          "chain_reference": {
+            "header_bytes": 992,
+            "server_timing": "app;dur=1, envoy_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tls;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-envoy_on\",envoy_request_receive;dur=0;desc=\"benchmark-envoy_on\", envoy_headers;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-outer_on\",envoy_request_receive;dur=0;desc=\"benchmark-outer_on\", nginx_headers;dur=0001;desc=\"benchmark-chain_on\", nginx_upstream_connect;dur=0000;desc=\"benchmark-chain_on attempt 1\", nginx_upstream_headers;dur=0001;desc=\"benchmark-chain_on attempt 1\""
+          },
+          "nginx_on": {
+            "header_bytes": 359,
+            "server_timing": "app;dur=1, nginx_headers;dur=0000;desc=\"benchmark-nginx_on\", nginx_upstream_connect;dur=0000;desc=\"benchmark-nginx_on attempt 1\", nginx_upstream_headers;dur=0000;desc=\"benchmark-nginx_on attempt 1\""
+          },
+          "envoy_on": {
+            "header_bytes": 484,
+            "server_timing": "app;dur=1, envoy_headers;dur=1;desc=\"benchmark-envoy_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tls;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-envoy_on\",envoy_request_receive;dur=0;desc=\"benchmark-envoy_on\""
+          },
+          "chain_on": {
+            "header_bytes": 992,
+            "server_timing": "app;dur=1, envoy_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_tls;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-envoy_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-envoy_on\",envoy_request_receive;dur=0;desc=\"benchmark-envoy_on\", envoy_headers;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_tcp;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_headers;dur=0;desc=\"benchmark-outer_on\",envoy_upstream_pool;dur=0;desc=\"benchmark-outer_on\",envoy_request_receive;dur=0;desc=\"benchmark-outer_on\", nginx_headers;dur=0001;desc=\"benchmark-chain_on\", nginx_upstream_connect;dur=0000;desc=\"benchmark-chain_on attempt 1\", nginx_upstream_headers;dur=0000;desc=\"benchmark-chain_on attempt 1\""
+          }
+        },
+        "retained_stopped_containers": 13
+      }
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",

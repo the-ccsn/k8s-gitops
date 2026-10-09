@@ -66,6 +66,68 @@ ngx_module_t ngx_http_ccsn_server_timing_module = {
     NGX_MODULE_V1_PADDING
 };
 
+/* Keep general integer formatting out of the common header-filter frame. */
+static ngx_str_t __attribute__((noinline))
+ngx_http_ccsn_timing_general(ngx_http_request_t *r,
+    const ngx_http_ccsn_timing_main_conf_t *timing,
+    ngx_http_upstream_state_t *states, ngx_uint_t count,
+    ngx_msec_int_t elapsed, const ngx_table_elt_t *header)
+{
+    ngx_uint_t i, attempt;
+    size_t capacity;
+    u_char *buffer, *cursor;
+    /* Each attempt emits two metrics; reserve room for integer values and labels. */
+    capacity = 96 + timing->description.len
+               + count * (256 + 2 * timing->description.len);
+    if (header != NULL) {
+        capacity += header->value.len + 1;
+    }
+    buffer = ngx_pnalloc(r->pool, capacity);
+    if (buffer == NULL) {
+        return (ngx_str_t) ngx_null_string;
+    }
+    cursor = buffer;
+    /* Upstream values remain opaque; append without parsing or changing them. */
+    if (header != NULL && header->value.len != 0) {
+        cursor = ngx_cpymem(cursor, header->value.data, header->value.len);
+        *cursor++ = ',';
+    }
+    cursor = ngx_cpymem(cursor, "nginx_headers;dur=", sizeof("nginx_headers;dur=") - 1);
+    cursor = ngx_http_ccsn_timing_number(cursor, (ngx_msec_t) elapsed);
+    cursor = ngx_cpymem(cursor, timing->description.data,
+                       timing->description.len);
+    attempt = 0;
+    for (i = 0; i < count; i++) {
+        if (states[i].peer == NULL) {
+            continue;
+        }
+        attempt++;
+        if (states[i].connect_time != (ngx_msec_t) -1) {
+            cursor = ngx_cpymem(cursor, ", nginx_upstream_connect;dur=",
+                               sizeof(", nginx_upstream_connect;dur=") - 1);
+            cursor = ngx_http_ccsn_timing_number(cursor, states[i].connect_time);
+            if (count == 1) {
+                cursor = ngx_cpymem(cursor, timing->description.data,
+                                   timing->description.len);
+            } else {
+                cursor = ngx_http_ccsn_timing_attempt(timing, cursor, attempt);
+            }
+        }
+        if (states[i].header_time != (ngx_msec_t) -1) {
+            cursor = ngx_cpymem(cursor, ", nginx_upstream_headers;dur=",
+                               sizeof(", nginx_upstream_headers;dur=") - 1);
+            cursor = ngx_http_ccsn_timing_number(cursor, states[i].header_time);
+            if (count == 1) {
+                cursor = ngx_cpymem(cursor, timing->description.data,
+                                   timing->description.len);
+            } else {
+                cursor = ngx_http_ccsn_timing_attempt(timing, cursor, attempt);
+            }
+        }
+    }
+    return (ngx_str_t) { (size_t) (cursor - buffer), buffer };
+}
+
 static ngx_int_t
 ngx_http_ccsn_timing_filter(ngx_http_request_t *r)
 {
@@ -76,7 +138,7 @@ ngx_http_ccsn_timing_filter(ngx_http_request_t *r)
     ngx_list_part_t *part;
     ngx_time_t *now;
     ngx_msec_int_t elapsed;
-    ngx_uint_t count, i, attempt;
+    ngx_uint_t count, i;
     size_t capacity;
     u_char *buffer, *cursor, *own;
 
@@ -133,44 +195,14 @@ ngx_http_ccsn_timing_filter(ngx_http_request_t *r)
         own[timing->digits[2]] = (u_char) ('0' + states[0].header_time);
         goto write_header;
     }
-    /* Each attempt emits two metrics; reserve room for integer values and labels. */
-    capacity = 96 + timing->description.len
-               + count * (256 + 2 * timing->description.len);
-    if (header != NULL) {
-        capacity += header->value.len + 1;
-    }
-    buffer = ngx_pnalloc(r->pool, capacity);
-    if (buffer == NULL) {
-        return NGX_ERROR;
-    }
-    cursor = buffer;
-    /* Upstream values remain opaque; append without parsing or changing them. */
-    if (header != NULL && header->value.len != 0) {
-        cursor = ngx_cpymem(cursor, header->value.data, header->value.len);
-        *cursor++ = ',';
-    }
-    cursor = ngx_cpymem(cursor, "nginx_headers;dur=", sizeof("nginx_headers;dur=") - 1);
-    cursor = ngx_http_ccsn_timing_number(cursor, (ngx_msec_t) elapsed);
-    cursor = ngx_cpymem(cursor, timing->description.data,
-                       timing->description.len);
-    attempt = 0;
-    for (i = 0; i < count; i++) {
-        if (states[i].peer == NULL) {
-            continue;
+    {
+        ngx_str_t value = ngx_http_ccsn_timing_general(r, timing, states,
+                                                      count, elapsed, header);
+        if (value.data == NULL) {
+            return NGX_ERROR;
         }
-        attempt++;
-        if (states[i].connect_time != (ngx_msec_t) -1) {
-            cursor = ngx_cpymem(cursor, ", nginx_upstream_connect;dur=",
-                               sizeof(", nginx_upstream_connect;dur=") - 1);
-            cursor = ngx_http_ccsn_timing_number(cursor, states[i].connect_time);
-            cursor = ngx_http_ccsn_timing_attempt(timing, cursor, attempt);
-        }
-        if (states[i].header_time != (ngx_msec_t) -1) {
-            cursor = ngx_cpymem(cursor, ", nginx_upstream_headers;dur=",
-                               sizeof(", nginx_upstream_headers;dur=") - 1);
-            cursor = ngx_http_ccsn_timing_number(cursor, states[i].header_time);
-            cursor = ngx_http_ccsn_timing_attempt(timing, cursor, attempt);
-        }
+        buffer = value.data;
+        cursor = value.data + value.len;
     }
 write_header:
     if (header == NULL) {
@@ -224,7 +256,7 @@ ngx_http_ccsn_timing_init(ngx_conf_t *cf)
     cursor = ngx_cpymem(cursor, " attempt 1\"", sizeof(" attempt 1\"") - 1);
     timing->attempt_one.data = buffer;
     timing->attempt_one.len = cursor - buffer;
-    buffer = ngx_pnalloc(cf->pool, 128 + 3 * timing->attempt_one.len);
+    buffer = ngx_pnalloc(cf->pool, 128 + 3 * timing->description.len);
     if (buffer == NULL) {
         return NGX_ERROR;
     }
@@ -237,14 +269,14 @@ ngx_http_ccsn_timing_init(ngx_conf_t *cf)
                        sizeof(", nginx_upstream_connect;dur=") - 1);
     timing->digits[1] = cursor - buffer;
     *cursor++ = '0';
-    cursor = ngx_cpymem(cursor, timing->attempt_one.data,
-                       timing->attempt_one.len);
+    cursor = ngx_cpymem(cursor, timing->description.data,
+                       timing->description.len);
     cursor = ngx_cpymem(cursor, ", nginx_upstream_headers;dur=",
                        sizeof(", nginx_upstream_headers;dur=") - 1);
     timing->digits[2] = cursor - buffer;
     *cursor++ = '0';
-    cursor = ngx_cpymem(cursor, timing->attempt_one.data,
-                       timing->attempt_one.len);
+    cursor = ngx_cpymem(cursor, timing->description.data,
+                       timing->description.len);
     timing->fast.data = buffer;
     timing->fast.len = cursor - buffer;
     ngx_http_ccsn_timing_next = ngx_http_top_header_filter;

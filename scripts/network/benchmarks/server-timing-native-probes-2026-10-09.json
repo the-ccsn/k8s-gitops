@@ -3126,6 +3126,158 @@
       },
       "completed_samples": 63,
       "limitations": "Failed the independent 10% throughput gate; stock Envoy binary unchanged"
+    },
+    {
+      "name": "nginx_compact_single_attempt",
+      "kind": "Hardened standalone module with isolated general formatter and compact single-attempt descriptions",
+      "shipped": false,
+      "raw_directory": "server-timing-nginx-compact-single-attempt-capacity-20261009T144830Z",
+      "source_sha256": "f730617d402fe2c7dafa5b629125a3d2b7466749bbba63b3ea5ece8f4e091829",
+      "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+      "parameters": {
+        "rounds": 14,
+        "duration": 12,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "nginx"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "on"
+        ],
+        "throughput_budgets_percent": {
+          "nginx": 5.0,
+          "envoy": 10.0
+        },
+        "confidence_method": "paired_round_bootstrap_95pct",
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.36 0.53 1.12 1/2454 110374",
+        "commit": "0ec858f785014dd401c79793d36f54784066359f",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "nginx": {
+          "capacity_off": {
+            "rps": 37127.765,
+            "proxy_cpu_us_per_request": 17.853544393384926,
+            "proxy_anon_mib": 5.2578125,
+            "client_cpu_cores": 0.33508353912802885,
+            "rps_range": [
+              36495.55,
+              37907.51
+            ],
+            "samples": 14,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 37127.765,
+                "rps_range": [
+                  36495.55,
+                  37907.51
+                ],
+                "samples": 14
+              },
+              "64": {
+                "rps": 36713.185,
+                "rps_range": [
+                  33317.94,
+                  40182.27
+                ],
+                "samples": 14
+              },
+              "256": {
+                "rps": 32766.635,
+                "rps_range": [
+                  29831.26,
+                  41030.92
+                ],
+                "samples": 14
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 36851.82,
+            "proxy_cpu_us_per_request": 17.410893073513265,
+            "proxy_anon_mib": 7.3056640625,
+            "client_cpu_cores": 0.34554698716730103,
+            "rps_range": [
+              35343.23,
+              40466.59
+            ],
+            "samples": 14,
+            "connections": 256,
+            "curve": {
+              "16": {
+                "rps": 35012.755000000005,
+                "rps_range": [
+                  30831.18,
+                  35846.99
+                ],
+                "samples": 14
+              },
+              "64": {
+                "rps": 33535.17999999999,
+                "rps_range": [
+                  31401.58,
+                  40272.0
+                ],
+                "samples": 14
+              },
+              "256": {
+                "rps": 36851.82,
+                "rps_range": [
+                  35343.23,
+                  40466.59
+                ],
+                "samples": 14
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -0.7432308408545474,
+            "proxy_cpu_us_per_request": -2.4793470143422702,
+            "proxy_anon_mib": 38.94873699851411,
+            "client_cpu_cores": 3.1226386311009824
+          },
+          "acceptance": {
+            "threshold_percent": 5.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": true,
+            "baseline_throughput_spread_percent": 3.8029760207758243,
+            "status": "passed",
+            "confidence": {
+              "method": "paired_round_bootstrap",
+              "rounds": 14,
+              "draws": 5000,
+              "seed": 0,
+              "one_sided_level": 0.95,
+              "upper_loss_percent": 1.9942649648945876
+            }
+          },
+          "extra_header_bytes": 158
+        }
+      },
+      "completed_samples": 84,
+      "limitations": "Independent x86_64 throughput gate passed for the recorded Nix package; ARM64 functional verification and runtime switch pending"
     }
   ],
   "invalid_runs": [
@@ -4036,13 +4188,76 @@
       "compiler_hardening_retained": true,
       "shipped": false,
       "integration": "Eleven two-worker checks passed, including 212 fast/changing-delay replies, real zero, long durations, retries with attempt-2 label, streaming, local replies and reload",
-      "throughput": "Fourteen-round, 12-second guarded comparison queued after unwrapped native Envoy",
+      "throughput": {
+        "raw_directory": "server-timing-nginx-compact-single-attempt-capacity-20261009T144830Z",
+        "completed_samples": 84,
+        "peak_loss_percent": 0.7432308408545474,
+        "acceptance": {
+          "threshold_percent": 5.0,
+          "metric": "peak_throughput",
+          "throughput_point_estimate_pass": true,
+          "baseline_throughput_spread_percent": 3.8029760207758243,
+          "status": "passed",
+          "confidence": {
+            "method": "paired_round_bootstrap",
+            "rounds": 14,
+            "draws": 5000,
+            "seed": 0,
+            "one_sided_level": 0.95,
+            "upper_loss_percent": 1.9942649648945876
+          }
+        }
+      },
       "preflight": {
         "raw_directory": "server-timing-nginx-compact-single-attempt-preflight-20261009",
         "validated_endpoints": 6,
         "samples": 0,
         "source_sha256": "f730617d402fe2c7dafa5b629125a3d2b7466749bbba63b3ea5ece8f4e091829",
         "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06"
+      },
+      "arm64_package": {
+        "module_bytes": 69184,
+        "module_sha256": "f0ac7becb9e123d30ef13272dac33fbd8df2e0b6a692002ba4a3261820d58316",
+        "image": "docker.io/library/nginx@sha256:7dd09a6c4f8cab9a2d2cb98fb39790f220e8bc2ea106b2cebde64b90405e0be8",
+        "integration": "Eleven two-worker checks passed under local QEMU, including 212 fast/changing-delay replies, retries, real zero, streaming and reload",
+        "throughput": "Functional evidence only; no native ARM64 throughput acceptance"
+      },
+      "flake_build_identity": "Both tracked flake architecture targets reproduce the tested package bytes",
+      "runtime_bundle": {
+        "raw_directory": "server-timing-nginx-compact-runtime-20261009",
+        "verification": {
+          "rendered_bundle_verified": true,
+          "rejections": {
+            "changed_binary": "Rendered binary differs from the verified nginx-timing-amd64.so",
+            "writable_module_mount": "Proxy module mount changed"
+          },
+          "architectures": {
+            "amd64": {
+              "architecture": "amd64",
+              "module_sha256": "3238f9d78c26426215a4c5266b9223a7c6c9961658ada858d13aefe03b57c522",
+              "init_container": "ccsn-timing-compact-init-amd64-1791559048681353373",
+              "init_architecture_selection": "passed",
+              "image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+              "status": "Eleven integration checks passed",
+              "integration_checks": 11,
+              "fast_and_changed_interval_responses": 212
+            },
+            "arm64": {
+              "architecture": "arm64",
+              "module_sha256": "f0ac7becb9e123d30ef13272dac33fbd8df2e0b6a692002ba4a3261820d58316",
+              "init_container": "ccsn-timing-compact-init-arm64-1791559048803741157",
+              "init_architecture_selection": "passed",
+              "image": "docker.io/library/nginx@sha256:7dd09a6c4f8cab9a2d2cb98fb39790f220e8bc2ea106b2cebde64b90405e0be8",
+              "status": "Eleven integration checks passed",
+              "integration_checks": 11,
+              "fast_and_changed_interval_responses": 212
+            }
+          },
+          "repeat_render_identical": true,
+          "rendered_sha256": "43ce6eb2577a679ee535508a1e435c937f42d5ad956770cf608b6e246d3052ca",
+          "flake_all_systems_evaluation": "Passed with --no-build"
+        },
+        "shipped": false
       }
     },
     "envoy_native_cel_select": {
@@ -4079,6 +4294,36 @@
         "path": "scripts/network/lua/envoy/policy.yaml",
         "sha256": "0352aac5c1c0d9480221a5fd5a5b349154c760307a2360b50faddd60a99d86c1",
         "identity": "YAML scalar presentation differs; parsed policy equals the tested candidate and embedded Lua source is byte-identical"
+      }
+    },
+    "envoy_lua_ffi_hot_path": {
+      "scope": "Offline follow-up: cache process hostname once and avoid per-response values table and elapsed string in the common path",
+      "policy_sha256": "0ce97dbd05a7e13cd6d5346d70c4406abfc54089754aabf31611149a9f500c60",
+      "integration": "Eleven two-worker checks passed, including 2000 complete-metric fast replies, changing delays, TLS/plaintext, streaming, local replies and later response-filter waiting",
+      "shipped": false,
+      "envoy_rebuild": false,
+      "throughput": "Not measured; pending independent guarded comparison",
+      "preflight": {
+        "raw_directory": "server-timing-lua-ffi-hot-path-preflight-20261009",
+        "validated_endpoints": 9,
+        "samples": 0,
+        "source_sha256": "de6fa2db035afc34c32faf34a706ec46e6641439559780da3a29564b540cce7b",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06"
+      }
+    },
+    "envoy_native_cel_single": {
+      "scope": "Offline native CEL follow-up: format one helper only; complete TLS tuple copied directly and missing intervals filtered by native regex fallback",
+      "policy_sha256": "d7b20f65ed96e7fd0d53e388613b5d4dae680500ca0dfd0f9f0f89d9982250e5",
+      "integration": "Eleven two-worker checks passed, including 2000 complete-metric fast replies, changing delays, TLS/plaintext, streaming, local replies and later response-filter waiting",
+      "shipped": false,
+      "envoy_rebuild": false,
+      "throughput": "Seven-round guarded comparison queued only if the preceding single-filter LuaJIT candidate fails to establish the 10% gate",
+      "preflight": {
+        "raw_directory": "server-timing-envoy-native-cel-single-preflight-20261009",
+        "validated_endpoints": 9,
+        "samples": 0,
+        "source_sha256": "139b2c109a688adfa0a21b42aedfa9492867b37c858381986f4b7a15786e796a",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06"
       }
     }
   },

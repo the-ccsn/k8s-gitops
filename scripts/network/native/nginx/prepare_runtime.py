@@ -50,7 +50,9 @@ def save(path, value):
 
 
 def prepare(args):
-    proof = json.loads(CATALOG.read_text())["next_candidates"]["native_nginx_pinned_nix_package"]
+    proof = json.loads(CATALOG.read_text())["next_candidates"]["native_nginx_compact_single_attempt"]
+    require(proof["throughput"]["acceptance"]["status"] == "passed",
+            "The recorded package must pass its independent throughput gate")
     source = Path(__file__).with_name("ngx_http_ccsn_server_timing_module.c")
     if digest(source.read_bytes()) != proof["source_sha256"]:
         raise ValueError("Module source differs from the recorded package")

@@ -317,7 +317,10 @@ module from pinned source and flake inputs. This 15,192-byte package also passed
 ten integration checks and six fixture preflights. Its compiler hardening
 changes the executable section, so a separate fourteen-round throughput
 comparison is queued after the Envoy comparison and a fresh compiler-idle
-window; the earlier acceptance is not transferred to this binary.
+window; the earlier acceptance is not transferred to this binary. The ARM64
+package also built and passed ten integration checks on its pinned stock
+image under local QEMU; no ARM64 throughput acceptance is claimed. Flake
+evaluation passed for both native systems.
 A duplicate-port fixture failed
 preflight before any load; port allocation now holds every reservation until
 all roles have distinct ports, and seventeen benchmark regressions pass.

@@ -32,6 +32,8 @@ enabled; it rejects a runtime library dependency. It retains Nix compiler
 hardening, so its executable section differs from the accepted candidate.
 Ten package integration checks passed; a separate guarded fourteen-round
 throughput comparison is pending. Acceptance is not transferred between binaries.
-Native builds are exposed
-for x86_64 Linux and aarch64 Linux. Verify the package against the intended
-image and architecture before packaging it.
+Native builds are exposed for x86_64 Linux and aarch64 Linux. Both packages
+built successfully and passed ten integration checks each on their pinned
+stock images. ARM64 validation used local QEMU and does not establish ARM64
+throughput acceptance. Flake evaluation passed for both systems. Verify the
+package against the intended image and architecture before packaging it.

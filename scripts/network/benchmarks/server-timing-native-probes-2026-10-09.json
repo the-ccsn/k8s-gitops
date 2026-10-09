@@ -2591,7 +2591,7 @@
       "package_executable_text_matches_accepted_candidate": false,
       "throughput": "Pending separate guarded precision comparison; previous candidate acceptance is not transferred",
       "shipped": false,
-      "arm64_runtime_verified": false,
+      "arm64_runtime_verified": true,
       "preflight": {
         "raw_directory": "server-timing-nginx-nix-package-preflight-20261009",
         "endpoints": {
@@ -2653,9 +2653,24 @@
         "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
         "stopped_containers": 9
       },
-      "status": "Nix build, ten package integration checks, and six fixture preflights passed; fourteen-round capacity comparison queued after the live Envoy controller",
+      "status": "Both native architecture builds and ten integration checks per package passed; x86_64 package fourteen-round capacity comparison queued after the live Envoy controller",
       "build_command": "nix build .#nginx-server-timing-module",
-      "definition": "scripts/network/native/nginx/default.nix"
+      "definition": "scripts/network/native/nginx/default.nix",
+      "arm64_package": {
+        "architecture": "aarch64-linux",
+        "build_command": "nix build .#packages.aarch64-linux.nginx-server-timing-module",
+        "module_sha256": "d35e3e1804a169fb17c8fbeaf3a9385e6f846b6df66e289c45686aa4de7a8e41",
+        "module_bytes": 69128,
+        "stock_image": "docker.io/library/nginx@sha256:7dd09a6c4f8cab9a2d2cb98fb39790f220e8bc2ea106b2cebde64b90405e0be8",
+        "runtime_library_dependencies": [],
+        "integration_checks": 10,
+        "integration_raw_directory": "server-timing-nginx-arm64-package-verification",
+        "runtime": "Pinned stock ARM64 image under local QEMU on the x86_64 benchmark host",
+        "throughput": "No ARM64 throughput acceptance is claimed",
+        "native_reference_image_preserved": "amd64",
+        "shipped": false
+      },
+      "flake_evaluation": "nix flake check --no-build --all-systems passed"
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",

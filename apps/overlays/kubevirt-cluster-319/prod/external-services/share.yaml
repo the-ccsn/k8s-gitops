@@ -28,7 +28,7 @@ spec:
     - timeouts:
         request: 0s
       backendRefs:
-        - group: networking.istio.io
-          kind: Hostname
-          name: share.external-services.mesh.internal
-          port: 5245
+        - group: ""
+          kind: Service
+          name: openlist-public
+          port: 5244

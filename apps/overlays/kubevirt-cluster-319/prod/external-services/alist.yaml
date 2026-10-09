@@ -26,7 +26,7 @@ spec:
     - alist.ccsn.dev
   rules:
     - backendRefs:
-        - group: networking.istio.io
-          kind: Hostname
-          name: alist.external-services.mesh.internal
+        - group: ""
+          kind: Service
+          name: openlist-private
           port: 5244

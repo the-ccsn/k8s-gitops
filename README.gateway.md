@@ -272,9 +272,19 @@ retained locally.
 Two stock-image native candidates simplify helper concatenation or remove the
 matcher wrapper around conversion. Each passed eight local integration checks.
 Renewed Android builds invalidated the concatenation capacity comparisons;
-the direct native candidate is queued after ten continuous compiler-idle
-minutes, retaining the during-load guard. Neither candidate has a valid
-throughput conclusion or changes the deployed policy.
+the direct conversion completed a guarded 45-sample comparison after ten
+continuous compiler-idle minutes. Across five alternating rounds and
+16/64/256 connections, it lost 13.52% from disabled and 1.49% against the
+retained policy. Its 10% point gate failed, so it is not shipped. The retained
+policy lost 12.21% in the same comparison; neither policy passed the Envoy gate.
+
+A standalone C ABI `.so` plugin uses the existing image's shared-library
+filter interface without a Go runtime or rebuilding Envoy. It formats compact
+native timing values, caches the hostname, and preserves opaque upstream fields.
+After fixing configuration lifetime, it passed all eight stock-image integration
+checks. Its full-feature capacity comparison and a separate production Nginx
+comparison are queued with seven paired rounds, the compiler-idle guard, and
+independent 5%/10% budgets. The plugin is not shipped; its throughput is pending.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

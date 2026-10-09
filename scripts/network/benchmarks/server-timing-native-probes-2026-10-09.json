@@ -797,6 +797,190 @@
         }
       },
       "limitations": "Five alternating rounds at fixed 64 connections. No compiler interference detected. The empty native filter lost 2.62% with a 0.93% disabled range; this isolates framework overhead and does not measure complete timing work."
+    },
+    {
+      "name": "envoy_native_direct",
+      "kind": "Complete native full-metric candidate on the existing stock Istio binary",
+      "shipped": false,
+      "raw_directory": "server-timing-envoy-new-budgets-20261009T062339Z",
+      "source_sha256": "663b9f96111531e320785fa2d28b06d072febaa760e0dd8ae7c77f4be9a65edf",
+      "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",
+      "parameters": {
+        "rounds": 5,
+        "duration": 4,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "envoy"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "reference",
+          "on"
+        ],
+        "throughput_budgets_percent": {
+          "nginx": 5.0,
+          "envoy": 10.0
+        },
+        "confidence_method": "paired_round_bootstrap_95pct",
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "0.64 1.02 2.34 2/7076 2415343",
+        "commit": "1c17250bbb584c0b448ef116a304ceca71aa85cc",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "envoy": {
+          "capacity_off": {
+            "rps": 13019.38,
+            "proxy_cpu_us_per_request": 69.5571477637002,
+            "proxy_anon_mib": 26.03515625,
+            "client_cpu_cores": 0.15786049303046432,
+            "rps_range": [
+              12859.81,
+              13298.87
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 12568.48,
+                "rps_range": [
+                  12549.06,
+                  12882.92
+                ],
+                "samples": 5
+              },
+              "64": {
+                "rps": 13019.38,
+                "rps_range": [
+                  12859.81,
+                  13298.87
+                ],
+                "samples": 5
+              },
+              "256": {
+                "rps": 12420.29,
+                "rps_range": [
+                  12212.58,
+                  12457.25
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_reference": {
+            "rps": 11429.59,
+            "proxy_cpu_us_per_request": 80.11971249891427,
+            "proxy_anon_mib": 26.640625,
+            "client_cpu_cores": 0.14193679696891756,
+            "rps_range": [
+              11308.89,
+              11668.17
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 11168.07,
+                "rps_range": [
+                  11134.45,
+                  11371.19
+                ],
+                "samples": 5
+              },
+              "64": {
+                "rps": 11429.59,
+                "rps_range": [
+                  11308.89,
+                  11668.17
+                ],
+                "samples": 5
+              },
+              "256": {
+                "rps": 10928.68,
+                "rps_range": [
+                  10787.53,
+                  10958.99
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 11259.55,
+            "proxy_cpu_us_per_request": 81.31707209394729,
+            "proxy_anon_mib": 26.546875,
+            "client_cpu_cores": 0.1401669554001284,
+            "rps_range": [
+              11164.61,
+              11414.18
+            ],
+            "samples": 5,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 10992.47,
+                "rps_range": [
+                  10957.32,
+                  11222.09
+                ],
+                "samples": 5
+              },
+              "64": {
+                "rps": 11259.55,
+                "rps_range": [
+                  11164.61,
+                  11414.18
+                ],
+                "samples": 5
+              },
+              "256": {
+                "rps": 10742.5,
+                "rps_range": [
+                  10628.6,
+                  10849.47
+                ],
+                "samples": 5
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -13.517003113819548,
+            "proxy_cpu_us_per_request": 16.906852434774855,
+            "proxy_anon_mib": 1.9654913728432089,
+            "client_cpu_cores": -11.208338001909922
+          },
+          "throughput_change_from_reference_percent": -1.4877174071860955,
+          "acceptance": {
+            "threshold_percent": 10.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 3.3723572090222524,
+            "status": "failed"
+          },
+          "extra_header_bytes": 325
+        }
+      },
+      "completed_samples": 45,
+      "limitations": "Five alternating rounds over 16/64/256 connections, after ten continuous compiler-idle minutes; during-load guard found no compilation. Candidate lost 13.52% from disabled and 1.49% against retained production configuration. The 10% point gate failed; five rounds cannot establish bootstrap acceptance."
     }
   ],
   "invalid_runs": [
@@ -888,14 +1072,25 @@
       "shipped": false
     },
     "envoy_native_concat": {
-      "status": "Eight integration checks passed on the existing Istio image. Capacity comparison invalidated by renewed Android compilation; guarded fresh Envoy/Nginx comparisons queued after a continuous idle window.",
+      "status": "Eight integration checks passed; capacity comparisons invalidated by Android compilation. No valid throughput conclusion; not shipped.",
       "shipped": false,
       "policy_sha256": "04e3e432c5b99adc609cd2d50edcf2ec7e3f22174d7231776a3e67cf53d028bc"
     },
     "envoy_native_direct": {
-      "status": "Eight integration checks passed on the existing Istio image. Removes the matcher wrapper and uses direct native HeaderToMetadata conversion; guarded capacity comparison queued.",
+      "status": "Eight integration checks passed; valid guarded 45-sample comparison lost 13.52% versus disabled and 1.49% versus the retained policy. Rejected; not shipped.",
       "policy_sha256": "09004915e66de7a92104321b4798a1a7e4e790bbbb571676e5e7a9e7a2962b22",
       "shipped": false
+    },
+    "envoy_native_capi": {
+      "scope": "Standalone C ABI plugin; existing stock Istio/Envoy binary is unchanged",
+      "source_sha256": "0161a2c5b354d0b1332d099b6df8fb27f6c00e8483c4bbe718f583926598b0fe",
+      "module_sha256": "05e4725688ad0aaa3f71ca034b85674facc47b7b172c489ed70ba0f676243b64",
+      "module_bytes": 16632,
+      "policy_sha256": "ea8a7b1e34c9bd66dacf8409a8d2c1dfde7e6c7ac246330f549e13e62b1243bd",
+      "integration": "Eight complete integration checks passed after immutable process configuration fix on the stock Istio image",
+      "throughput": "pending",
+      "shipped": false,
+      "status": "Complete standalone .so plugin passed eight integration checks after immutable configuration fix on the stock Istio binary. Seven-round full capacity comparison queued after ten continuous compiler-idle minutes; no complete Envoy build or runtime change."
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",

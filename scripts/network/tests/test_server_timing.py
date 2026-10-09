@@ -120,8 +120,17 @@ class ServerTimingIntegrationTest(unittest.TestCase):
                 "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua",
                 "default_source_code": {"inline_string": """
 function envoy_on_request(handle)
+  if handle:headers():get(":path") == "/response-delay" then
+    handle:streamInfo():dynamicMetadata():set("test", "response_delay", true)
+  end
   if handle:headers():get(":path") == "/deny" then
     handle:respond({[":status"] = "401"}, "denied")
+  end
+end
+function envoy_on_response(handle)
+  local metadata = handle:streamInfo():dynamicMetadata():get("test")
+  if metadata and metadata.response_delay then
+    handle:httpCall("backend", {[":method"] = "GET", [":path"] = "/delay", [":authority"] = "localhost"}, "", 1000)
   end
 end
 """},
@@ -272,6 +281,15 @@ server {{
             self.assertIn("nginx_headers", timing)
             if path != "/nginx-local":
                 self.assertIn("envoy_headers", timing)
+
+    def test_elapsed_headers_include_response_filter_wait(self) -> None:
+        status, timing = self.fetch(self.inner_port, "/response-delay")
+        self.assertEqual(status, 200)
+        elapsed = float(re.search(r"envoy_headers;dur=([0-9.]+)", timing).group(1))
+        upstream = float(re.search(r"envoy_upstream_headers;dur=([0-9.]+)", timing).group(1))
+        self.assertGreaterEqual(elapsed, 140, timing)
+        self.assertGreaterEqual(upstream, 70, timing)
+        self.assertGreaterEqual(elapsed - upstream, 60, timing)
 
     def test_all_production_nginx_locations_validate(self) -> None:
         configs = yaml.safe_load((NGINX_DIR / "nginx-subconfig.yaml").read_text())["data"]

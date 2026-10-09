@@ -266,7 +266,7 @@ further measurements need to control that variation.
 The native Envoy formatter experiment is closed: it modifies the Envoy core and
 requires rebuilding the complete proxy, whereas the required scope is a plugin
 for the existing Istio/Envoy binary. That build was stopped. No replacement proxy
-image was produced or deployed. Prototype plugin binaries and raw outputs are
+binary was produced or deployed. Prototype plugin binaries and raw outputs are
 retained locally.
 
 Two stock-image native candidates simplify helper concatenation or remove the
@@ -281,9 +281,12 @@ policy lost 12.21% in the same comparison; neither policy passed the Envoy gate.
 A standalone C ABI `.so` plugin uses the existing image's shared-library
 filter interface without a Go runtime or rebuilding Envoy. It formats compact
 native timing values, caches the hostname, and preserves opaque upstream fields.
-After fixing configuration lifetime, it passed all eight stock-image integration
-checks. Its full-feature capacity comparison and a separate production Nginx
-comparison are queued with seven paired rounds, the compiler-idle guard, and
+After fixing configuration lifetime and including later response-filter waits,
+it passed all nine stock-image integration checks with two workers. A local
+package preserves the stock image's four layers and adds only the `.so` file;
+the same nine checks passed without a plugin volume mount. It has not been
+published or deployed. Its full-feature capacity comparison and a separate
+production Nginx comparison are queued with seven paired rounds, the compiler-idle guard, and
 independent 5%/10% budgets. The plugin is not shipped; its throughput is pending.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of

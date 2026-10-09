@@ -1083,14 +1083,26 @@
     },
     "envoy_native_capi": {
       "scope": "Standalone C ABI plugin; existing stock Istio/Envoy binary is unchanged",
-      "source_sha256": "0161a2c5b354d0b1332d099b6df8fb27f6c00e8483c4bbe718f583926598b0fe",
-      "module_sha256": "05e4725688ad0aaa3f71ca034b85674facc47b7b172c489ed70ba0f676243b64",
+      "source_sha256": "9ac169a25dbab9c8f598a53f7fed456c561796783aae0895ebe7b0328aea98f6",
+      "module_sha256": "d2d6821ae5e1b65699b050cc815ba3a8e053958b6c1b44a4393af0ea94b84ebf",
       "module_bytes": 16632,
-      "policy_sha256": "ea8a7b1e34c9bd66dacf8409a8d2c1dfde7e6c7ac246330f549e13e62b1243bd",
-      "integration": "Eight complete integration checks passed after immutable process configuration fix on the stock Istio image",
-      "throughput": "pending",
+      "policy_sha256": "1f212fd6b3307fdf829d90b30ebc2cec7fc6696e85ed4ec7ec645f15361be21d",
+      "integration": "Nine complete integration checks passed with two workers on the stock Istio image, including elapsed time spent in another response filter",
+      "throughput": "pending; earlier capacity controller deliberately stopped before any sample to correct response-filter elapsed timing",
+      "elapsed_headers": "Computed at the final response callback from the native request start timestamp; unavailable local-response timestamps use the public request.time property",
+      "packaging": {
+        "image_id": "455f6b50d03bff1ee402b481d48d2af9ec0bee64d8fbbc2db44499fedd6cce61",
+        "base_image_id": "64b6473d92166ee883c9951d54320d477311ca150b3b13c0411bb1386140f53a",
+        "unchanged_base_layers": 4,
+        "added_layers": 1,
+        "added_uncompressed_bytes": 20820,
+        "containerfile": "FROM pinned existing Istio image; COPY standalone server-timing.so",
+        "integration": "Nine full integration checks passed with two workers and no plugin volume mount",
+        "published": false,
+        "deployed": false
+      },
       "shipped": false,
-      "status": "Complete standalone .so plugin passed eight integration checks after immutable configuration fix on the stock Istio binary. Seven-round full capacity comparison queued after ten continuous compiler-idle minutes; no complete Envoy build or runtime change."
+      "status": "Nine integration checks passed with two workers on both the stock mounted-plugin image and the locally packaged image without a plugin mount. Includes elapsed time spent in later response filters. Seven-round full capacity comparison is waiting for the compiler-idle window; no Envoy rebuild, publication, deployment, or production policy change."
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",

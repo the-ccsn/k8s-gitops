@@ -1,6 +1,7 @@
 """Ensure capacity experiments cannot accept incomplete timing responses."""
 import importlib.util
 import json
+import socket
 import unittest
 import tempfile
 from pathlib import Path
@@ -55,6 +56,15 @@ class BenchmarkTimingValidationTest(unittest.TestCase):
 
 
 class BenchmarkEnvironmentValidationTest(unittest.TestCase):
+    def test_fixture_ports_are_distinct_and_reservations_are_released(self):
+        keys = [f"role_{i}" for i in range(256)]
+        ports = benchmark.allocate_ports(keys)
+        self.assertEqual(set(ports), set(keys))
+        self.assertEqual(len(set(ports.values())), len(keys))
+        for number in ports.values():
+            with socket.socket() as sock:
+                sock.bind(("127.0.0.1", number))
+
     def test_resume_rejects_missing_or_changed_harness_identity(self):
         with tempfile.TemporaryDirectory(dir=benchmark.ROOT.parent / "task-logs") as directory:
             output = Path(directory)

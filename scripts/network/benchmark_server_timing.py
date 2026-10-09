@@ -24,7 +24,7 @@ import statistics
 import subprocess
 import time
 from collections import Counter
-from contextlib import closing
+from contextlib import ExitStack, closing
 from pathlib import Path
 
 import yaml
@@ -123,10 +123,16 @@ def save(path: Path, value: object) -> None:
     temporary.replace(path)
 
 
-def port() -> int:
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        return sock.getsockname()[1]
+def allocate_ports(keys: list[str]) -> dict[str, int]:
+    # Keep reservations open until all roles have distinct ports. Closing each
+    # socket immediately lets the kernel assign its port to a later role.
+    with ExitStack() as reservations:
+        ports = {}
+        for key in keys:
+            sock = reservations.enter_context(socket.socket())
+            sock.bind(("127.0.0.1", 0))
+            ports[key] = sock.getsockname()[1]
+        return ports
 
 
 def physical_cpus() -> list[int]:
@@ -329,7 +335,11 @@ http {{
     def prepare(self) -> None:
         self.state.setdefault("run_id", str(time.time_ns()))
         keys = ["backend", "backend_tls", *(f"{role}_{mode}" for mode in self.args.modes for role in ["nginx", "envoy", "outer", "chain"])]
-        ports = self.state.setdefault("ports", {key: port() for key in keys})
+        if "ports" not in self.state:
+            self.state["ports"] = allocate_ports(keys)
+        ports = self.state["ports"]
+        if len(set(ports.values())) != len(keys) or set(ports) != set(keys):
+            raise ValueError("Fixture ports are incomplete or duplicated; use a new output directory")
         if not (self.output / "tls.crt").exists():
             command("openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", str(self.output / "tls.key"),
                     "-out", str(self.output / "tls.crt"), "-days", "1", "-subj", "/CN=localhost")

@@ -1518,6 +1518,198 @@
       "completed_samples": 42,
       "limitations": "Seven complete guarded rounds, 42 samples, all fixture ports distinct. Peak loss 7.88%, 95% upper loss 9.66%; baseline peak range 2.60%. Failed the independent 5% gate. Earlier 3.7% exploratory point is not acceptance proof.",
       "retained_in_pr": true
+    },
+    {
+      "name": "nginx_o3_scoped_valid_capacity",
+      "kind": "Standalone O3 native Nginx module with configuration-owned cached templates",
+      "shipped": false,
+      "raw_directory": "server-timing-nginx-native-capacity-20261009T084700Z",
+      "source_sha256": "3fb393c39c89fb07a13e8ebf36556c089ee2ec429992e8e8baeff7af0614a643",
+      "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+      "parameters": {
+        "rounds": 7,
+        "duration": 6,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "nginx"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "reference",
+          "on"
+        ],
+        "throughput_budgets_percent": {
+          "nginx": 5.0,
+          "envoy": 10.0
+        },
+        "confidence_method": "paired_round_bootstrap_95pct",
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "1.16 1.92 1.65 1/6864 2519742",
+        "commit": "5fd9e7796df87a7aa05a27b03a954b4449e82e69",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "nginx": {
+          "capacity_off": {
+            "rps": 37083.42,
+            "proxy_cpu_us_per_request": 18.001489917634522,
+            "proxy_anon_mib": 5.251953125,
+            "client_cpu_cores": 0.3295056391729932,
+            "rps_range": [
+              36691.15,
+              37844.1
+            ],
+            "samples": 7,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 37083.42,
+                "rps_range": [
+                  36691.15,
+                  37844.1
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 32756.33,
+                "rps_range": [
+                  32388.17,
+                  34245.92
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 32692.75,
+                "rps_range": [
+                  31022.4,
+                  41810.27
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_reference": {
+            "rps": 33995.55,
+            "proxy_cpu_us_per_request": 19.818888562017428,
+            "proxy_anon_mib": 5.90234375,
+            "client_cpu_cores": 0.3367115217802773,
+            "rps_range": [
+              33064.24,
+              34326.48
+            ],
+            "samples": 7,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 33995.55,
+                "rps_range": [
+                  33064.24,
+                  34326.48
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 32124.35,
+                "rps_range": [
+                  30268.98,
+                  38500.35
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 33047.43,
+                "rps_range": [
+                  31001.34,
+                  33644.05
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 35910.22,
+            "proxy_cpu_us_per_request": 18.818212624097885,
+            "proxy_anon_mib": 5.251953125,
+            "client_cpu_cores": 0.33268496394372343,
+            "rps_range": [
+              35666.85,
+              36586.4
+            ],
+            "samples": 7,
+            "connections": 16,
+            "curve": {
+              "16": {
+                "rps": 35910.22,
+                "rps_range": [
+                  35666.85,
+                  36586.4
+                ],
+                "samples": 7
+              },
+              "64": {
+                "rps": 33412.26,
+                "rps_range": [
+                  31674.23,
+                  39694.31
+                ],
+                "samples": 7
+              },
+              "256": {
+                "rps": 35717.0,
+                "rps_range": [
+                  35041.06,
+                  37493.27
+                ],
+                "samples": 7
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -3.1636779994941078,
+            "proxy_cpu_us_per_request": 4.536972829472785,
+            "proxy_anon_mib": 0.0,
+            "client_cpu_cores": 0.9648771956406677
+          },
+          "throughput_change_from_reference_percent": 5.6321194979931155,
+          "acceptance": {
+            "threshold_percent": 5.0,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": true,
+            "baseline_throughput_spread_percent": 3.1090713855410237,
+            "status": "inconclusive",
+            "confidence": {
+              "method": "paired_round_bootstrap",
+              "rounds": 7,
+              "draws": 5000,
+              "seed": 0,
+              "one_sided_level": 0.95,
+              "upper_loss_percent": 9.54752629994723
+            }
+          },
+          "extra_header_bytes": 178
+        }
+      },
+      "completed_samples": 63,
+      "limitations": "Seven complete guarded rounds and all distinct fixture ports. Point loss 3.16%, 5.63% faster than retained maps/njs, baseline peak range 3.11%. High-concurrency variation widens peak-reselecting bootstrap upper loss to 9.55%; inconclusive under the 5% gate. More stable or higher-precision replication remains required."
     }
   ],
   "invalid_runs": [
@@ -1587,6 +1779,15 @@
       "reason": "Duplicate fixture ports; strict response preflight rejected the wrong proxy response before any throughput sample",
       "completed_samples": 0,
       "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-envoy-lua-fallback-capacity-20261009T090000Z",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "soong_ui"
+      ],
+      "completed_samples": 10,
+      "acceptance": "invalid; no throughput conclusion"
     }
   ],
   "next_candidates": {
@@ -1608,7 +1809,7 @@
       "shipped": false
     },
     "nginx_o3_template": {
-      "status": "Fresh seven-round capacity comparison running with retained production reference, distinct reserved ports, independent 5% budget, and compiler guard; no production runtime change",
+      "status": "Ten integration checks passed. Valid guarded seven-round point loss 3.16%, 95% upper loss 9.55%, 5.63% faster than retained maps/njs. Inconclusive under the 5% gate; precision/repeatability pending.",
       "source_sha256": "5f8c01672458ee5b06455023d97107512edaba68e0b2e90ff73d9f0ade316d42",
       "module_sha256": "6b403db1bcb39ac24851c005358a5d8148a261f2f2fb42e39b81e88296521aa6",
       "shipped": false,
@@ -1763,6 +1964,37 @@
         "harness_sha256": "5009675bf4f670ccfaedbdcc4778a2a006328f8e040521eaf1fc6da3af171912"
       },
       "status": "Complete integration and inline checks passed; full capacity comparison failed the 10% gate. Not shipped."
+    },
+    "envoy_native_lua_fallback": {
+      "scope": "Existing native formatters and matcher; direct helper concatenation, Lua cleanup only when own optional durations are missing",
+      "policy_sha256": "ff95ce25a6e45a89df03ea7d9aa2804e777e8df9785a2be4ed44e5d6f4567522",
+      "integration": "Nine complete integration checks passed on the stock image, including streaming, local replies, opaque upstream fields, and response-filter waiting",
+      "image_changes": false,
+      "envoy_rebuild": false,
+      "shipped": false,
+      "throughput": "Comparison invalidated by renewed soong_ui after 10 samples; fresh guarded comparison queued, no throughput conclusion"
+    },
+    "envoy_capi_cached_template": {
+      "scope": "Standalone cached-template C ABI plugin; original Istio/Envoy binary unchanged",
+      "source_sha256": "eab43cebf224d6bef10c31c6040c42a9f83572838bfb48b8ed8a4e57a40216a0",
+      "module_sha256": "2b11ac3c96f0a34a59e8899be3999dfeb15d26d3ecd8a4b131324203396c6765",
+      "module_bytes": 20728,
+      "policy_sha256": "1f212fd6b3307fdf829d90b30ebc2cec7fc6696e85ed4ec7ec645f15361be21d",
+      "cache": "Immutable complete and plaintext templates; general formatting for larger or other unavailable intervals",
+      "format_validation": "Four explicit expected-output/capacity cases passed",
+      "integration": "Ten checks passed with two workers, including TLS/plaintext, elapsed response-filter waiting, streaming, and 2000 sustained full-metric fast replies",
+      "throughput": "pending; compiler-idle guarded capacity comparison required",
+      "shipped": false,
+      "published": false,
+      "preflight": {
+        "kind": "Response preflight only; no throughput acceptance",
+        "raw_directory": "server-timing-capi-template-preflight-20261009",
+        "validated_endpoints": 9,
+        "source_sha256": "edf5b5ecec29983e68641f3d43d4aff3a561937694e213a0ed1f91a1be4891c5",
+        "harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+        "samples": 0,
+        "stopped_containers": 13
+      }
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",
@@ -1775,5 +2007,21 @@
   "historical_gates": "Each experiment retains its original recorded acceptance gate; current budgets do not retroactively reclassify historical runs.",
   "current_acceptance_evidence": "At least seven complete paired rounds, idle-build guard, component baseline range within its budget, and a one-sided 95% paired-round bootstrap upper peak-throughput loss bound within the budget. Diagnostic empty filters cannot pass feature acceptance.",
   "capacity_wait": "Repeated Android compilations invalidate 90-second-gap attempts; future capacity comparisons require ten continuous compiler-idle minutes and retain the during-load guard.",
-  "latest_harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06"
+  "latest_harness_sha256": "7691c7aff4888cc7da287f2d18b392e6582972056c4954d39c342a85e0c7df06",
+  "precision_replication": {
+    "component": "nginx",
+    "candidate": "nginx_o3_template",
+    "rounds": 14,
+    "duration": 6,
+    "connections": [
+      16,
+      64,
+      256
+    ],
+    "modes": [
+      "off",
+      "on"
+    ],
+    "status": "queued after continuous compiler-idle window; does not change the 5% gate, peak selection, confidence, or baseline criteria"
+  }
 }

@@ -303,10 +303,24 @@ Its guarded seven-round capacity comparison lost 18.01%, with a one-sided
 and is rejected. The retained policy lost 11.18% in that same comparison.
 A separate seven-round production Nginx comparison lost 7.88%, with a 95%
 upper bound of 9.66%, failing the independent 5% gate. No runtime change
-is shipped. The O3 native Nginx candidate passed ten integration checks and
-is undergoing a fresh guarded comparison. A duplicate-port fixture failed
+is shipped. The O3 native Nginx candidate passed ten integration checks. Its guarded
+seven-round point loss was 3.16%, a 5.63% gain over the retained maps/njs
+configuration, but high-concurrency variation raised the 95% upper loss
+to 9.55%; its 5% acceptance remains inconclusive. A duplicate-port fixture failed
 preflight before any load; port allocation now holds every reservation until
 all roles have distinct ports, and seventeen benchmark regressions pass.
+
+
+A native Envoy fallback candidate copies complete helpers directly and runs Lua
+cleanup only for missing durations. Nine integration checks passed; renewed
+compilation invalidated its capacity comparison after ten samples. It has no
+throughput conclusion. A separate C ABI candidate caches complete and plaintext
+formatting templates, using the general path for larger or other missing values.
+Four explicit formatting/capacity checks, ten integration checks with two workers
+(including 2,000 sustained full-metric replies), and all nine fixture preflights
+passed. Thirteen preflight containers were stopped. Its capacity comparison,
+a fourteen-round Nginx precision replication, and a fresh fallback comparison
+are queued after the continuous compiler-idle window. None is shipped or accepted.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each
@@ -416,3 +430,4 @@ reference, and enabled endpoints; capacity acceptance remains pending.
 | **80** | Internal Split DNS, `i319-reroute` | Standard plain HTTP traffic. |
 | **443** | Internal Split DNS | Standard HTTPS traffic (Gateway handles TLS). |
 | **8080** | Cloudflare Tunnel, `i319-reroute` | Decrypted HTTPS traffic forwarded from upstream proxies. |
+

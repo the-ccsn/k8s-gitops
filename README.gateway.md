@@ -238,9 +238,16 @@ pool remain under investigation. The latest Nginx candidates each passed nine
 integration checks, including configuration reload. Guarded template and O3/pool
 runs were invalidated when Android compilation restarted; the latter completed
 18 samples before invalidation. Those samples cannot establish capacity gains.
-The single native Envoy formatter compiled against the pinned Istio Envoy source;
-its full proxy build and integration checks are pending. Prototype binaries and
-raw outputs are retained locally and are not deployed.
+A subsequent compiler-idle Nginx O3/pool screening measured 2.6% peak throughput
+loss. The disabled peak range spanned 27%, and identical reference/on controls
+differed by 1.13% at peak; this does not establish stable overhead or pass the
+budget. Further measurements need to control that variation.
+
+The native Envoy formatter experiment is closed: it modifies the Envoy core and
+requires rebuilding the complete proxy, whereas the required scope is a plugin
+for the existing Istio/Envoy binary. That build was stopped. No replacement proxy
+image was produced or deployed. Prototype plugin binaries and raw outputs are
+retained locally.
 
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each

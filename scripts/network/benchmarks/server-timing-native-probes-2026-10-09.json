@@ -409,6 +409,184 @@
         }
       },
       "limitations": "The reference module-load file pointed to /module/server-timing.so, so reference loaded the on binary. The reported improvement over the previous candidate is withdrawn. The off/on screening remains exploratory and does not establish a 1% bound."
+    },
+    {
+      "name": "nginx_o3_pool_guarded",
+      "kind": "Native Nginx plugin candidate; identical reference/on binaries and request pools provide an A/A control",
+      "shipped": false,
+      "raw_directory": "server-timing-nginx-guarded-20261009T051908Z",
+      "source_sha256": "85b4957fda6ba7a16e74a4493b3dd70b58f7aad231968459dc311a5c97ff4d85",
+      "harness_sha256": "b03a2bc17dd6baf1c3631a6f29de4d9df8874763fe0e30f65a83a52987c487ad",
+      "parameters": {
+        "rounds": 3,
+        "duration": 4,
+        "rate": 2000,
+        "cpus": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "scenarios": [
+          "nginx"
+        ],
+        "connections": [
+          16,
+          64,
+          256
+        ],
+        "modes": [
+          "off",
+          "reference",
+          "on"
+        ],
+        "require_idle_builds": true
+      },
+      "environment": {
+        "nginx_image": "nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de",
+        "envoy_image": "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless",
+        "cpu_model": "Intel(R) Core(TM) i7-14650HX",
+        "initial_load": "3.54 7.59 7.57 1/7457 2334046",
+        "commit": "c37b99e77aa9d167aeea804dbb552363c00543fd",
+        "wrk": "wrk 4.2.0 [epoll] Copyright (C) 2012 Will Glozer",
+        "vegeta": "Version: 12.13.0\nCommit: 03ca49e9b419c106db29d687827c4c823d8b8ece\nRuntime: go1.26.7 linux/amd64\nDate: 1970-01-01T00:00:00Z"
+      },
+      "results": {
+        "nginx": {
+          "capacity_off": {
+            "rps": 40873.59,
+            "proxy_cpu_us_per_request": 15.771509835034879,
+            "proxy_anon_mib": 7.03515625,
+            "client_cpu_cores": 0.3443752550174143,
+            "rps_range": [
+              31383.52,
+              42402.2
+            ],
+            "samples": 3,
+            "connections": 256,
+            "curve": {
+              "16": {
+                "rps": 36338.45,
+                "rps_range": [
+                  35178.74,
+                  36986.21
+                ],
+                "samples": 3
+              },
+              "64": {
+                "rps": 33368.6,
+                "rps_range": [
+                  31981.76,
+                  33470.33
+                ],
+                "samples": 3
+              },
+              "256": {
+                "rps": 40873.59,
+                "rps_range": [
+                  31383.52,
+                  42402.2
+                ],
+                "samples": 3
+              }
+            }
+          },
+          "capacity_reference": {
+            "rps": 40261.24,
+            "proxy_cpu_us_per_request": 16.451420556358826,
+            "proxy_anon_mib": 5.603515625,
+            "client_cpu_cores": 0.3502382079234895,
+            "rps_range": [
+              33142.97,
+              42847.37
+            ],
+            "samples": 3,
+            "connections": 64,
+            "curve": {
+              "16": {
+                "rps": 35482.71,
+                "rps_range": [
+                  33764.79,
+                  36007.22
+                ],
+                "samples": 3
+              },
+              "64": {
+                "rps": 40261.24,
+                "rps_range": [
+                  33142.97,
+                  42847.37
+                ],
+                "samples": 3
+              },
+              "256": {
+                "rps": 35395.67,
+                "rps_range": [
+                  35264.63,
+                  42566.29
+                ],
+                "samples": 3
+              }
+            }
+          },
+          "capacity_on": {
+            "rps": 39807.73,
+            "proxy_cpu_us_per_request": 16.19731825544941,
+            "proxy_anon_mib": 7.2734375,
+            "client_cpu_cores": 0.34877400384639445,
+            "rps_range": [
+              34532.3,
+              40335.35
+            ],
+            "samples": 3,
+            "connections": 256,
+            "curve": {
+              "16": {
+                "rps": 35486.32,
+                "rps_range": [
+                  35228.12,
+                  36302.85
+                ],
+                "samples": 3
+              },
+              "64": {
+                "rps": 34930.45,
+                "rps_range": [
+                  32240.32,
+                  42756.41
+                ],
+                "samples": 3
+              },
+              "256": {
+                "rps": 39807.73,
+                "rps_range": [
+                  34532.3,
+                  40335.35
+                ],
+                "samples": 3
+              }
+            }
+          },
+          "capacity_change_percent": {
+            "rps": -2.6076985163280053,
+            "proxy_cpu_us_per_request": 2.699858319643189,
+            "proxy_anon_mib": 3.3870072182121014,
+            "client_cpu_cores": 1.277312688670884
+          },
+          "throughput_change_from_reference_percent": -1.1264183616798595,
+          "acceptance": {
+            "threshold_percent": 1,
+            "metric": "peak_throughput",
+            "throughput_point_estimate_pass": false,
+            "baseline_throughput_spread_percent": 26.957945215969524,
+            "status": "failed"
+          },
+          "extra_header_bytes": 178
+        }
+      },
+      "limitations": "No compiler interference was detected, but disabled peak throughput spanned 27% and identical reference/on controls differed by 1.13% at peak. The 2.61% loss point estimate exceeds the budget; this screening does not establish a stable feature overhead."
     }
   ],
   "invalid_runs": [
@@ -444,11 +622,12 @@
       "status": "Eight local integration checks passed; throughput screening invalidated by external compilation; no capacity conclusion"
     },
     "envoy_native_formatter": {
-      "status": "Standalone formatting checks and the formatter library build passed; complete Istio proxy build and proxy integration pending; no throughput conclusion",
+      "status": "Closed: this experiment modifies the Envoy core and requires rebuilding the complete proxy. The user requires a plugin for the existing Istio/Envoy binary. The build was stopped, and no image was produced or deployed.",
       "istio_source": "959dc66ceeb630a80b6fd7bba6a7de1bf469944d",
       "envoy_source": "c90c9e9ba9b26d6a40717689269fc0c3c9c5702d",
       "patch_sha256": "f393effebac6bbbe527851ac576cbc69a6b0b07c2175c36c963a85776dd65a90",
-      "shipped": false
+      "shipped": false,
+      "disposition": "cancelled; out of plugin scope"
     },
     "nginx_scoped_template": {
       "status": "Nine integration checks passed, including configuration reload; throughput acceptance pending",
@@ -469,6 +648,6 @@
       "shipped": false
     }
   },
-  "harness_sha256": "a3330e1cd768ed585d9ec2f15c3a7cafbf9b82fbb992f415bb6711f9b8ed9f6f",
+  "harness_sha256": "b03a2bc17dd6baf1c3631a6f29de4d9df8874763fe0e30f65a83a52987c487ad",
   "reference_harness_correction": "Native reference mode now loads its own mounted binary. New invocations record the harness hash and reject resumes with missing or changed harness identity."
 }

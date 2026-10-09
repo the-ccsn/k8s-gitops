@@ -9,3 +9,4 @@ resources:
 - openlist-public-identity.yaml
 - openlist-public-seed.yaml
 - openlist-public-helm-release.yaml
+- public-dns.yaml

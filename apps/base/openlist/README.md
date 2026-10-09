@@ -19,4 +19,6 @@ The existing public share maps exactly to the SeaweedFS `share` bucket contents.
 
 Verify both HelmReleases and pods in namespace `prod`, route backend references, authenticated private listing/upload, anonymous private denial, public read access and write denial, and both OIDC authorization redirects.
 
-Native S3 correctly honors Range requests, including a 1 GiB object. At migration time Cloudflare returned a full HTTP 200 for that object's presigned Range request, while smaller objects returned 206. This remains pending a hostname-scoped Cloudflare cache bypass rule; current automation credentials cannot edit Cache Rules. Do not treat successful bounded byte reads as proof of public range support.
+Native S3 correctly honors Range requests, including a 1 GiB object. At migration time Cloudflare returned a full HTTP 200 for that object's presigned Range request, while smaller objects returned 206. Further diagnosis needs Cache Rules permission: enable Origin Range Requests while preserving caching. The owner explicitly requests Cloudflare cache utilization; do not add bypass rules. Current automation credentials cannot edit Cache Rules. Do not treat successful bounded byte reads as proof of public range support.
+
+`public-dns.yaml` preserves the public share CNAME through external-dns. An old explicit record pointed at the legacy OMV tunnel and bypassed the Kubernetes gateway; migration updates it to `prod.ingress.ccsn.dev`. The private hostname uses the existing production wildcard.

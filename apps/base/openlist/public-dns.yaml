@@ -1,0 +1,14 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: openlist-public
+spec:
+  endpoints:
+    - dnsName: share.ccsn.dev
+      recordType: CNAME
+      recordTTL: 1
+      targets:
+        - prod.ingress.ccsn.dev
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "true"

@@ -102,6 +102,11 @@ header is added.
 Nginx uses lazy native `map` variables and `add_header` for single attempts;
 only retries, upstream groups and partial measurements evaluate njs. Envoy uses
 native timing formatters and Header Mutation.
+A literal `;dur=;` search selects the missing-measurement path, avoiding a
+regular-expression scan on complete measurements. Native header formatters
+render absent durations as empty values (`omit_empty_values=true`), as defined
+by [Envoy's header parser](https://github.com/envoyproxy/envoy/blob/c90c9e9ba9b26d6a40717689269fc0c3c9c5702d/source/common/router/header_parser.cc)
+and [formatter](https://github.com/envoyproxy/envoy/blob/c90c9e9ba9b26d6a40717689269fc0c3c9c5702d/source/common/formatter/substitution_formatter.cc).
 Complete measurements bypass header-to-metadata conversion; a native regex
 omits unavailable measurements on the fallback path. Neither proxy
 creates per-request script state on its normal path. Nginx preserves inherited
@@ -150,7 +155,7 @@ Verification from the repository root:
 
 ```bash
 node --test scripts/network/tests/server-timing.test.mjs
-uv run --with pyyaml python scripts/network/tests/test_server_timing.py -v
+uv run --with pyyaml python -m unittest discover -s scripts/network/tests -p 'test_*.py' -v
 kubectl kustomize infra/configs/overlays/kubevirt-cluster-319
 ```
 
@@ -182,7 +187,7 @@ nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
 The harness needs at least six available physical cores. `--connections`
 selects the capacity sweep (default: 16, 64, 256, 1024). `--cpus` can select six
 distinct physical cores explicitly. It alternates test order, warms each
-endpoint, validates responses, records available CPU frequency samples, and saves every completed
+endpoint, validates response bodies and complete per-hop timing metrics, records available CPU frequency samples, and saves every completed
 sample and its raw output. Rerunning the same command resumes the same run;
 use a different output directory when changing parameters. `--stage capacity`,
 `--stage latency`, and `--stage report` select individual stages. Test containers
@@ -226,6 +231,40 @@ Raw samples and per-role CPU frequency readings are under the workspace's
 `task-logs/server-timing-throughput-retained/` directory. The recorded checkout
 precedes the candidate commit; file hashes identify the measured sources.
 Reference sources are snapshots from commit `ffa188e`.
+
+A subsequent literal-matcher run compared the candidate with `ac1c9bb` and
+the feature disabled. It used CPUs 16–21 (six physical cores without SMT
+siblings), three alternating rounds of 4-second samples, and the same
+16/64/256-connection sweep. The highest median for each mode was at 64
+connections. The 1% budget remains **not passed**:
+
+| Scenario | Disabled req/s | Previous req/s | Candidate req/s | From previous | From disabled |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Envoy → TLS backend | 12,948 | 11,349 | 11,493 | +1.3% | -11.2% |
+| Nginx → Envoy → Envoy → TLS backend | 12,248 | 9,271 | 9,525 | +2.7% | -22.2% |
+
+These are exploratory point estimates: baseline peak ranges span 3.9–4.2%,
+larger than the apparent improvements. The host is shared, and these results
+cannot establish stable gains or a 1% limit. Nginx's timing implementation is
+unchanged. No sample reported socket errors, HTTP failures, or proxy CPU
+throttling.
+
+[Literal-matcher summary](scripts/network/benchmarks/server-timing-throughput-literal-2026-10-09.json)
+records source hashes, curves, ranges, and the reference commit. All nine
+endpoints' recorded timing values were checked against the fixture's expected
+metrics. Raw samples are under `task-logs/server-timing-throughput-literal-ecores/`.
+The preceding run on CPUs 0/2/4/6/8/10 was invalidated: concurrent compilation
+reduced disabled Envoy throughput from 38,246 to 1,073 req/s. Its artifacts
+remain under `task-logs/server-timing-throughput-literal/` and are excluded
+from performance conclusions.
+
+The benchmark now rejects invalid durations, missing hop metrics, and leaked
+private helpers before generating load. Four regression checks cover these
+failures and valid zero durations. The original matcher-gated Lua experiment
+failed missing-value conversion and its performance results were discarded;
+the corrected candidate passed integration checks but reduced chain throughput
+relative to the native candidate. A compact-helper Lua reconstruction also
+lacked repeatable throughput evidence. The retained policy uses native filters.
 
 Chrome's navigation and resource APIs each exposed all 16 metrics in the
 integration chain, preserving an application description containing a comma.

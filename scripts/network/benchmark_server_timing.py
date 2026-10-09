@@ -22,6 +22,7 @@ import socket
 import statistics
 import subprocess
 import time
+from collections import Counter
 from contextlib import closing
 from pathlib import Path
 
@@ -30,6 +31,31 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 NGINX_DIR = ROOT / "infra/configs/base/i319-reroute"
 ENVOY_IMAGE = "registry.istio.io/release/proxyv2:1.30.0-rc.0-distroless"
+
+
+def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]]) -> None:
+    """Reject candidates that gain capacity by omitting or corrupting metrics."""
+    if any(key.lower() == "x-ccsn-envoy-timing" for key, _ in headers):
+        raise ValueError("Private timing helper leaked into a benchmark response")
+    timing = ",".join(value for key, value in headers if key.lower() == "server-timing")
+    # This fixture's descriptions are DNS hostnames; its backend emits app;dur=1.
+    names = []
+    for metric in timing.split(","):
+        match = re.fullmatch(r'\s*([a-z_]+);dur=([0-9]+(?:\.[0-9]+)?)(?:;desc="[^"]*")?\s*', metric)
+        if match is None:
+            raise ValueError(f"Invalid benchmark timing metric: {metric!r}")
+        names.append(match[1])
+    expected = Counter({"app": 1})
+    if mode != "off":
+        if scenario in {"nginx", "chain"}:
+            expected.update(["nginx_headers", "nginx_upstream_connect", "nginx_upstream_headers"])
+        if scenario in {"envoy", "chain"}:
+            hops = 2 if scenario == "chain" else 1
+            expected.update({name: hops for name in ["envoy_headers", "envoy_upstream_tcp",
+                            "envoy_upstream_headers", "envoy_upstream_pool", "envoy_request_receive"]})
+            expected["envoy_upstream_tls"] = 1
+    if Counter(names) != expected:
+        raise ValueError(f"Benchmark timing metrics differ: expected {dict(expected)}, got {dict(Counter(names))}")
 
 
 def command(*args: str) -> str:
@@ -259,7 +285,7 @@ http {{
                                                ("chain", [chain, outer, inner], f"chain_{mode}")]:
                 self.state["endpoints"][f"{scenario}_{mode}"] = {"url": f"http://127.0.0.1:{ports[endpoint]}/", "roles": roles}
         self.persist()
-        for endpoint in self.state["endpoints"].values():
+        for key, endpoint in self.state["endpoints"].items():
             endpoint_port = int(endpoint["url"].split(":")[2].split("/")[0])
             deadline = time.monotonic() + 15
             while True:
@@ -268,6 +294,8 @@ http {{
                         conn.request("GET", "/")
                         response = conn.getresponse()
                         assert response.status == 200 and len(response.read()) == 256
+                        scenario, mode = key.rsplit("_", 1)
+                        validate_timing(scenario, mode, response.getheaders())
                         endpoint["header_bytes"] = sum(len(k.encode()) + len(v.encode()) + 4 for k, v in response.getheaders())
                         endpoint["server_timing"] = response.getheader("Server-Timing")
                     break

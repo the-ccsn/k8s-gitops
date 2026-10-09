@@ -74,9 +74,9 @@ items:
                                   "@type": type.googleapis.com/envoy.type.matcher.v3.HttpResponseHeaderMatchInput
                                   header_name: x-ccsn-envoy-timing
                               value_match:
-                                safe_regex:
-                                  google_re2: {}
-                                  regex: '.*;dur=-?;.*'
+                                # Header formatters omit missing duration values;
+                                # use a literal search instead of scanning with RE2.
+                                contains: ";dur=;"
                         on_match:
                           action:
                             name: skip

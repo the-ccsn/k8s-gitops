@@ -836,6 +836,21 @@
       ],
       "completed_samples": 0,
       "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-envoy-new-budgets-20261009T060304Z",
+      "reason": "Concurrent build activity",
+      "process_names": [
+        "soong_ui"
+      ],
+      "completed_samples": 26,
+      "acceptance": "invalid; no throughput conclusion"
+    },
+    {
+      "raw_directory": "server-timing-envoy-new-budgets-20261009T060757Z",
+      "reason": "Interrupted to lengthen the idle window; incomplete capacity sweep",
+      "completed_samples": 0,
+      "acceptance": "invalid; no throughput conclusion"
     }
   ],
   "next_candidates": {
@@ -876,6 +891,11 @@
       "status": "Eight integration checks passed on the existing Istio image. Capacity comparison invalidated by renewed Android compilation; guarded fresh Envoy/Nginx comparisons queued after a continuous idle window.",
       "shipped": false,
       "policy_sha256": "04e3e432c5b99adc609cd2d50edcf2ec7e3f22174d7231776a3e67cf53d028bc"
+    },
+    "envoy_native_direct": {
+      "status": "Eight integration checks passed on the existing Istio image. Removes the matcher wrapper and uses direct native HeaderToMetadata conversion; guarded capacity comparison queued.",
+      "policy_sha256": "09004915e66de7a92104321b4798a1a7e4e790bbbb571676e5e7a9e7a2962b22",
+      "shipped": false
     }
   },
   "harness_sha256": "c1fb2dba6a6fd7d61c0f87b0756c3e3007025af677254a5842b428128800393b",
@@ -886,5 +906,6 @@
     "envoy": 10
   },
   "historical_gates": "Each experiment retains its original recorded acceptance gate; current budgets do not retroactively reclassify historical runs.",
-  "current_acceptance_evidence": "At least seven complete paired rounds, idle-build guard, component baseline range within its budget, and a one-sided 95% paired-round bootstrap upper peak-throughput loss bound within the budget. Diagnostic empty filters cannot pass feature acceptance."
+  "current_acceptance_evidence": "At least seven complete paired rounds, idle-build guard, component baseline range within its budget, and a one-sided 95% paired-round bootstrap upper peak-throughput loss bound within the budget. Diagnostic empty filters cannot pass feature acceptance.",
+  "capacity_wait": "Repeated Android compilations invalidate 90-second-gap attempts; future capacity comparisons require ten continuous compiler-idle minutes and retain the during-load guard."
 }

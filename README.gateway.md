@@ -269,6 +269,13 @@ for the existing Istio/Envoy binary. That build was stopped. No replacement prox
 image was produced or deployed. Prototype plugin binaries and raw outputs are
 retained locally.
 
+Two stock-image native candidates simplify helper concatenation or remove the
+matcher wrapper around conversion. Each passed eight local integration checks.
+Renewed Android builds invalidated the concatenation capacity comparisons;
+the direct native candidate is queued after ten continuous compiler-idle
+minutes, retaining the during-load guard. Neither candidate has a valid
+throughput conclusion or changes the deployed policy.
+
 The 2026-10-09 retained-candidate run used three alternating rounds of
 4-second samples at 16, 64, and 256 connections on an Intel i7-14650HX. Each
 mode's reported capacity is its highest median across the sweep. The applicable

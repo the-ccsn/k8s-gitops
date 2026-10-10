@@ -33,40 +33,55 @@ spec:
           version: v1
           kind: Deployment
           name: openlist-public
-        patch: "- op: add\n  path: /spec/strategy\n  value:\n    type: Recreate\n\
-          - op: add\n  path: /spec/template/spec/automountServiceAccountToken\n  value:\
-          \ false\n- op: add\n  path: /spec/template/spec/securityContext/runAsUser\n\
-          \  value: 1001\n- op: add\n  path: /spec/template/spec/securityContext/runAsGroup\n\
-          \  value: 1001\n- op: add\n  path: /spec/template/spec/securityContext/runAsNonRoot\n\
-          \  value: true\n- op: add\n  path: /spec/template/spec/securityContext/seccompProfile\n\
-          \  value:\n    type: RuntimeDefault\n- op: add\n  path: /spec/template/spec/containers/0/resources\n\
-          \  value:\n    requests:\n      cpu: 100m\n      memory: 128Mi\n    limits:\n\
-          \      memory: 1Gi\n- op: add\n  path: /spec/template/spec/containers/0/securityContext\n\
-          \  value:\n    allowPrivilegeEscalation: false\n    readOnlyRootFilesystem:\
-          \ true\n    capabilities:\n      drop:\n      - ALL\n- op: add\n  path:\
-          \ /spec/template/spec/containers/0/volumeMounts/-\n  value:\n    name: temporary\n\
-          \    mountPath: /tmp\n- op: add\n  path: /spec/template/spec/containers/0/readinessProbe\n\
-          \  value:\n    httpGet:\n      path: /ping\n      port: 5244\n    periodSeconds:\
-          \ 5\n    timeoutSeconds: 3\n- op: add\n  path: /spec/template/spec/containers/0/livenessProbe\n\
-          \  value:\n    httpGet:\n      path: /ping\n      port: 5244\n    periodSeconds:\
-          \ 15\n    timeoutSeconds: 3\n- op: add\n  path: /spec/template/spec/containers/0/startupProbe\n\
-          \  value:\n    httpGet:\n      path: /ping\n      port: 5244\n    periodSeconds:\
-          \ 5\n    failureThreshold: 60\n- op: add\n  path: /spec/template/spec/volumes/-\n\
-          \  value:\n    name: seed\n    secret:\n      secretName: openlist-public-seed\n\
-          \      defaultMode: 288\n- op: add\n  path: /spec/template/spec/volumes/-\n\
-          \  value:\n    name: oidc\n    secret:\n      secretName: openlist-public-oidc\n\
-          \      defaultMode: 288\n- op: add\n  path: /spec/template/spec/volumes/-\n\
-          \  value:\n    name: bootstrap\n    configMap:\n      name: openlist-bootstrap\n\
-          - op: add\n  path: /spec/template/spec/volumes/-\n  value:\n    name: temporary\n\
-          \    emptyDir:\n      sizeLimit: 1Gi\n- op: add\n  path: /spec/template/spec/initContainers\n\
-          \  value:\n  - name: bootstrap\n    image: docker.ccsn.dev/library/python:3.13-alpine\n\
-          \    command:\n    - python3\n    - /bootstrap/bootstrap.py\n    env:\n\
-          \    - name: SITE_URL\n      value: https://share.ccsn.dev\n    - name:\
-          \ SSO_AUTO_REGISTER\n      value: 'true'\n    securityContext:\n      allowPrivilegeEscalation:\
-          \ false\n      readOnlyRootFilesystem: true\n      capabilities:\n     \
-          \   drop:\n        - ALL\n    resources:\n      requests:\n        cpu:\
-          \ 20m\n        memory: 32Mi\n      limits:\n        memory: 128Mi\n    volumeMounts:\n\
-          \    - name: openlist-data\n      mountPath: /data\n    - name: seed\n \
-          \     mountPath: /seed\n      readOnly: true\n    - name: oidc\n      mountPath:\
-          \ /oidc\n      readOnly: true\n    - name: bootstrap\n      mountPath: /bootstrap\n\
-          \      readOnly: true\n    - name: temporary\n      mountPath: /tmp\n"
+        patch: "- op: add\n  path: /spec/strategy\n  value:\n    type: Recreate\n- op: add\n  path: /spec/template/spec/automountServiceAccountToken\n\
+          \  value: false\n- op: add\n  path: /spec/template/spec/securityContext/runAsUser\n  value:\
+          \ 1001\n- op: add\n  path: /spec/template/spec/securityContext/runAsGroup\n  value: 1001\n-\
+          \ op: add\n  path: /spec/template/spec/securityContext/runAsNonRoot\n  value: true\n- op: add\n\
+          \  path: /spec/template/spec/securityContext/seccompProfile\n  value:\n    type: RuntimeDefault\n\
+          - op: add\n  path: /spec/template/spec/containers/0/resources\n  value:\n    requests:\n   \
+          \   cpu: 100m\n      memory: 128Mi\n    limits:\n      memory: 1Gi\n- op: add\n  path: /spec/template/spec/containers/0/securityContext\n\
+          \  value:\n    allowPrivilegeEscalation: false\n    readOnlyRootFilesystem: true\n    capabilities:\n\
+          \      drop:\n      - ALL\n- op: add\n  path: /spec/template/spec/containers/0/volumeMounts/-\n\
+          \  value:\n    name: temporary\n    mountPath: /tmp\n- op: add\n  path: /spec/template/spec/containers/0/readinessProbe\n\
+          \  value:\n    httpGet:\n      path: /ping\n      port: 5246\n    periodSeconds: 5\n    timeoutSeconds:\
+          \ 3\n- op: add\n  path: /spec/template/spec/containers/0/livenessProbe\n  value:\n    httpGet:\n\
+          \      path: /ping\n      port: 5246\n    periodSeconds: 15\n    timeoutSeconds: 3\n- op: add\n\
+          \  path: /spec/template/spec/containers/0/startupProbe\n  value:\n    httpGet:\n      path:\
+          \ /ping\n      port: 5246\n    periodSeconds: 5\n    failureThreshold: 60\n- op: add\n  path:\
+          \ /spec/template/spec/volumes/-\n  value:\n    name: seed\n    secret:\n      secretName: openlist-public-seed\n\
+          \      defaultMode: 288\n- op: add\n  path: /spec/template/spec/volumes/-\n  value:\n    name:\
+          \ oidc\n    secret:\n      secretName: openlist-public-oidc\n      defaultMode: 288\n- op: add\n\
+          \  path: /spec/template/spec/volumes/-\n  value:\n    name: bootstrap\n    configMap:\n    \
+          \  name: openlist-bootstrap\n- op: add\n  path: /spec/template/spec/volumes/-\n  value:\n  \
+          \  name: temporary\n    emptyDir:\n      sizeLimit: 1Gi\n- op: add\n  path: /spec/template/spec/initContainers\n\
+          \  value:\n  - name: bootstrap\n    image: docker.ccsn.dev/library/python:3.13-alpine\n    command:\n\
+          \    - python3\n    - /bootstrap/bootstrap.py\n    env:\n    - name: SITE_URL\n      value:\
+          \ https://share.ccsn.dev\n    - name: SSO_AUTO_REGISTER\n      value: 'true'\n    securityContext:\n\
+          \      allowPrivilegeEscalation: false\n      readOnlyRootFilesystem: true\n      capabilities:\n\
+          \        drop:\n        - ALL\n    resources:\n      requests:\n        cpu: 20m\n        memory:\
+          \ 32Mi\n      limits:\n        memory: 128Mi\n    volumeMounts:\n    - name: openlist-data\n\
+          \      mountPath: /data\n    - name: seed\n      mountPath: /seed\n      readOnly: true\n  \
+          \  - name: oidc\n      mountPath: /oidc\n      readOnly: true\n    - name: bootstrap\n     \
+          \ mountPath: /bootstrap\n      readOnly: true\n    - name: temporary\n      mountPath: /tmp\n\
+          - op: add\n  path: /spec/template/metadata/annotations\n  value:\n    ccsn.dev/authorization-sha256:\
+          \ 593b599e5f1ce810830beb3dda03a92966f64e5201db0eac0951e740439805fd\n- op: add\n  path: /spec/template/spec/volumes/-\n\
+          \  value:\n    name: authorization\n    configMap:\n      name: openlist-authorization\n- op:\
+          \ add\n  path: /spec/template/spec/volumes/-\n  value:\n    name: logto-management\n    secret:\n\
+          \      secretName: logto-management\n      defaultMode: 288\n- op: add\n  path: /spec/template/spec/containers/-\n\
+          \  value:\n    name: authorization\n    image: docker.ccsn.dev/library/python:3.13-alpine\n\
+          \    command:\n    - python3\n    - /authorization/authorization.py\n    env:\n    - name: SITE_URL\n\
+          \      value: https://share.ccsn.dev\n    - name: REQUIRED_ROLE\n      value: share:admin\n\
+          \    ports:\n    - name: authorization\n      containerPort: 5246\n    securityContext:\n  \
+          \    allowPrivilegeEscalation: false\n      readOnlyRootFilesystem: true\n      capabilities:\n\
+          \        drop:\n        - ALL\n    resources:\n      requests:\n        cpu: 20m\n        memory:\
+          \ 32Mi\n      limits:\n        memory: 256Mi\n    readinessProbe:\n      httpGet:\n        path:\
+          \ /healthz\n        port: 5246\n      periodSeconds: 5\n      timeoutSeconds: 3\n    livenessProbe:\n\
+          \      httpGet:\n        path: /healthz\n        port: 5246\n      periodSeconds: 15\n     \
+          \ timeoutSeconds: 3\n    volumeMounts:\n    - name: authorization\n      mountPath: /authorization\n\
+          \      readOnly: true\n    - name: logto-management\n      mountPath: /logto\n      readOnly:\
+          \ true\n    - name: openlist-data\n      mountPath: /data\n      readOnly: true\n"
+      - target:
+          version: v1
+          kind: Service
+          name: openlist-public
+        patch: "- op: replace\n  path: /spec/ports/0/targetPort\n  value: 5246\n"

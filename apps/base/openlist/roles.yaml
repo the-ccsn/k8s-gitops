@@ -1,0 +1,41 @@
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: base-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:admin
+    description: base OpenList file management and read-only configuration
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: share-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: share:admin
+    description: share OpenList file management and read-only configuration
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

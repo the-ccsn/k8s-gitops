@@ -10,3 +10,5 @@ resources:
 - openlist-public-seed.yaml
 - openlist-public-helm-release.yaml
 - public-dns.yaml
+- authorization-config.yaml
+- roles.yaml

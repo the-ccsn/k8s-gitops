@@ -12,3 +12,4 @@ resources:
 - public-dns.yaml
 - authorization-config.yaml
 - roles.yaml
+- authorization-network-policy.yaml

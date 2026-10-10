@@ -1,0 +1,73 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: openlist-private-authorization
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      app: openlist
+      release: openlist-private
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - port: 5246
+      protocol: TCP
+    - port: 15008
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: openlist-public-authorization
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      app: openlist
+      release: openlist-public
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - port: 5246
+      protocol: TCP
+    - port: 15008
+      protocol: TCP
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: openlist-private-protect-native
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: openlist
+      release: openlist-private
+  action: DENY
+  rules:
+  - to:
+    - operation:
+        ports:
+        - '5244'
+        - '5245'
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: openlist-public-protect-native
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: openlist
+      release: openlist-public
+  action: DENY
+  rules:
+  - to:
+    - operation:
+        ports:
+        - '5244'
+        - '5245'

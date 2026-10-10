@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: networking.istio.io/v1alpha3
+  kind: EnvoyFilter
+  metadata:
+    name: server-timing
+    namespace: istio-system
+  spec:
+    priority: -10
+    configPatches: &id001
+    - applyTo: HTTP_FILTER
+      match:
+        proxy:
+          metadata:
+            CCSN_SERVER_TIMING: 49e1d724-87d6dbdd
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: ccsn.server_timing
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.dynamic_modules.v3.DynamicModuleFilter
+            dynamic_module_config:
+              module:
+                local:
+                  filename: /etc/istio/server-timing/server-timing.so
+              do_not_close: true
+            filter_name: server-timing
+- apiVersion: networking.istio.io/v1alpha3
+  kind: EnvoyFilter
+  metadata:
+    name: waypoint-server-timing
+    namespace: istio-system
+  spec:
+    priority: -10
+    targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: GatewayClass
+      name: istio-waypoint
+    configPatches: *id001

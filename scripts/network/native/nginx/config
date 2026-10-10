@@ -1,0 +1,11 @@
+ngx_addon_name=ngx_http_ccsn_server_timing_module
+
+if test "$ngx_module_link" != DYNAMIC; then
+    echo "Use --add-dynamic-module for the standalone timing module" >&2
+    exit 1
+fi
+
+ngx_module_type=HTTP
+ngx_module_name=ngx_http_ccsn_server_timing_module
+ngx_module_srcs="$ngx_addon_dir/ngx_http_ccsn_server_timing_module.c"
+. auto/module

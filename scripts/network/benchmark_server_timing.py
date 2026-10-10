@@ -1,0 +1,660 @@
+"""Resumable local A/B benchmark; does not write to a cluster.
+
+nix shell nixpkgs#wrk nixpkgs#vegeta -c uv run --with pyyaml python \
+  scripts/network/benchmark_server_timing.py --output ../task-logs/server-timing-benchmark
+
+Each proxy has one worker pinned to its own physical core. Containers are
+stopped after each invocation and retained for inspection. Results/configs
+are persisted after each sample. --stage selects prepare, capacity, latency, or report.
+"""
+from __future__ import annotations
+
+import argparse
+import copy
+import http.client
+import hashlib
+import json
+import os
+import random
+import re
+import resource
+import signal
+import socket
+import statistics
+import subprocess
+import time
+from collections import Counter
+from contextlib import ExitStack, closing
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[2]
+NGINX_DIR = ROOT / "infra/configs/base/i319-reroute"
+ENVOY_IMAGE = "mirror.gcr.io/istio/proxyv2:1.31.1-distroless@sha256:bdf5cb574340307f60438d5ebc3ba71a785e0b53bc3b7c5d02af9f0f975d04d4"
+
+
+def active_builds() -> list[str]:
+    """Process names only: avoid reading arguments or environment variables."""
+    names = command("ps", "-eo", "comm=").splitlines()
+    return sorted({name.strip() for name in names if name.strip() in {
+        "soong_ui", "soong_build", "ninja", "rustc", "cc1", "cc1plus",
+    } or name.strip().startswith("clang")})
+
+
+def validate_timing(scenario: str, mode: str, headers: list[tuple[str, str]],
+                    upstream_protocol: str = "tls") -> None:
+    """Reject candidates that gain capacity by omitting or corrupting metrics."""
+    if any(key.lower() in {"x-ccsn-envoy-timing", "x-ccsn-envoy-plain-timing"} for key, _ in headers):
+        raise ValueError("Private timing helper leaked into a benchmark response")
+    timing = ",".join(value for key, value in headers if key.lower() == "server-timing")
+    # Compact names preserve the same six measurements. Descriptions are DNS
+    # hostnames, which can use either token or quoted-string syntax.
+    aliases = {"envoy_tcp": "envoy_upstream_tcp", "envoy_tls": "envoy_upstream_tls",
+               "envoy_ttfb": "envoy_upstream_headers", "envoy_pool": "envoy_upstream_pool",
+               "envoy_receive": "envoy_request_receive",
+               "e_hdr": "envoy_headers", "e_tcp": "envoy_upstream_tcp",
+               "e_tls": "envoy_upstream_tls", "e_ttfb": "envoy_upstream_headers",
+               "e_pool": "envoy_upstream_pool", "e_rx": "envoy_request_receive"}
+    names = []
+    for metric in timing.split(","):
+        match = re.fullmatch(r'\s*([a-z_]+);dur=([0-9]+(?:\.[0-9]+)?)(?:;desc=(?:"[^"]*"|[a-zA-Z0-9._-]+))?\s*', metric)
+        if match is None:
+            raise ValueError(f"Invalid benchmark timing metric: {metric!r}")
+        names.append(aliases.get(match[1], match[1]))
+    expected = Counter({"app": 1})
+    if mode != "off":
+        if scenario in {"nginx", "chain"}:
+            expected.update(["nginx_headers", "nginx_upstream_connect", "nginx_upstream_headers"])
+        if scenario in {"envoy", "chain"}:
+            hops = 2 if scenario == "chain" else 1
+            expected.update({name: hops for name in ["envoy_headers", "envoy_upstream_tcp",
+                            "envoy_upstream_headers", "envoy_upstream_pool", "envoy_request_receive"]})
+            expected["envoy_upstream_tls"] = int(upstream_protocol == "tls")
+    if Counter(names) != expected:
+        raise ValueError(f"Benchmark timing metrics differ: expected {dict(expected)}, got {dict(Counter(names))}")
+
+
+def capacity_confidence(samples: list[dict], scenario: str, config: dict) -> dict | None:
+    """Resample paired rounds and reselect each mode's peak in every draw."""
+    if config.get("confidence_method") != "paired_round_bootstrap_95pct" or config["rounds"] < 7:
+        return None
+    connections = config["connections"]
+    values = {(s["mode"], s["round"], s.get("connections", 64)): s["rps"]
+              for s in samples if s["stage"] == "capacity" and s["scenario"] == scenario
+              and s["mode"] in {"off", "on"}}
+    expected = {(mode, r, c) for mode in ["off", "on"]
+                for r in range(config["rounds"]) for c in connections}
+    if values.keys() != expected or any(not 0 < value < float("inf") for value in values.values()):
+        return None
+    generator = random.Random(0)
+    drops = []
+    for _ in range(5000):
+        rounds = generator.choices(range(config["rounds"]), k=config["rounds"])
+        peaks = {mode: max(statistics.median(values[mode, r, c] for r in rounds) for c in connections)
+                 for mode in ["off", "on"]}
+        drops.append((1 - peaks["on"] / peaks["off"]) * 100)
+    drops.sort()
+    return {"method": "paired_round_bootstrap", "rounds": config["rounds"],
+            "draws": 5000, "seed": 0, "one_sided_level": 0.95,
+            "upper_loss_percent": drops[4749]}
+
+
+def throughput_acceptance(scenario: str, drop: float, baseline: dict, config: dict,
+                          confidence: dict | None = None, diagnostic: bool = False) -> dict:
+    # Historical runs retain their original 1% gate when no budgets were recorded.
+    budgets = config.get("throughput_budgets_percent", {name: 1 for name in ["nginx", "envoy", "chain"]})
+    if diagnostic or scenario not in budgets:
+        return {"metric": "peak_throughput", "status": "diagnostic",
+                "reason": "Diagnostic experiment" if diagnostic else "No throughput budget was specified for this path"}
+    budget = budgets[scenario]
+    spread = (baseline["rps_range"][1] - baseline["rps_range"][0]) / baseline["rps"] * 100
+    status = "failed" if drop > budget else "inconclusive"
+    if (drop <= budget and confidence is not None and config.get("require_idle_builds")
+            and spread <= budget and confidence["upper_loss_percent"] <= budget):
+        status = "passed"
+    result = {"threshold_percent": budget, "metric": "peak_throughput",
+              "throughput_point_estimate_pass": drop <= budget,
+              "baseline_throughput_spread_percent": spread, "status": status}
+    if confidence is not None:
+        result["confidence"] = confidence
+    return result
+
+
+def command(*args: str) -> str:
+    return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+
+
+def save(path: Path, value: object) -> None:
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(value, indent=2) + "\n")
+    temporary.replace(path)
+
+
+def allocate_ports(keys: list[str]) -> dict[str, int]:
+    # Keep reservations open until all roles have distinct ports. Closing each
+    # socket immediately lets the kernel assign its port to a later role.
+    with ExitStack() as reservations:
+        ports = {}
+        for key in keys:
+            sock = reservations.enter_context(socket.socket())
+            sock.bind(("127.0.0.1", 0))
+            ports[key] = sock.getsockname()[1]
+        return ports
+
+
+def physical_cpus() -> list[int]:
+    found = {}
+    for cpu in sorted(os.sched_getaffinity(0)):
+        topology = Path(f"/sys/devices/system/cpu/cpu{cpu}/topology")
+        key = ((topology / "physical_package_id").read_text(), (topology / "core_id").read_text())
+        found.setdefault(key, cpu)
+    if len(found) < 6:
+        raise RuntimeError("At least six available physical cores are required")
+    return list(found.values())[:6]
+
+
+class Benchmark:
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
+        self.envoy_image = getattr(args, "envoy_image", ENVOY_IMAGE)
+        self.upstream_protocol = getattr(args, "envoy_upstream_protocol", "tls")
+        self.output = args.output.resolve()
+        if not self.output.is_relative_to(ROOT.parent):
+            raise ValueError("Artifacts must remain inside the workspace")
+        self.output.mkdir(parents=True, exist_ok=True)
+        self.path = self.output / "state.json"
+        self.state = json.loads(self.path.read_text()) if self.path.exists() else {"samples": [], "containers": {}}
+        if self.state.get("invalid") or (self.output / "invalid.json").exists():
+            raise ValueError("This invocation was invalidated; use a new output directory")
+        if args.stage == "report":
+            return
+        harness_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        if self.state["samples"] and self.state.get("harness_sha256") != harness_hash:
+            raise ValueError("Benchmark harness changed or was not recorded; use a new output directory")
+        self.state["harness_sha256"] = harness_hash
+        self.timing_dir = args.nginx_timing_dir.resolve()
+        if not self.timing_dir.is_relative_to(ROOT.parent):
+            raise ValueError("Candidate Nginx sources must remain inside the workspace")
+        self.state.setdefault("role_cpus", {})
+        self.reference_dir = (args.reference_nginx_timing_dir or self.timing_dir).resolve()
+        reference_policy = (args.reference_envoy_policy or args.envoy_policy).resolve()
+        if not self.reference_dir.is_relative_to(ROOT.parent) or not reference_policy.is_relative_to(ROOT.parent):
+            raise ValueError("Reference sources must remain inside the workspace")
+        selected_cpus = args.cpus or physical_cpus()
+        if not set(selected_cpus).issubset(os.sched_getaffinity(0)):
+            raise ValueError("Selected CPUs must be available to this process")
+        cores = [tuple((Path(f"/sys/devices/system/cpu/cpu{cpu}/topology") / name).read_text().strip()
+                       for name in ["physical_package_id", "core_id"]) for cpu in selected_cpus]
+        if len(set(cores)) != 6:
+            raise ValueError("Select six distinct physical cores")
+        config = {"rounds": args.rounds, "duration": args.duration, "rate": args.rate, "cpus": selected_cpus,
+                  "scenarios": args.scenarios, "connections": args.connections, "modes": args.modes,
+                  "envoy_upstream_protocol": self.upstream_protocol,
+                  "envoy_image": self.envoy_image,
+                  "diagnostic": bool(getattr(args, "diagnostic", False)),
+                  "throughput_budgets_percent": {"nginx": getattr(args, "nginx_throughput_budget", 5),
+                                                 "envoy": getattr(args, "envoy_throughput_budget", 10)},
+                  "confidence_method": "paired_round_bootstrap_95pct"}
+        if getattr(args, "require_idle_builds", False):
+            config["require_idle_builds"] = True
+        if "config" in self.state and self.state["config"] != config:
+            raise ValueError("Existing run parameters differ; select another output directory")
+        self.state["config"] = config
+        if config["diagnostic"]:
+            self.state["diagnostic"] = True
+        policy = args.envoy_policy.resolve()
+        if not policy.is_relative_to(ROOT.parent):
+            raise ValueError("Candidate policy must remain inside the workspace")
+        sources = [policy, *sorted(p for p in self.timing_dir.iterdir()
+                   if p.name.startswith("server-timing") or p.name == "module-load.conf")]
+        self.envoy_module = None
+        if "/etc/istio/server-timing/server-timing.so" in policy.read_text():
+            architecture = {"x86_64": "amd64", "aarch64": "arm64"}[os.uname().machine]
+            self.envoy_module = (getattr(args, "envoy_module", None) or ROOT /
+                                 f"infra/controllers/networking/base/istio/server-timing-{architecture}.module").resolve()
+            if not self.envoy_module.is_relative_to(ROOT.parent) or not self.envoy_module.is_file():
+                raise ValueError("The native Envoy plugin must exist inside the workspace")
+            sources.append(self.envoy_module)
+        if "reference" in args.modes:
+            sources += [reference_policy, *sorted(p for p in self.reference_dir.iterdir()
+                        if p.name.startswith("server-timing") or p.name == "module-load.conf")]
+        source_hash = hashlib.sha256(b"".join(str(p.relative_to(ROOT.parent)).encode() + b"\0" + p.read_bytes() for p in sources)).hexdigest()
+        if self.state.get("source_sha256", source_hash) != source_hash:
+            raise ValueError("Timing implementation changed; select another output directory")
+        self.state["source_sha256"] = source_hash
+        self.cpus = config["cpus"]
+        self.client_cpus = ",".join(map(str, self.cpus[4:6]))
+        self.nginx_image = yaml.safe_load((NGINX_DIR / "deployment.yaml").read_text())["spec"]["template"]["spec"]["containers"][0]["image"]
+        self.patches = yaml.safe_load(policy.read_text())["items"][0]["spec"]["configPatches"]
+        self.reference_patches = yaml.safe_load(reference_policy.read_text())["items"][0]["spec"]["configPatches"]
+        self.state.setdefault("environment", {
+            "nginx_image": self.nginx_image, "envoy_image": self.envoy_image,
+            "cpu_model": next(line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines() if line.startswith("model name")),
+            "initial_load": Path("/proc/loadavg").read_text().strip(),
+            "commit": command("git", "-C", str(ROOT), "rev-parse", "HEAD").strip(),
+            "wrk": subprocess.run(["wrk", "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True).stdout.splitlines()[0],
+            "vegeta": command("vegeta", "-version").strip(),
+        })
+        self.persist()
+
+    def persist(self) -> None:
+        save(self.path, self.state)
+
+    def require_idle(self) -> None:
+        if not getattr(self.args, "require_idle_builds", False):
+            return
+        builds = active_builds()
+        if builds:
+            self.state["invalid"] = {"reason": "Concurrent build activity", "process_names": builds}
+            self.persist()
+            raise RuntimeError(f"Benchmark invalidated by build activity: {', '.join(builds)}; wait for completion and use a new output directory")
+
+    def container(self, role: str, cpu: int, image: str, entrypoint: str, args: list[str]) -> str:
+        self.state["role_cpus"][role] = cpu
+        if role in self.state["containers"]:
+            name = self.state["containers"][role]
+            if command("podman", "inspect", "--format", "{{.State.Running}}", name).strip() != "true":
+                command("podman", "start", name)
+            return role
+        name = f"ccsn-timing-bench-{role}-{self.state['run_id']}"
+        native_mount = (["--volume", f"{self.envoy_module}:/etc/istio/server-timing/server-timing.so:ro"]
+                        if self.envoy_module is not None else [])
+        command("podman", "run", "--detach", "--name", name, "--hostname", f"benchmark-{role.replace('_reference', '_on')}",
+                "--user", "0", "--network", "host",
+                "--entrypoint", entrypoint, "--volume", f"{self.output}:/bench:ro",
+                "--volume", f"{self.timing_dir}:/module:ro", "--volume", f"{self.reference_dir}:/reference:ro",
+                *native_mount, image, *args)
+        self.state["containers"][role] = name
+        self.persist()
+        return role
+
+    def nginx(self, role: str, listen: int, upstream: int, mode: str, cpu: int) -> str:
+        enabled = mode in {"on", "reference"}
+        directory, mount = (self.reference_dir, "/reference") if mode == "reference" else (self.timing_dir, "/module")
+        module_config = directory / "module-load.conf"
+        architecture = {"x86_64": "amd64", "aarch64": "arm64"}.get(os.uname().machine)
+        native_module = directory / f"server-timing-{architecture}.module"
+        if module_config.exists():
+            module = module_config.read_text().replace("/module/", f"{mount}/")
+        elif native_module.exists():
+            module = f"load_module {mount}/{native_module.name};"
+        else:
+            module = "load_module /usr/lib/nginx/modules/ngx_http_js_module.so;"
+        imports = f"include {mount}/server-timing-http.conf;" if (directory / "server-timing-http.conf").exists() else f"js_import server_timing from {mount}/server-timing.js; include {mount}/server-timing-maps.conf;"
+        if mode == "static":
+            hop = f"benchmark-{role.replace('_static', '_on')}"
+            metrics = f'nginx_headers;dur=0000;desc="{hop}", nginx_upstream_connect;dur=0000;desc="{hop} attempt 1", nginx_upstream_headers;dur=0000;desc="{hop} attempt 1"'
+            headers = f"add_header Server-Timing '{metrics}' always;"
+        else:
+            headers = f"include {mount}/server-timing-headers.conf;" if enabled else ""
+        text = f"""
+{module if enabled else ''}
+pcre_jit on;
+user root;
+worker_processes 1;
+events {{ worker_connections 8192; }}
+http {{
+    access_log off;
+    error_log /dev/stderr warn;
+    keepalive_requests 1000000;
+    {imports if enabled else ''}
+    upstream backend {{ server 127.0.0.1:{upstream}; keepalive 128; }}
+    server {{
+        listen 127.0.0.1:{listen};
+        location / {{
+            {headers}
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_request_buffering off;
+            proxy_pass http://backend;
+        }}
+    }}
+}}
+"""
+        (self.output / f"{role}.conf").write_text(text)
+        return self.container(role, cpu, self.nginx_image, "nginx", ["-c", f"/bench/{role}.conf", "-g", "daemon off;"])
+
+    def envoy(self, role: str, listen: int, upstream: int, mode: str, cpu: int, tls: bool = False) -> str:
+        route = {"name": "benchmark", "virtual_hosts": [{"name": "backend", "domains": ["*"], "routes": [{
+            "match": {"prefix": "/"}, "route": {"cluster": "backend"},
+        }]}]}
+        filters = []
+        patches = self.reference_patches if mode == "reference" else self.patches
+        if mode in {"on", "reference"}:
+            for patch in patches:
+                if patch["applyTo"] == "ROUTE_CONFIGURATION":
+                    route.update(copy.deepcopy(patch["patch"]["value"]))
+                elif patch["applyTo"] == "HTTP_FILTER":
+                    filters.append(copy.deepcopy(patch["patch"]["value"]))
+        elif mode == "static":
+            hop = f"benchmark-{role.replace('_static', '_on')}"
+            names = ["upstream_tcp", *(["upstream_tls"] if tls else []), "upstream_headers", "upstream_pool", "request_receive"]
+            values = [",".join([f'envoy_headers;dur=0;desc="{hop}"',
+                                *(f'envoy_{name};dur=0;desc="{hop}"' for name in names)])]
+            route["response_headers_to_add"] = [{"header": {"key": "server-timing", "value": value},
+                                                 "append_action": "APPEND_IF_EXISTS_OR_ADD"} for value in values]
+        filters.append({"name": "envoy.filters.http.router", "typed_config": {
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+        }})
+        cluster = {"name": "backend", "connect_timeout": "1s", "type": "STATIC", "load_assignment": {
+            "cluster_name": "backend", "endpoints": [{"lb_endpoints": [{"endpoint": {
+                "address": {"socket_address": {"address": "127.0.0.1", "port_value": upstream}},
+            }}]}],
+        }}
+        if tls:
+            cluster["transport_socket"] = {"name": "envoy.transport_sockets.tls", "typed_config": {
+                "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+                "common_tls_context": {"validation_context": {"trusted_ca": {"filename": "/bench/tls.crt"}}},
+            }}
+        bootstrap = {"static_resources": {"clusters": [cluster], "listeners": [{
+            "name": "http", "address": {"socket_address": {"address": "127.0.0.1", "port_value": listen}},
+            "filter_chains": [{"filters": [{"name": "envoy.filters.network.http_connection_manager", "typed_config": {
+                "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+                "stat_prefix": "benchmark", "route_config": route, "http_filters": filters,
+            }}]}],
+        }]}}
+        if mode in {"on", "reference"}:
+            hcm = bootstrap["static_resources"]["listeners"][0]["filter_chains"][0]["filters"][0]["typed_config"]
+            for patch in patches:
+                if patch["applyTo"] == "NETWORK_FILTER":
+                    hcm.update(copy.deepcopy(patch["patch"]["value"]["typed_config"]))
+        (self.output / f"{role}.yaml").write_text(yaml.safe_dump(bootstrap))
+        return self.container(role, cpu, self.envoy_image, "/usr/local/bin/envoy", ["-c", f"/bench/{role}.yaml",
+                              "--disable-hot-restart", "--concurrency", "1", "-l", "error"])
+
+    def prepare(self) -> None:
+        self.state.setdefault("run_id", str(time.time_ns()))
+        keys = ["backend", "backend_tls", *(f"{role}_{mode}" for mode in self.args.modes for role in ["nginx", "envoy", "outer", "chain"])]
+        if "ports" not in self.state:
+            self.state["ports"] = allocate_ports(keys)
+        ports = self.state["ports"]
+        if len(set(ports.values())) != len(keys) or set(ports) != set(keys):
+            raise ValueError("Fixture ports are incomplete or duplicated; use a new output directory")
+        if not (self.output / "tls.crt").exists():
+            command("openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", str(self.output / "tls.key"),
+                    "-out", str(self.output / "tls.crt"), "-days", "1", "-subj", "/CN=localhost")
+        (self.output / "backend.conf").write_text(f"""
+pcre_jit on;
+user root;
+worker_processes 1;
+events {{ worker_connections 8192; }}
+http {{
+    access_log off;
+    error_log /dev/stderr warn;
+    keepalive_requests 1000000;
+    server {{
+        listen 127.0.0.1:{ports['backend']};
+        listen 127.0.0.1:{ports['backend_tls']} ssl;
+        ssl_certificate /bench/tls.crt;
+        ssl_certificate_key /bench/tls.key;
+        add_header Server-Timing 'app;dur=1';
+        location / {{ return 200 '{'x' * 256}'; }}
+    }}
+}}
+""")
+        self.container("backend", self.cpus[3], self.nginx_image, "nginx", ["-c", "/bench/backend.conf", "-g", "daemon off;"])
+        self.state["endpoints"] = {}
+        upstream_tls = self.upstream_protocol == "tls"
+        for mode in self.args.modes:
+            inner = self.envoy(f"envoy_{mode}", ports[f"envoy_{mode}"],
+                               ports["backend_tls" if upstream_tls else "backend"],
+                               mode, self.cpus[2], tls=upstream_tls)
+            outer = self.envoy(f"outer_{mode}", ports[f"outer_{mode}"], ports[f"envoy_{mode}"], mode, self.cpus[1])
+            nginx = self.nginx(f"nginx_{mode}", ports[f"nginx_{mode}"], ports["backend"], mode, self.cpus[0])
+            chain = self.nginx(f"chain_{mode}", ports[f"chain_{mode}"], ports[f"outer_{mode}"], mode, self.cpus[0])
+            for scenario, roles, endpoint in [("nginx", [nginx], f"nginx_{mode}"), ("envoy", [inner], f"envoy_{mode}"),
+                                               ("chain", [chain, outer, inner], f"chain_{mode}")]:
+                self.state["endpoints"][f"{scenario}_{mode}"] = {"url": f"http://127.0.0.1:{ports[endpoint]}/", "roles": roles}
+        self.persist()
+        for key, endpoint in self.state["endpoints"].items():
+            endpoint_port = int(endpoint["url"].split(":")[2].split("/")[0])
+            deadline = time.monotonic() + 15
+            while True:
+                try:
+                    with closing(http.client.HTTPConnection("127.0.0.1", endpoint_port, timeout=1)) as conn:
+                        conn.request("GET", "/")
+                        response = conn.getresponse()
+                        assert response.status == 200 and len(response.read()) == 256
+                        scenario, mode = key.rsplit("_", 1)
+                        validate_timing(scenario, mode, response.getheaders(), self.upstream_protocol)
+                        endpoint["header_bytes"] = sum(len(k.encode()) + len(v.encode()) + 4 for k, v in response.getheaders())
+                        endpoint["server_timing"] = response.getheader("Server-Timing")
+                    break
+                except OSError:
+                    if time.monotonic() >= deadline:
+                        raise
+                    time.sleep(0.1)
+        self.cgroups = {}
+        for role, name in self.state["containers"].items():
+            pid = command("podman", "inspect", "--format", "{{.State.Pid}}", name).strip()
+            relative = Path(f"/proc/{pid}/cgroup").read_text().strip().split("::", 1)[1]
+            self.cgroups[role] = Path("/sys/fs/cgroup") / relative.lstrip("/")
+            assert (self.cgroups[role] / "cpu.stat").exists()
+            # The OCI runtime resets inherited affinity. Pin every existing
+            # process/thread explicitly; future threads inherit this affinity.
+            for process in (self.cgroups[role] / "cgroup.procs").read_text().split():
+                for task in Path(f"/proc/{process}/task").iterdir():
+                    os.sched_setaffinity(int(task.name), {self.state["role_cpus"][role]})
+                    assert os.sched_getaffinity(int(task.name)) == {self.state["role_cpus"][role]}
+        self.persist()
+        print(f"Prepared {len(self.state['containers'])} containers; CPUs {self.cpus}", flush=True)
+
+    def counters(self, roles: list[str]) -> dict:
+        result = {}
+        for role in roles:
+            group = self.cgroups[role]
+            cpu = dict(line.split() for line in (group / "cpu.stat").read_text().splitlines())
+            memory = dict(line.split() for line in (group / "memory.stat").read_text().splitlines())
+            result[role] = {"cpu_us": int(cpu["usage_usec"]), "anon_bytes": int(memory["anon"]),
+                            "throttled_us": int(cpu.get("throttled_usec", 0))}
+            frequency = Path(f"/sys/devices/system/cpu/cpu{self.state['role_cpus'][role]}/cpufreq/scaling_cur_freq")
+            if frequency.exists():
+                result[role]["frequency_khz"] = int(frequency.read_text())
+        return result
+
+    def sample(self, scenario: str, mode: str, stage: str, round_number: int, connections: int = 64) -> None:
+        key = f"{stage}_{scenario}_{mode}_{round_number}_c{connections}"
+        if any(item["key"] == key for item in self.state["samples"]):
+            return
+        self.require_idle()
+        endpoint = self.state["endpoints"][f"{scenario}_{mode}"]
+        prefix = self.output / key
+        command("taskset", "-c", self.client_cpus, "wrk", "-t2", f"-c{connections}", "-d2s", endpoint["url"])
+        self.require_idle()
+        roles = endpoint["roles"] + ["backend"]
+        if stage == "capacity":
+            args = ["taskset", "-c", self.client_cpus, "wrk", "-t2", f"-c{connections}", f"-d{self.args.duration}s", "--latency", endpoint["url"]]
+        else:
+            targets = self.output / "targets.txt"
+            targets.write_text(f"GET {endpoint['url']}\n")
+            args = ["taskset", "-c", self.client_cpus, "vegeta", "-cpus", "2", "attack", "-targets", str(targets),
+                    "-rate", str(self.args.rate), "-duration", f"{self.args.duration}s", "-workers", "16", "-max-workers", "256",
+                    "-connections", "64", "-max-connections", "64", "-http2=false", "-timeout", "2s", "-output", str(prefix) + ".bin"]
+        before = self.counters(roles)
+        usage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
+        memory_samples = []
+        started = time.monotonic()
+        last_idle_check = started
+        with prefix.with_suffix(".log").open("wb") as logfile:
+            process = subprocess.Popen(args, stdout=logfile, stderr=subprocess.STDOUT)
+            try:
+                while process.poll() is None:
+                    if time.monotonic() - last_idle_check >= 1:
+                        self.require_idle()
+                        last_idle_check = time.monotonic()
+                    memory_samples.append(self.counters(roles))
+                    time.sleep(0.2)
+            except BaseException:
+                if process.poll() is None:
+                    process.send_signal(signal.SIGINT)
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.terminate()
+                        process.wait()
+                raise
+            if process.returncode:
+                raise RuntimeError(f"Load generator failed; inspect {prefix}.log")
+        elapsed = time.monotonic() - started
+        self.require_idle()
+        after = self.counters(roles)
+        usage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
+        log = prefix.with_suffix(".log").read_text()
+        if stage == "capacity":
+            requests = int(re.search(r"(\d+) requests in", log)[1])
+            rps = float(re.search(r"Requests/sec:\s+([0-9.]+)", log)[1])
+            if "Socket errors:" in log or "Non-2xx or 3xx responses:" in log:
+                raise RuntimeError(f"Invalid capacity sample; inspect {prefix}.log")
+            result = {"requests": requests, "rps": rps}
+        else:
+            report = json.loads(command("vegeta", "report", "-type=json", str(prefix) + ".bin"))
+            save(prefix.with_suffix(".report.json"), report)
+            if report["success"] != 1 or report["errors"]:
+                raise RuntimeError(f"Invalid latency sample; inspect {prefix}.report.json")
+            result = {"requests": report["requests"], "rps": report["throughput"],
+                      "p50_ms": report["latencies"]["50th"] / 1e6,
+                      "p95_ms": report["latencies"]["95th"] / 1e6,
+                      "p99_ms": report["latencies"]["99th"] / 1e6}
+        per_role = {}
+        for role in roles:
+            cpu_us = after[role]["cpu_us"] - before[role]["cpu_us"]
+            per_role[role] = {"cpu_us_per_request": cpu_us / result["requests"], "cpu_cores": cpu_us / elapsed / 1e6,
+                              "anon_mib": statistics.median(item[role]["anon_bytes"] for item in memory_samples) / 2**20,
+                              "peak_anon_mib": max(item[role]["anon_bytes"] for item in memory_samples) / 2**20,
+                              "throttled_us": after[role]["throttled_us"] - before[role]["throttled_us"]}
+            frequencies = [item[role]["frequency_khz"] for item in memory_samples if "frequency_khz" in item[role]]
+            if frequencies:
+                per_role[role]["frequency_khz_median"] = statistics.median(frequencies)
+                per_role[role]["frequency_khz_range"] = [min(frequencies), max(frequencies)]
+        result.update({"key": key, "scenario": scenario, "mode": mode, "stage": stage, "round": round_number,
+                       "connections": connections, "elapsed_s": elapsed, "load_after": Path("/proc/loadavg").read_text().strip(), "roles": per_role,
+                       "proxy_cpu_us_per_request": sum(per_role[role]["cpu_us_per_request"] for role in endpoint["roles"]),
+                       "proxy_anon_mib": sum(per_role[role]["anon_mib"] for role in endpoint["roles"]),
+                       "client_cpu_cores": ((usage_after.ru_utime + usage_after.ru_stime) - (usage_before.ru_utime + usage_before.ru_stime)) / elapsed})
+        self.state["samples"].append(result)
+        self.persist()
+        print(f"{key}: {result['rps']:.0f} req/s, proxy CPU {result['proxy_cpu_us_per_request']:.2f} us/req" +
+              (f", p99 {result['p99_ms']:.3f} ms" if stage == "latency" else ""), flush=True)
+
+    def measure(self, stage: str) -> None:
+        for round_number in range(self.args.rounds):
+            for scenario in self.state["config"].get("scenarios", ["nginx", "envoy", "chain"]):
+                for connections in (self.args.connections if stage == "capacity" else [64]):
+                    modes = self.args.modes if round_number % 2 == 0 else list(reversed(self.args.modes))
+                    for mode in modes:
+                        self.sample(scenario, mode, stage, round_number, connections)
+
+    def report(self) -> None:
+        if self.state.get("invalid") or (self.output / "invalid.json").exists():
+            raise RuntimeError("This invocation was invalidated; its raw samples cannot be used for acceptance")
+        summary = {"environment": self.state["environment"], "config": self.state["config"],
+                   "source_sha256": self.state.get("source_sha256"),
+                   "harness_sha256": self.state.get("harness_sha256"), "results": {}}
+        for scenario in self.state["config"].get("scenarios", ["nginx", "envoy", "chain"]):
+            entry = {}
+            for stage in ["capacity", "latency"]:
+                for mode in self.state["config"].get("modes", ["off", "on"]):
+                    samples = [s for s in self.state["samples"] if (s["scenario"], s["stage"], s["mode"]) == (scenario, stage, mode)]
+                    if not samples:
+                        continue
+                    curves = {}
+                    if stage == "capacity":
+                        for connections in sorted({s.get("connections", 64) for s in samples}):
+                            group = [s for s in samples if s.get("connections", 64) == connections]
+                            curves[str(connections)] = {"rps": statistics.median(s["rps"] for s in group),
+                                                        "rps_range": [min(s["rps"] for s in group), max(s["rps"] for s in group)],
+                                                        "samples": len(group)}
+                        peak = max(curves, key=lambda c: curves[c]["rps"])
+                        samples = [s for s in samples if s.get("connections", 64) == int(peak)]
+                    metrics = ["rps", "proxy_cpu_us_per_request", "proxy_anon_mib", "client_cpu_cores"]
+                    if stage == "latency":
+                        metrics += ["p50_ms", "p95_ms", "p99_ms"]
+                    entry[f"{stage}_{mode}"] = {name: statistics.median(s[name] for s in samples) for name in metrics}
+                    entry[f"{stage}_{mode}"]["rps_range"] = [min(s["rps"] for s in samples), max(s["rps"] for s in samples)]
+                    entry[f"{stage}_{mode}"]["samples"] = len(samples)
+                    if curves:
+                        entry[f"{stage}_{mode}"]["connections"] = int(peak)
+                        entry[f"{stage}_{mode}"]["curve"] = curves
+            for stage in ["capacity", "latency"]:
+                if f"{stage}_on" in entry and f"{stage}_off" in entry:
+                    entry[f"{stage}_change_percent"] = {key: (entry[f"{stage}_on"][key] / value - 1) * 100
+                                                         for key, value in entry[f"{stage}_off"].items()
+                                                         if isinstance(value, (int, float)) and value != 0 and key not in {"samples", "connections"}}
+            if "capacity_static" in entry and "capacity_off" in entry:
+                entry["static_throughput_change_percent"] = (entry["capacity_static"]["rps"] / entry["capacity_off"]["rps"] - 1) * 100
+            if "capacity_reference" in entry and "capacity_on" in entry:
+                entry["throughput_change_from_reference_percent"] = (entry["capacity_on"]["rps"] / entry["capacity_reference"]["rps"] - 1) * 100
+            if "capacity_change_percent" in entry:
+                throughput_drop = -entry["capacity_change_percent"]["rps"]
+                baseline = entry["capacity_off"]
+                confidence = capacity_confidence(self.state["samples"], scenario, self.state["config"])
+                entry["acceptance"] = throughput_acceptance(
+                    scenario, throughput_drop, baseline, self.state["config"], confidence,
+                    diagnostic=bool(self.state.get("diagnostic")))
+            if "on" in self.state["config"].get("modes", ["off", "on"]) and "off" in self.state["config"].get("modes", ["off", "on"]):
+                entry["extra_header_bytes"] = self.state["endpoints"][f"{scenario}_on"]["header_bytes"] - self.state["endpoints"][f"{scenario}_off"]["header_bytes"]
+            summary["results"][scenario] = entry
+        save(self.output / "summary.json", summary)
+        print(json.dumps(summary, indent=2), flush=True)
+
+    def stop(self) -> None:
+        for role, name in reversed(list(self.state["containers"].items())):
+            try:
+                command("podman", "stop", "--time", "2", name)
+                (self.output / f"{role}.container.log").write_text(command("podman", "logs", name))
+            except subprocess.CalledProcessError as error:
+                print(error.output, flush=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--envoy-policy", type=Path, default=ROOT / "infra/configs/base/gateway/server-timing.yaml",
+                        help="Optional candidate policy inside the workspace")
+    parser.add_argument("--envoy-module", type=Path, help="Optional native plugin; defaults to the verified architecture package")
+    parser.add_argument("--envoy-image", default=ENVOY_IMAGE, help="Pinned proxy image or immutable cached image ID")
+    parser.add_argument("--envoy-upstream-protocol", choices=["tls", "plain"], default="tls",
+                        help="Benchmark TLS or plaintext upstreams independently")
+    parser.add_argument("--nginx-timing-dir", type=Path, default=NGINX_DIR)
+    parser.add_argument("--reference-envoy-policy", type=Path, help="Previous implementation for reference mode")
+    parser.add_argument("--reference-nginx-timing-dir", type=Path, help="Previous Nginx implementation for reference mode")
+    parser.add_argument("--stage", choices=["all", "prepare", "capacity", "latency", "report"], default="all")
+    parser.add_argument("--diagnostic", action="store_true",
+                        help="Collect optimization evidence without qualifying the run for acceptance")
+    parser.add_argument("--scenarios", choices=["nginx", "envoy", "chain"], nargs="+", default=["nginx", "envoy", "chain"])
+    parser.add_argument("--connections", type=int, nargs="+", default=[16, 64, 256, 1024], help="Capacity connection-count sweep")
+    parser.add_argument("--cpus", type=int, nargs=6, help="Distinct physical cores: Nginx, outer Envoy, inner Envoy, backend, two clients")
+    parser.add_argument("--modes", choices=["off", "on", "static", "reference"], nargs="+", default=["off", "on"], help="Static uses constant metrics; reference runs the previous implementation")
+    parser.add_argument("--nginx-throughput-budget", type=float, default=5,
+                        help="Maximum Nginx peak throughput loss in percent")
+    parser.add_argument("--envoy-throughput-budget", type=float, default=10,
+                        help="Maximum Envoy peak throughput loss in percent")
+    parser.add_argument("--rounds", type=int, default=3)
+    parser.add_argument("--require-idle-builds", action="store_true",
+                        help="Invalidate the invocation if build activity appears before or during load")
+    parser.add_argument("--duration", type=int, default=12)
+    parser.add_argument("--rate", type=int, default=2000)
+    args = parser.parse_args()
+    if min(args.rounds, args.duration, args.rate, *args.connections) <= 0 or min(args.connections) < 2:
+        parser.error("rounds, duration, and rate must be positive; connections must be at least two")
+    if not all(0 <= value < 100 for value in [args.nginx_throughput_budget, args.envoy_throughput_budget]):
+        parser.error("throughput budgets must be finite percentages between zero and 100 (exclusive)")
+    benchmark = Benchmark(args)
+    if args.stage == "report":
+        benchmark.report()
+        return
+    try:
+        benchmark.prepare()
+        if args.stage == "prepare":
+            return
+        for stage in (["capacity", "latency"] if args.stage == "all" else [args.stage]):
+            benchmark.measure(stage)
+        benchmark.report()
+    finally:
+        benchmark.stop()
+
+
+if __name__ == "__main__":
+    main()

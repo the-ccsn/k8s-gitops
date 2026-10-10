@@ -20,7 +20,13 @@ data:
     for key,value in settings.items():\n    result=connection.execute('update x_setting_items\
     \ set value=? where key=?',(value,key))\n    if not result.rowcount:\n       \
     \ connection.execute('insert into x_setting_items (key,value,type,\"group\",flag,\"\
-    index\") values (?,?,?,7,1,0)',(key,value,'string'))\nassert connection.execute('pragma\
-    \ integrity_check').fetchone()[0]=='ok'\nconnection.commit()\nconnection.close()\n\
-    print('Copied migration state if needed and configured native OIDC without exposing\
-    \ credentials.')\n"
+    index\") values (?,?,?,7,1,0)',(key,value,'string'))\nfor row in connection.execute(\"\
+    select id,driver,addition from x_storages\").fetchall():\n    storage_id,driver,raw=row\n\
+    \    if driver!='S3':\n        continue\n    addition=json.loads(raw)\n    if\
+    \ addition.get('bucket') not in ['buctbase','share'] or addition.get('endpoint')\
+    \ not in ['https://s3.ccsn.dev','http://192.168.1.22:8333']:\n        continue\n\
+    \    addition.update(endpoint='http://192.168.1.22:8333',custom_host='https://s3.ccsn.dev',enable_custom_host_presign=True)\n\
+    \    connection.execute('update x_storages set addition=? where id=?',(json.dumps(addition),storage_id))\n\
+    assert connection.execute('pragma integrity_check').fetchone()[0]=='ok'\nconnection.commit()\n\
+    connection.close()\nprint('Copied migration state if needed and configured native\
+    \ OIDC without exposing credentials.')\n"

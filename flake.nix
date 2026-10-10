@@ -27,6 +27,7 @@
       };
 
       packages = forAllSystems (pkgs: {
+        nginx-server-timing-module = pkgs.callPackage ./scripts/network/native/nginx/default.nix { };
         gen-image-lock = pkgs.writeShellApplication {
           name = "gen-image-lock";
           runtimeInputs = with pkgs; [

@@ -34,6 +34,9 @@ spec:
             cpu: "2"
             memory: "256Mi"
         volumeMounts:
+        - name: server-timing
+          mountPath: /etc/nginx/server-timing
+          readOnly: true
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
@@ -44,7 +47,13 @@ spec:
         - name: tls-certs
           mountPath: /etc/nginx/certs
           readOnly: true
+        - name: server-timing-module
+          mountPath: /etc/nginx/native-modules
+          readOnly: true
       volumes:
+      - name: server-timing
+        configMap:
+          name: i319-reroute-server-timing
       - name: nginx-config
         configMap:
           name: i319-reroute-nginx-config
@@ -54,3 +63,29 @@ spec:
       - name: tls-certs
         secret:
           secretName: i319-reroute-tls-secret
+      - name: server-timing-binaries
+        configMap:
+          name: i319-reroute-server-timing-module
+      - name: server-timing-module
+        emptyDir: {}
+      initContainers:
+      - name: server-timing-module
+        image: nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+        command:
+        - sh
+        - -eu
+        - -c
+        args:
+        - |
+          case "$(uname -m)" in
+            x86_64) timing_arch=amd64 ;;
+            aarch64) timing_arch=arm64 ;;
+            *) echo "Unsupported Nginx module architecture" >&2; exit 1 ;;
+          esac
+          cp "/binaries/nginx-timing-$timing_arch.so" /selected/ngx_http_ccsn_server_timing_module.so
+        volumeMounts:
+        - name: server-timing-binaries
+          mountPath: /binaries
+          readOnly: true
+        - name: server-timing-module
+          mountPath: /selected

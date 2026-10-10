@@ -64,7 +64,7 @@ spec:
           \  - name: oidc\n      mountPath: /oidc\n      readOnly: true\n    - name: bootstrap\n     \
           \ mountPath: /bootstrap\n      readOnly: true\n    - name: temporary\n      mountPath: /tmp\n\
           - op: add\n  path: /spec/template/metadata/annotations\n  value:\n    ccsn.dev/authorization-sha256:\
-          \ 593b599e5f1ce810830beb3dda03a92966f64e5201db0eac0951e740439805fd\n- op: add\n  path: /spec/template/spec/volumes/-\n\
+          \ 772b76caa360a58986d3ad8adc1ace5c203477d878f4bc58067acc361a9d6047\n- op: add\n  path: /spec/template/spec/volumes/-\n\
           \  value:\n    name: authorization\n    configMap:\n      name: openlist-authorization\n- op:\
           \ add\n  path: /spec/template/spec/volumes/-\n  value:\n    name: logto-management\n    secret:\n\
           \      secretName: logto-management\n      defaultMode: 288\n- op: add\n  path: /spec/template/spec/containers/-\n\

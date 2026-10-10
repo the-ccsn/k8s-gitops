@@ -28,6 +28,9 @@ class Native(BaseHTTPRequestHandler):
                 self.rfile.read(2)
         elif self.headers.get('Content-Length'):
             body = self.rfile.read(int(self.headers['Content-Length']))
+        if len(self.headers.get_all('Host', [])) != 1:
+            self.send_error(400, 'Multiple Host headers')
+            return
         self.server.calls.append((self.command, self.path, self.headers.get('Authorization'), body))
         if self.path == '/api/me':
             actor = self.server.actors.get(self.headers.get('Authorization'))
@@ -119,9 +122,10 @@ class GatewayTest(unittest.TestCase):
             server.shutdown()
             server.server_close()
 
-    def request(self, method, path, token=None, body=None, chunked=False):
+    def request(self, method, path, token=None, body=None, chunked=False, extra_headers=None):
         c = http.client.HTTPConnection('127.0.0.1', self.proxy.server_port, timeout=5)
         headers = {'Authorization': token} if token else {}
+        headers.update(extra_headers or {})
         if body is not None and not isinstance(body, (bytes, list)):
             body = json.dumps(body).encode()
             headers['Content-Type'] = 'application/json'
@@ -177,6 +181,12 @@ class GatewayTest(unittest.TestCase):
         self.assertEqual(self.request('POST', '/api/me/update', 'base-session', {'sso_id': ''})[0], 403)
         self.assertEqual(self.request('POST', '/api/me/update', 'base-session', {'sso_id': 'base-user', 'SSO_ID': ''})[0], 400)
         self.assertEqual(self.request('POST', '/api/me/update', 'base-session', {'sso_id': 'base-user'})[0], 200)
+
+    def test_lowercase_ingress_headers_are_overridden_without_duplicates(self):
+        status, body, _ = self.request('GET', '/api/admin/storage/list', 'base-session',
+                                     extra_headers={'host': 'base.example', 'accept-encoding': 'gzip'})
+        self.assertEqual(status, 200)
+        self.assertNotIn(b'synthetic-storage-secret', body)
 
     def test_fixed_length_and_chunked_upload_bodies_are_streamed(self):
         payload = b'synthetic upload' * 10000

@@ -217,13 +217,13 @@ class Handler(BaseHTTPRequestHandler):
             manager = bool(actor and actor.get('sso_id') and gate.authority.allows(actor['sso_id']))
             if configuration and not manager:
                 raise AccessDenied('Required application role is missing')
-            headers = {k: v for k, v in self.headers.items() if k.lower() not in HOP_HEADERS}
-            headers['Host'] = gate.site_host
-            headers['Connection'] = 'close'
+            headers = {k.lower(): v for k, v in self.headers.items() if k.lower() not in HOP_HEADERS}
+            headers['host'] = gate.site_host
+            headers['connection'] = 'close'
             if auth.startswith('Bearer '):
-                headers['Authorization'] = auth[7:]
+                headers['authorization'] = auth[7:]
             if configuration or (manager and path == '/api/fs/link'):
-                headers['Authorization'] = gate.admin_token()
+                headers['authorization'] = gate.admin_token()
             length = self.headers.get('Content-Length')
             transfer = self.headers.get('Transfer-Encoding')
             if (length and transfer) or (transfer and transfer.lower() != 'chunked'):
@@ -240,15 +240,15 @@ class Handler(BaseHTTPRequestHandler):
                 if profile.get('sso_id') != actor['sso_id']:
                     return self.json_response(403, 'SSO identity is managed by the identity provider')
                 payload = json.dumps(profile).encode()
-                headers['Content-Length'] = str(len(payload))
+                headers['content-length'] = str(len(payload))
             connection = http.client.HTTPConnection(gate.native_host, gate.native_port, timeout=300)
             connection.putrequest(self.command, self.path, skip_host=True, skip_accept_encoding=True)
             if transfer:
-                headers['Transfer-Encoding'] = 'chunked'
+                headers['transfer-encoding'] = 'chunked'
             # JSON responses that are filtered must use an uncompressed representation.
             filtered = configuration or path == '/api/me' or path.startswith('/api/auth')
             if filtered:
-                headers['Accept-Encoding'] = 'identity'
+                headers['accept-encoding'] = 'identity'
             for name, value in headers.items():
                 connection.putheader(name, value)
             connection.endheaders()

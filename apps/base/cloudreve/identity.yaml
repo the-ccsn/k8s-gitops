@@ -1,0 +1,48 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudreve
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Cloudreve
+    type: Traditional
+    description: OIDC for cloud.ccsn.dev
+    isThirdParty: false
+    redirectUris:
+    - https://cloud.ccsn.dev/callback/openid/3
+    postLogoutRedirectUris:
+    - https://cloud.ccsn.dev/
+    corsAllowedOrigins: []
+    customClientMetadataExtra: '{"idTokenTtl":3600,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Secret
+metadata:
+  name: cloudreve-credential
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: GitOps
+    applicationIdRef:
+      name: cloudreve
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+  writeConnectionSecretToRef:
+    name: cloudreve-oidc

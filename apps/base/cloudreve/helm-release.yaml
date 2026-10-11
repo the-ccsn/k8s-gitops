@@ -1,0 +1,188 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cloudreve
+  namespace: prod
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: cloudreve
+  chartRef:
+    kind: OCIRepository
+    name: cloudreve
+  values:
+    image:
+      repository: ghcr.io/isning/cloudreve
+      tag: v4.14.0-oidc.2@sha256:adea6ad1854f0dbae16c83f236cc39c0fe752fc0238dacc9ff069ddd4d5414c1
+    TZ: Asia/Shanghai
+    persistence:
+      config:
+        enabled: true
+        type: pvc
+        storageClass: longhorn-backup
+        size: 5Gi
+        mountPath: /cloudreve/data
+    cnpg:
+      main:
+        enabled: false
+    redis:
+      enabled: false
+    workload:
+      main:
+        podSpec:
+          containers:
+            main:
+              env:
+                CR_CONF_Database.Type: postgres
+                CR_CONF_Database.Host: cloudreve-pg-cluster-rw
+                CR_CONF_Database.User: cloudreve
+                CR_CONF_Database.Name: cloudreve
+                CR_CONF_Database.Password: replaced-by-secret-reference
+                CR_CONF_Database.Port: 5432
+                CR_CONF_Redis.Server: cloudreve-dragonfly:6379
+                CR_CONF_Redis.User: default
+                CR_CONF_Redis.Password: replaced-by-secret-reference
+              command:
+              - /bin/sh
+              - -ec
+              - unset CR_ENABLE_ARIA2; . /cloudreve/data/managed-env.sh; exec /cloudreve/cloudreve --conf
+                /cloudreve/data/conf.ini
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 2Gi
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: cloudreve
+        patch: |
+          - op: add
+            path: /spec/strategy
+            value:
+              rollingUpdate:
+                maxSurge: 1
+                maxUnavailable: 0
+              type: RollingUpdate
+          - op: add
+            path: /spec/template/spec/automountServiceAccountToken
+            value: false
+          - op: add
+            path: /spec/template/metadata/annotations/ccsn.dev~1bootstrap-sha256
+            value: ac0ac914fb70c8d5bf580b560014850da43d3bd42d52e4be577d9bec38dd6336
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              configMap:
+                name: cloudreve-bootstrap-config
+              name: managed-bootstrap
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: managed-credentials
+              secret:
+                defaultMode: 256
+                secretName: cloudreve-bootstrap
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: oidc
+              secret:
+                defaultMode: 256
+                secretName: cloudreve-oidc
+          - op: add
+            path: /spec/template/spec/initContainers
+            value:
+            - command:
+              - python3
+              - /bootstrap/bootstrap-config.py
+              image: docker.ccsn.dev/library/python:3.13-alpine
+              name: managed-bootstrap
+              resources:
+                limits:
+                  memory: 128Mi
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                readOnlyRootFilesystem: true
+                runAsGroup: 0
+                runAsUser: 0
+              volumeMounts:
+              - mountPath: /cloudreve/data
+                name: config
+              - mountPath: /bootstrap
+                name: managed-bootstrap
+                readOnly: true
+              - mountPath: /credentials
+                name: managed-credentials
+                readOnly: true
+              - mountPath: /oidc
+                name: oidc
+                readOnly: true
+      - target:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: cloudreve
+        patch: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: cloudreve
+          spec:
+            template:
+              spec:
+                containers:
+                - name: cloudreve
+                  env:
+                  - name: CR_CONF_Redis.Password
+                    value: null
+                    valueFrom:
+                      secretKeyRef:
+                        name: cloudreve-bootstrap
+                        key: redisPassword
+                  - name: CR_CONF_Database.Password
+                    value: null
+                    valueFrom:
+                      secretKeyRef:
+                        name: cloudreve-pg-cluster-app
+                        key: password
+                initContainers:
+                - name: cloudreve-system-cnpg-wait
+                  image: docker.ccsn.dev/library/postgres:16-alpine
+                  command:
+                  - /bin/sh
+                  - -ec
+                  - until pg_isready -U cloudreve -d cloudreve -h cloudreve-pg-cluster-rw; do
+                    sleep 5; done
+                - name: cloudreve-system-redis-wait
+                  image: docker.io/bitnamisecure/valkey:latest@sha256:3ab4091a7e3cb5f12184a3009cad1aefef50f424c0860d580a41675e38392ba5
+                  command:
+                  - /bin/sh
+                  - -ec
+                  - export REDISCLI_AUTH="$REDIS_PASSWORD"; until valkey-cli -h cloudreve-dragonfly
+                    -p 6379 ping | grep -q PONG; do sleep 5; done
+                  env:
+                  - name: REDIS_PASSWORD
+                    valueFrom:
+                      secretKeyRef:
+                        name: cloudreve-bootstrap
+                        key: redisPassword
+                  resources:
+                    requests:
+                      cpu: 10m
+                      memory: 32Mi
+                    limits:
+                      memory: 128Mi

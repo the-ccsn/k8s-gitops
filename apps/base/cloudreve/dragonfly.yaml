@@ -1,0 +1,53 @@
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: cloudreve-dragonfly
+  namespace: prod
+spec:
+  image: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
+  replicas: 1
+  podMetadata:
+    labels:
+      app.kubernetes.io/env: prod
+  args:
+  - --maxmemory=512mb
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+  authentication:
+    passwordFromSecret:
+      name: cloudreve-bootstrap
+      key: redisPassword
+  snapshot:
+    cron: '*/5 * * * *'
+    persistentVolumeClaimSpec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: longhorn-backup
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloudreve-dragonfly-ambient
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudreve-dragonfly
+      app.kubernetes.io/name: dragonfly
+      app.kubernetes.io/part-of: dragonfly
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15008

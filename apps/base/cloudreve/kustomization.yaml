@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- chart-source.yaml
+- identity.yaml
+- bootstrap-secret.yaml
+- bootstrap-config.yaml
+- helm-release.yaml
+- pg-cluster.yaml
+- objectstore.yaml
+- scheduled-backup.yaml
+- bootstrap-job-v4.yaml
+- httproute.yaml
+- initial-backup.yaml
+- dragonfly.yaml

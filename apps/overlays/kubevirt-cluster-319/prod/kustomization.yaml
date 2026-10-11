@@ -14,6 +14,7 @@ resources:
   - ./../../../components/openlist/
   - ./../../../base/base/
   - ./../../../base/share/
+  - ./../../../base/cloudreve/
 # Apply after commonLabels to preserve the adapter's existing selector.
 patchesJson6902:
   - target:

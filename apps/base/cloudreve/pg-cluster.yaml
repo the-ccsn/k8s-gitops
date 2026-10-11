@@ -1,0 +1,24 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cloudreve-pg-cluster
+spec:
+  instances: 2
+  plugins:
+  - name: barman-cloud.cloudnative-pg.io
+    isWALArchiver: true
+    parameters:
+      barmanObjectName: cloudreve-pg-objectstore
+      serverName: cloudreve-pg-cluster
+  bootstrap:
+    initdb:
+      database: cloudreve
+      owner: cloudreve
+  imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ClusterImageCatalog
+    name: postgresql-minimal-trixie
+    major: 18
+  storage:
+    size: 5Gi
+    storageClass: longhorn

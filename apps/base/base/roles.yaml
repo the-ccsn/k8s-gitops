@@ -1,0 +1,71 @@
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: base-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:admin
+    description: base OpenList native administrator via verified resource access tokens
+    type: User
+    isDefault: false
+    scopeIdsRefs:
+    - name: base-admin
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: base-general
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:general
+    description: base OpenList native general via verified resource access tokens
+    type: User
+    isDefault: false
+    scopeIdsRefs:
+    - name: base-general
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: base-guest
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:guest
+    description: base OpenList native guest via verified resource access tokens
+    type: User
+    isDefault: false
+    scopeIdsRefs:
+    - name: base-guest
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

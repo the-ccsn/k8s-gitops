@@ -3,17 +3,18 @@ kind: ServiceEntry
 metadata:
   name: external-alist
 spec:
-  exportTo: ["."]
+  exportTo:
+  - .
   hosts:
-    - alist.external-services.mesh.internal
+  - alist.external-services.mesh.internal
   location: MESH_EXTERNAL
   ports:
-    - number: 5244
-      name: http-alist
-      protocol: HTTP
+  - number: 5244
+    name: http-alist
+    protocol: HTTP
   resolution: DNS
   endpoints:
-    - address: openmediavault.local
+  - address: openmediavault.local
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -21,12 +22,14 @@ metadata:
   name: external-alist
 spec:
   parentRefs:
-    - name: default-gateway
+  - name: default-gateway
   hostnames:
-    - alist.ccsn.dev
+  - alist.ccsn.dev
   rules:
-    - backendRefs:
-        - group: networking.istio.io
-          kind: Hostname
-          name: alist.external-services.mesh.internal
-          port: 5244
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        hostname: base.ccsn.dev
+        port: 443
+        statusCode: 302

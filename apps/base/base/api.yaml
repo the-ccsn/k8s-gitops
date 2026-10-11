@@ -1,0 +1,92 @@
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Resource
+metadata:
+  name: base-api
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: 1tuaw4men1ek45a0d7nvi
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: OpenList Base API
+    indicator: https://base.ccsn.dev/api
+    accessTokenTtl: 300
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: base-admin
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: ebah3odval9wlxl0xz1t1
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:admin
+    description: OpenList Base native administrator
+    resourceIdRef:
+      name: base-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: base-general
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: 6561xlhxw1btp1lqsaevv
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:general
+    description: OpenList base native general
+    resourceIdRef:
+      name: base-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: base-guest
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: 4v9p1ye9hyfbg8up4yod8
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:guest
+    description: OpenList base native guest
+    resourceIdRef:
+      name: base-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

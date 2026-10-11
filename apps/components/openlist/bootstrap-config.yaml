@@ -22,11 +22,12 @@ data:
     \ roles',\n    'sso_auto_register':os.environ['SSO_AUTO_REGISTER'],\n    'sso_default_dir':'/','sso_default_permission':'65535',\n\
     \    'sso_compatibility_mode':'false'}\nif native_mapping:\n    settings.update(sso_oidc_resource=os.environ['SSO_OIDC_RESOURCE'],sso_oidc_role_mapping=native_mapping,sso_extra_scopes=os.environ['SSO_EXTRA_SCOPES'],sso_oidc_username_mapping=os.environ['SSO_OIDC_USERNAME_MAPPING'])\n\
     connection=sqlite3.connect(database)\nif native_mapping and os.environ.get('OIDC_MIGRATE_SUB_BINDINGS')=='true':\n\
-    \    import base64,hashlib\n    assert connection.execute(\"select value from\
-    \ x_setting_items where key='sso_oidc_username_key'\").fetchone()[0]=='sub'\n\
+    \    import base64,hashlib\n    previous_username_key=connection.execute(\"select value from\
+    \ x_setting_items where key='sso_oidc_username_key'\").fetchone()[0]\n\
     \    for uid,subject in connection.execute(\"select id,sso_id from x_users where\
     \ sso_id!=''\").fetchall():\n        if subject.startswith('oidc:'):\n       \
-    \     continue\n        identity='oidc:'+base64.urlsafe_b64encode(hashlib.sha256(json.dumps(['https://login.ccsn.dev/oidc',subject],separators=(',',':')).encode()).digest()).decode().rstrip('=')\n\
+    \     continue\n        assert previous_username_key=='sub' or subject==os.environ.get('OIDC_SPLIT_OWNER_SUBJECT'), 'Cannot convert an unknown legacy OIDC identity'\n\
+    \        identity='oidc:'+base64.urlsafe_b64encode(hashlib.sha256(json.dumps(['https://login.ccsn.dev/oidc',subject],separators=(',',':')).encode()).digest()).decode().rstrip('=')\n\
     \        connection.execute('update x_users set sso_id=? where id=?',(identity,uid))\n\
     if native_mapping and os.environ.get('OIDC_SPLIT_OWNER_SUBJECT'):\n    subject=os.environ['OIDC_SPLIT_OWNER_SUBJECT']\n\
     \    identity='oidc:'+base64.urlsafe_b64encode(hashlib.sha256(json.dumps(['https://login.ccsn.dev/oidc',subject],separators=(',',':')).encode()).digest()).decode().rstrip('=')\n\
@@ -43,6 +44,9 @@ data:
     \ ('+','.join('\"'+key+'\"' for key in keys)+') values ('+','.join('?' for _ in\
     \ keys)+')',[account[key] for key in keys])\n        elif account['username']==subject:\n\
     \            connection.execute('update x_users set username=? where id=?',(username,account['id']))\n\
+    if os.environ.get('PUBLIC_READ_ONLY')=='true':\n\
+    \    assert connection.execute('select count(*) from x_users where role=1').fetchone()[0]==1, 'Expected exactly one native guest account'\n\
+    \    connection.execute(\"update x_users set disabled=0,base_path=?,permission=0 where role=1\",(os.environ['PUBLIC_BASE_PATH'],))\n\
     for key,value in settings.items():\n    result=connection.execute('update x_setting_items\
     \ set value=? where key=?',(value,key))\n    if not result.rowcount:\n       \
     \ connection.execute('insert into x_setting_items (key,value,type,\"group\",flag,\"\

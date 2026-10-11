@@ -12,6 +12,7 @@ resources:
   - ./../../../base/flux-operator/
   - ./../../../base/vaultwarden/
   - ./../../../components/openlist/
+  - ./../../../base/base/
 # Apply after commonLabels to preserve the adapter's existing selector.
 patchesJson6902:
   - target:

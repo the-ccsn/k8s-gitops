@@ -3,17 +3,18 @@ kind: ServiceEntry
 metadata:
   name: external-base
 spec:
-  exportTo: ["."]
+  exportTo:
+  - .
   hosts:
-    - base.external-services.mesh.internal
+  - base.external-services.mesh.internal
   location: MESH_EXTERNAL
   ports:
-    - number: 5246
-      name: http-base
-      protocol: HTTP
+  - number: 5246
+    name: http-base
+    protocol: HTTP
   resolution: DNS
   endpoints:
-    - address: openmediavault.local
+  - address: openmediavault.local
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -21,25 +22,14 @@ metadata:
   name: external-base
 spec:
   parentRefs:
-    - name: default-gateway
+  - name: default-gateway
   hostnames:
-    - base.ccsn.dev
+  - base.ccsn.dev
   rules:
-    - matches:
-        - path:
-            type: RegularExpression
-            value: "^/(p|api|assets|d).*"
-      timeouts:
-        request: 0s
-      backendRefs:
-        - group: networking.istio.io
-          kind: Hostname
-          name: base.external-services.mesh.internal
-          port: 5246
-    - filters:
-        - type: RequestRedirect
-          requestRedirect:
-            scheme: https
-            hostname: base.snc.moe
-            port: 443
-            statusCode: 302
+  - timeouts:
+      request: 0s
+    backendRefs:
+    - group: ''
+      kind: Service
+      name: base
+      port: 5244

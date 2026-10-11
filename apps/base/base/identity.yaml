@@ -1,0 +1,53 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: base
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: z9x7gmhfewi7uhwt2d23z
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Base
+    type: Traditional
+    description: Native OIDC for base.ccsn.dev
+    isThirdParty: false
+    redirectUris:
+    - https://base.ccsn.dev/api/auth/sso_callback?method=sso_get_token
+    - https://base.ccsn.dev/api/auth/sso_callback?method=get_sso_id
+    postLogoutRedirectUris:
+    - https://base.ccsn.dev/
+    corsAllowedOrigins: []
+    customClientMetadataExtra: '{"idTokenTtl":3600,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Secret
+metadata:
+  name: base-credential
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: z9x7gmhfewi7uhwt2d23z/GitOps
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: GitOps
+    applicationIdRef:
+      name: base
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+  writeConnectionSecretToRef:
+    name: base-oidc

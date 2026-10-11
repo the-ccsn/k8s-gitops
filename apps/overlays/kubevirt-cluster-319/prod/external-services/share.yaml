@@ -3,17 +3,18 @@ kind: ServiceEntry
 metadata:
   name: external-share
 spec:
-  exportTo: ["."]
+  exportTo:
+  - .
   hosts:
-    - share.external-services.mesh.internal
+  - share.external-services.mesh.internal
   location: MESH_EXTERNAL
   ports:
-    - number: 5245
-      name: http-share
-      protocol: HTTP
+  - number: 5245
+    name: http-share
+    protocol: HTTP
   resolution: DNS
   endpoints:
-    - address: openmediavault.local
+  - address: openmediavault.local
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -21,14 +22,14 @@ metadata:
   name: external-share
 spec:
   parentRefs:
-    - name: default-gateway
+  - name: default-gateway
   hostnames:
-    - share.ccsn.dev
+  - share.ccsn.dev
   rules:
-    - timeouts:
-        request: 0s
-      backendRefs:
-        - group: networking.istio.io
-          kind: Hostname
-          name: share.external-services.mesh.internal
-          port: 5245
+  - timeouts:
+      request: 0s
+    backendRefs:
+    - group: ''
+      kind: Service
+      name: share
+      port: 5244

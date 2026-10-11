@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: share-authorization
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      app: share
+      release: share
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - port: 5244
+      protocol: TCP
+    - port: 15008
+      protocol: TCP
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: share-protect-native
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: share
+      release: share
+  action: DENY
+  rules:
+  - to:
+    - operation:
+        ports:
+        - '5245'

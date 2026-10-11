@@ -1,0 +1,53 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: share
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: c5clj61y07b9mtgh1i1dj
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Share
+    type: Traditional
+    description: Native OIDC for share.ccsn.dev
+    isThirdParty: false
+    redirectUris:
+    - https://share.ccsn.dev/api/auth/sso_callback?method=sso_get_token
+    - https://share.ccsn.dev/api/auth/sso_callback?method=get_sso_id
+    postLogoutRedirectUris:
+    - https://share.ccsn.dev/
+    corsAllowedOrigins: []
+    customClientMetadataExtra: '{"idTokenTtl":3600,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Secret
+metadata:
+  name: share-credential
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: c5clj61y07b9mtgh1i1dj/GitOps-native-20261011
+spec:
+  forProvider:
+    applicationIdRef:
+      name: share
+      policy:
+        resolve: Always
+    name: GitOps-native-20261011
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  providerConfigRef:
+    kind: ClusterProviderConfig
+    name: ccsn-logto
+  writeConnectionSecretToRef:
+    name: share-oidc

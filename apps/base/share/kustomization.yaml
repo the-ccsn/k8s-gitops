@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- identity.yaml
+- bootstrap-secret.yaml
+- helm-release.yaml
+- api.yaml
+- roles.yaml
+- network-policy.yaml
+- dns.yaml

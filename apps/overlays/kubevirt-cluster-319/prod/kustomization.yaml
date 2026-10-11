@@ -13,6 +13,7 @@ resources:
   - ./../../../base/vaultwarden/
   - ./../../../components/openlist/
   - ./../../../base/base/
+  - ./../../../base/share/
 # Apply after commonLabels to preserve the adapter's existing selector.
 patchesJson6902:
   - target:

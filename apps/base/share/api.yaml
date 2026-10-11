@@ -1,0 +1,92 @@
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Resource
+metadata:
+  name: share-api
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: 5b3qmu4n6wu7q5w34xg7j
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: OpenList Share API
+    indicator: https://share.ccsn.dev/api
+    accessTokenTtl: 300
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: share-admin
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: eulci8r6wflwmh7a8plq0
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: share:admin
+    description: OpenList Share native administrator
+    resourceIdRef:
+      name: share-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: share-general
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: 9avyv5w5ng29vkq21ciod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: share:general
+    description: OpenList share native general
+    resourceIdRef:
+      name: share-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: share-guest
+  namespace: prod
+  annotations:
+    crossplane.io/external-name: hungenf4lkh9fd5a3n9uc
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: share:guest
+    description: OpenList share native guest
+    resourceIdRef:
+      name: share-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

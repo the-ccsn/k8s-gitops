@@ -1,0 +1,192 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: share
+  namespace: prod
+spec:
+  releaseName: share
+  interval: 30m
+  timeout: 15m
+  chart:
+    spec:
+      chart: openlist
+      version: 0.1.1
+      sourceRef:
+        kind: HelmRepository
+        name: openlist
+  values:
+    fullnameOverride: share
+    replicaCount: 1
+    image:
+      registry: ghcr.io
+      repository: isning/openlist-git
+      tag: v4.2.6-oidc.3@sha256:f7089448736d8c9a313014deac4ba93523cb7bf2d56d619c7824d652535d6686
+    persistence:
+      storageClass: longhorn-backup
+      size: 5Gi
+      accessMode: ReadWriteOnce
+    nameOverride: share
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: share
+        patch: |
+          - op: add
+            path: /spec/strategy
+            value:
+              type: Recreate
+          - op: add
+            path: /spec/template/spec/automountServiceAccountToken
+            value: false
+          - op: add
+            path: /spec/template/spec/securityContext/runAsUser
+            value: 1001
+          - op: add
+            path: /spec/template/spec/securityContext/runAsGroup
+            value: 1001
+          - op: add
+            path: /spec/template/spec/securityContext/runAsNonRoot
+            value: true
+          - op: add
+            path: /spec/template/spec/securityContext/seccompProfile
+            value:
+              type: RuntimeDefault
+          - op: add
+            path: /spec/template/spec/containers/0/resources
+            value:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                memory: 1Gi
+          - op: add
+            path: /spec/template/spec/containers/0/securityContext
+            value:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+          - op: add
+            path: /spec/template/spec/containers/0/volumeMounts/-
+            value:
+              name: temporary
+              mountPath: /tmp
+          - op: add
+            path: /spec/template/spec/containers/0/readinessProbe
+            value:
+              httpGet:
+                path: /ping
+                port: 5244
+              periodSeconds: 5
+              timeoutSeconds: 3
+          - op: add
+            path: /spec/template/spec/containers/0/livenessProbe
+            value:
+              httpGet:
+                path: /ping
+                port: 5244
+              periodSeconds: 15
+              timeoutSeconds: 3
+          - op: add
+            path: /spec/template/spec/containers/0/startupProbe
+            value:
+              httpGet:
+                path: /ping
+                port: 5244
+              periodSeconds: 5
+              failureThreshold: 60
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: seed
+              secret:
+                secretName: share-seed
+                defaultMode: 288
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: oidc
+              secret:
+                secretName: share-oidc
+                defaultMode: 288
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: bootstrap
+              configMap:
+                name: openlist-bootstrap
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: temporary
+              emptyDir:
+                sizeLimit: 1Gi
+          - op: add
+            path: /spec/template/spec/initContainers
+            value:
+            - name: bootstrap
+              image: docker.ccsn.dev/library/python:3.13-alpine
+              command:
+              - python3
+              - /bootstrap/bootstrap.py
+              env:
+              - name: SITE_URL
+                value: https://share.ccsn.dev
+              - name: SSO_AUTO_REGISTER
+                value: 'true'
+              - name: SSO_OIDC_RESOURCE
+                value: https://share.ccsn.dev/api
+              - name: SSO_OIDC_ROLE_MAPPING
+                value: 'has(claims.scope) && claims.scope.matches(''(^| )share:admin( |$)'') ? ''admin'' : has(claims.scope)
+                  && claims.scope.matches(''(^| )share:general( |$)'') ? ''general'' : ''guest'''
+              - name: SSO_OIDC_USERNAME_MAPPING
+                value: '''oidc:'' + claims.sub'
+              - name: SSO_EXTRA_SCOPES
+                value: email share:admin share:general share:guest
+              - name: OIDC_MIGRATE_SUB_BINDINGS
+                value: 'true'
+              - name: OIDC_SPLIT_OWNER_SUBJECT
+                value: gb8z4dzoitsz
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                  - ALL
+              resources:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+              volumeMounts:
+              - name: openlist-data
+                mountPath: /data
+              - name: seed
+                mountPath: /seed
+                readOnly: true
+              - name: oidc
+                mountPath: /oidc
+                readOnly: true
+              - name: bootstrap
+                mountPath: /bootstrap
+                readOnly: true
+              - name: temporary
+                mountPath: /tmp
+          - op: add
+            path: /spec/template/metadata/annotations
+            value:
+              ccsn.dev/native-oidc-bootstrap-sha256: 5986de019d4ff3b42432e3deb8f8f4858b2783038136a11f8c58eb74d18f4ada
+      - target:
+          version: v1
+          kind: Service
+          name: share
+        patch: |
+          - op: replace
+            path: /spec/ports/0/targetPort
+            value: 5244

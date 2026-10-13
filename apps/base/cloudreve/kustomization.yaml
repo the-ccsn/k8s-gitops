@@ -9,7 +9,6 @@ resources:
 - pg-cluster.yaml
 - objectstore.yaml
 - scheduled-backup.yaml
-- bootstrap-job-v4.yaml
 - httproute.yaml
 - initial-backup.yaml
 - dragonfly.yaml

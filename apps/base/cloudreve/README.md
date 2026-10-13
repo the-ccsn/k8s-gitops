@@ -8,11 +8,14 @@ Logto users can register through OIDC as ordinary users in group 2, with an
 initial 1 GiB quota. Administrators are assigned separately. Local public
 registration is disabled. OIDC group mapping applies at registration.
 
-The local recovery administrator is `cloudreve-recovery@ccsn.dev`. Its initial
-password is in Secret `prod/cloudreve-bootstrap`, key `adminPassword`. Bootstrap
-leaves an existing administrator password unchanged. Crossplane supplies OIDC
-credentials; tracked credentials are SOPS encrypted. Master settings are
-injected through the managed environment at startup.
+Storage policies, user groups, quotas and administrator accounts are managed
+manually in the Cloudreve administration interface. Existing database settings
+and accounts are retained; no SQL bootstrap job manages them.
+
+Crossplane supplies OIDC credentials; tracked credentials are SOPS encrypted.
+The startup init container writes `conf.ini` and injects the site URL, local
+registration setting, signing secret and OIDC provider through environment
+variables. Database and cache connections remain managed by Helm.
 
 Chart-managed PostgreSQL and Valkey are disabled. Independent CRs configure
 the application database and cache:

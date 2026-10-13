@@ -16,21 +16,3 @@ data:
     settings={'siteURL':'https://cloud.ccsn.dev','register_enabled':'0','secret_key':read('secretKey'),'external_login_providers':json.dumps(providers,separators=(',',':'))}
     env=root/'managed-env.sh';env.write_text(''.join('export CR_SETTING_'+k+'='+shlex.quote(v)+'\n' for k,v in settings.items()));env.chmod(0o600)
     print('Managed Cloudreve startup configuration written; credentials omitted')
-  bootstrap-sql.py: |
-    import hashlib,json,pathlib,secrets
-    root=pathlib.Path('/credentials')
-    def read(k):return (root/k).read_text().strip()
-    def q(s):return "'"+str(s).replace("'","''")+"'"
-    salt=secrets.token_urlsafe(24);password=salt+':'+hashlib.sha256((read('adminPassword')+salt).encode()).hexdigest()
-    settings={'region':'us-east-1','s3_path_style':True,'chunk_size':8*1024*1024,'relay':False}
-    sql='''BEGIN;
-    SELECT pg_advisory_xact_lock(11414003);
-    DO $$ BEGIN
-     IF EXISTS (SELECT 1 FROM storage_policies WHERE id=1 AND type NOT IN ('local','s3')) THEN RAISE EXCEPTION 'Unexpected default storage policy'; END IF;
-     IF EXISTS (SELECT 1 FROM storage_policies WHERE id=1 AND type='local') AND EXISTS(SELECT 1 FROM entities) THEN RAISE EXCEPTION 'Existing local entities cannot be moved implicitly'; END IF;
-    END $$;
-    '''
-    sql+='UPDATE storage_policies SET name='+q('SeaweedFS Cloudreve')+",type='s3',server='https://s3.ccsn.dev',bucket_name='cloudreve',is_private=true,access_key="+q(read('s3AccessKey'))+',secret_key='+q(read('s3SecretKey'))+",dir_name_rule='users/{uid}/{path}',file_name_rule='{uid}_{randomkey8}_{originname}',settings="+q(json.dumps(settings))+",updated_at=now() WHERE id=1;\n"
-    sql+='INSERT INTO users (created_at,updated_at,email,nick,password,status,storage,two_factor_secret,avatar,settings,group_users,sso_managed) SELECT now(),now(),'+q('cloudreve-recovery@ccsn.dev')+','+q('Local recovery administrator')+','+q(password)+",'active',0,'','',"+q(json.dumps({'version_retention':True,'version_retention_max':10}))+",1,false WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='cloudreve-recovery@ccsn.dev');\nCOMMIT;\n"
-    p=pathlib.Path('/sql/bootstrap.sql');p.write_text(sql);p.chmod(0o600)
-    print('Scoped storage policy and independent recovery account SQL prepared; credentials omitted')

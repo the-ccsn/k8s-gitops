@@ -12,3 +12,5 @@ resources:
 - httproute.yaml
 - initial-backup.yaml
 - dragonfly.yaml
+- search-secret.yaml
+- search.yaml

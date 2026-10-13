@@ -144,9 +144,33 @@ spec:
           spec:
             template:
               spec:
+                serviceAccountName: cloudreve
                 containers:
                 - name: cloudreve
                   env:
+                  - name: CR_CONF_System.LogLevel
+                    value: warning
+                  - name: CR_SETTING_fts_enabled
+                    value: '1'
+                  - name: CR_SETTING_fts_index_type
+                    value: meilisearch
+                  - name: CR_SETTING_fts_extractor_type
+                    value: tika
+                  - name: CR_SETTING_fts_meilisearch_endpoint
+                    value: http://cloudreve-meilisearch:7700
+                  - name: CR_SETTING_fts_meilisearch_api_key
+                    valueFrom:
+                      secretKeyRef:
+                        name: cloudreve-search
+                        key: apiKey
+                  - name: CR_SETTING_fts_tika_endpoint
+                    value: http://cloudreve-tika:9998
+                  - name: CR_SETTING_fts_tika_exts
+                    value: pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,rtf,txt,md,html,htm,epub,csv
+                  - name: CR_SETTING_fts_tika_max_file_size_remote
+                    value: '52428800'
+                  - name: CR_SETTING_fts_meilisearch_embed_enabled
+                    value: '0'
                   - name: CR_CONF_Redis.Password
                     value: null
                     valueFrom:
@@ -160,6 +184,36 @@ spec:
                         name: cloudreve-pg-cluster-app
                         key: password
                 initContainers:
+                - name: cloudreve-search-wait
+                  image: docker.ccsn.dev/library/python:3.13-alpine
+                  command:
+                  - python3
+                  - -c
+                  - |
+                    import time, urllib.request
+                    deadline = time.monotonic() + 900
+                    for endpoint in ['http://cloudreve-meilisearch:7700/health', 'http://cloudreve-tika:9998/version']:
+                        while True:
+                            try:
+                                with urllib.request.urlopen(endpoint, timeout=5) as response:
+                                    assert response.status == 200
+                                break
+                            except Exception:
+                                if time.monotonic() >= deadline:
+                                    raise RuntimeError('Search service readiness timed out') from None
+                                time.sleep(5)
+                    print('Search services ready')
+                  resources:
+                    requests:
+                      cpu: 10m
+                      memory: 32Mi
+                    limits:
+                      memory: 128Mi
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop: [ALL]
+                    readOnlyRootFilesystem: true
                 - name: cloudreve-system-cnpg-wait
                   image: docker.ccsn.dev/library/postgres:16-alpine
                   command:

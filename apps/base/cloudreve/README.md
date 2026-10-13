@@ -31,3 +31,13 @@ the application database and cache:
 Cloudreve connects to `cloudreve-pg-cluster-rw:5432` and
 `cloudreve-dragonfly:6379`. Database and cache passwords are Secret references.
 The startup init container uses `valkey-cli` for authenticated cache readiness.
+
+Full-text search uses private Meilisearch and Apache Tika services. Meilisearch
+stores its index on a 20 GiB Longhorn volume. The minimal Tika image extracts
+text without an OCR installation. Ambient mTLS and AuthorizationPolicy restrict access to Cloudreve’s dedicated
+service account; NetworkPolicy permits mesh ingress.
+Search connections, document extensions, the 50 MiB extraction limit and the
+search switch are supplied through `CR_SETTING_*` environment variables. The
+Meilisearch authentication key comes from the SOPS-encrypted `cloudreve-search`
+Secret. Vector search is disabled. Cloudreve uses warning-level logging to avoid
+printing the search credential through its generic environment override logger.

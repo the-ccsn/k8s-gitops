@@ -150,6 +150,8 @@ spec:
                   env:
                   - name: CR_CONF_System.LogLevel
                     value: warning
+                  - name: CR_CONF_System.ProxyHeader
+                    value: X-Envoy-External-Address
                   - name: CR_SETTING_fts_enabled
                     value: '1'
                   - name: CR_SETTING_fts_index_type

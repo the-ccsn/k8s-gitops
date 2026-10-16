@@ -15,7 +15,7 @@ spec:
   values:
     image:
       repository: ghcr.io/isning/cloudreve
-      tag: v4.14.0-multi-storage.4@sha256:7799e9a84a27912ab4270eec32035bc548a762a03f7de93efdb2bc29145eeb5a
+      tag: v4.14.0-multi-storage.6@sha256:54b378954eb6e8bbe2c9625eb157956e080ef558bcbfddfe38caac1daad3cfd6
     TZ: Asia/Shanghai
     persistence:
       config:

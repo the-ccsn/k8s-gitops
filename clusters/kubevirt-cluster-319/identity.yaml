@@ -27,6 +27,9 @@ spec:
     - apiVersion: apiextensions.k8s.io/v1
       kind: CustomResourceDefinition
       name: proxycaches.harbor.ccsn.dev
+    - apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      name: userconsentscopes.application.logto.m.crossplane.io
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -54,6 +57,18 @@ spec:
     secretRef:
       name: sops-age
   healthChecks:
+  - apiVersion: application.logto.m.crossplane.io/v1alpha1
+    kind: Application
+    name: cloudflare-access
+    namespace: prod
+  - apiVersion: application.logto.m.crossplane.io/v1alpha1
+    kind: UserConsentScopes
+    name: cloudflare-access
+    namespace: prod
+  - apiVersion: v1
+    kind: Secret
+    name: cloudflare-access-oidc
+    namespace: prod
   - apiVersion: helm.toolkit.fluxcd.io/v2
     kind: HelmRelease
     name: logto

@@ -1,6 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- cloudflare-access-application.yaml
+- cloudflare-access-consent-scopes.yaml
+- cloudflare-access-credential.yaml
 - connector-github.yaml
 - connector-smtp.yaml
 - connectors.yaml

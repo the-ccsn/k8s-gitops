@@ -1,0 +1,22 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: UserConsentScopes
+metadata:
+  name: cloudflare-access
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    applicationIdRef:
+      name: cloudflare-access
+      policy:
+        resolve: Always
+    userScopes:
+    - profile
+    - email
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

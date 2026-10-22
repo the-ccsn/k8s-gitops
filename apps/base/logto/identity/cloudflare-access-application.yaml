@@ -1,0 +1,25 @@
+apiVersion: application.logto.m.crossplane.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudflare-access
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Cloudflare Access
+    type: Traditional
+    description: ''
+    isThirdParty: true
+    redirectUris:
+    - https://the-ccsn.cloudflareaccess.com/cdn-cgi/access/callback
+    postLogoutRedirectUris: []
+    corsAllowedOrigins: []
+    oidcClientMetadataExtra: '{"backchannelLogoutSessionRequired":false}'
+    customClientMetadataExtra: '{"idTokenTtl":3600,"refreshTokenTtlInDays":14,"alwaysIssueRefreshToken":false,"rotateRefreshToken":true,"allowTokenExchange":false}'
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

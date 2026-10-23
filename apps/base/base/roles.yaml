@@ -15,7 +15,7 @@ spec:
     type: User
     isDefault: false
     scopeIdsRefs:
-    - name: base-admin
+    - name: base-domain-admin
       policy:
         resolve: Always
   providerConfigRef:
@@ -39,7 +39,7 @@ spec:
     type: User
     isDefault: false
     scopeIdsRefs:
-    - name: base-general
+    - name: base-domain-general
       policy:
         resolve: Always
   providerConfigRef:
@@ -63,7 +63,7 @@ spec:
     type: User
     isDefault: false
     scopeIdsRefs:
-    - name: base-guest
+    - name: base-domain-guest
       policy:
         resolve: Always
   providerConfigRef:

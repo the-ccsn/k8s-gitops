@@ -1,3 +1,4 @@
+# Preserve the former resource and its scopes; resource indicators are immutable.
 apiVersion: api.logto.m.crossplane.io/v1alpha1
 kind: Resource
 metadata:
@@ -13,7 +14,7 @@ spec:
   - LateInitialize
   forProvider:
     name: OpenList Base API
-    indicator: https://base.ccsn.dev/api
+    indicator: https://alist.ccsn.dev/api
     accessTokenTtl: 300
   providerConfigRef:
     name: ccsn-logto
@@ -85,6 +86,91 @@ spec:
     description: OpenList base native guest
     resourceIdRef:
       name: base-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Resource
+metadata:
+  name: base-domain-api
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: Base API
+    indicator: https://base.ccsn.dev/api
+    accessTokenTtl: 300
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: base-domain-admin
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:admin
+    description: OpenList Base native administrator
+    resourceIdRef:
+      name: base-domain-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: base-domain-general
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:general
+    description: OpenList base native general
+    resourceIdRef:
+      name: base-domain-api
+      policy:
+        resolve: Always
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig
+---
+apiVersion: api.logto.m.crossplane.io/v1alpha1
+kind: Scope
+metadata:
+  name: base-domain-guest
+  namespace: prod
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  - LateInitialize
+  forProvider:
+    name: base:guest
+    description: OpenList base native guest
+    resourceIdRef:
+      name: base-domain-api
       policy:
         resolve: Always
   providerConfigRef:

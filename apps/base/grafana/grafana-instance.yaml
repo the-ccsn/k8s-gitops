@@ -23,6 +23,8 @@ spec:
       enable_gzip: "true"
     log:
       mode: "console"
+      # Grafana's opaque OAuth token warning includes the token in its error text.
+      filters: "oauth.generic_oauth:error"
     auth:
       disable_login_form: "true"
     auth.generic_oauth:

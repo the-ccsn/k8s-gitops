@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - ./metrics-authorization.yaml
+  - ./backend-authorization.yaml
   - ./availability-probe.yaml
   - ./platform-dashboard.yaml
   - ./dashboard.yaml

@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cloudflared-tunnels
+  namespace: monitoring
+  labels:
+    application: cloudflare
+    component: tunnel
+spec:
+  namespaceSelector:
+    matchNames: [cloudflare-operator-system]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudflared
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  targetLimit: 5
+  sampleLimit: 2000

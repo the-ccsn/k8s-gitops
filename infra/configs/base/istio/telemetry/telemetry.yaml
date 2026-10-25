@@ -1,0 +1,47 @@
+
+# https://istio.io/latest/docs/reference/config/telemetry/
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: mesh-default-metrics
+  namespace: istio-system
+spec:
+  # No selector in the mesh root namespace: defaults for the whole mesh.
+  tracing:
+    - providers:
+        - name: otel-tracing
+      # Start with 1% of new traces; applications must propagate trace headers.
+      randomSamplingPercentage: 1.0
+      customTags:
+        entrypoint:
+          literal:
+            value: istio
+        cf_ray:
+          header:
+            name: cf-ray
+            defaultValue: ''
+        request_id:
+          header:
+            # Envoy regenerates X-Request-ID at the external trust boundary.
+            name: x-ccsn-request-id
+            defaultValue: ''
+        proxy_request_id:
+          header:
+            name: x-request-id
+            defaultValue: ''
+  accessLogging:
+    - providers:
+        - name: mesh-json
+      # Keep HTTP errors and requests whose W3C sampled flag is set.
+      filter:
+        expression: >-
+          response.code >= 400 ||
+          ('traceparent' in request.headers &&
+           request.headers['traceparent'].matches('.*-[0-9a-f][13579bdf]$'))
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - tagOverrides:
+            request_method:
+              value: "request.method"

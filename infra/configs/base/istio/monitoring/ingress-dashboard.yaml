@@ -1,0 +1,201 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: ingress-requests
+  namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: networking
+  json: |-
+    {
+      "title": "Ingress Requests",
+      "uid": "ingress-requests",
+      "tags": [
+        "networking",
+        "ingress",
+        "tracing",
+        "cloudflare",
+        "nginx"
+      ],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Gateway Request Rate",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace) (rate(istio_requests_total{cluster=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
+              "legendFormat": "{{namespace}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "title": "Gateway 5xx Ratio",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "sum by (namespace) (rate(istio_requests_total{cluster=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\",response_code=~\"5..\"}[5m])) / sum by (namespace) (rate(istio_requests_total{cluster=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
+              "legendFormat": "{{namespace}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "title": "Cloudflared HA Connections",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 7
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "cloudflared:tunnel_ha_connections",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 4,
+          "title": "Cloudflared Origin Errors",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 7
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "cloudflared:tunnel_request_errors:rate5m",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "title": "Ingress Request Logs",
+          "description": "Sampled requests and HTTP errors. Expand a record to filter cf_ray/request_id or open its TraceID link. Unsampled errors may have no stored trace. Query strings and credentials are excluded.",
+          "type": "logs",
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 14
+          },
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "targets": [
+            {
+              "expr": "{cluster=\"kubevirt-cluster-319\"} | entrypoint=~\"campus|istio\"",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "wrapLogMessage": true,
+            "sortOrder": "Descending"
+          }
+        },
+        {
+          "id": 6,
+          "title": "Ingress Trace Search",
+          "description": "Sampled campus NGINX and Istio spans. Cloudflare Ray IDs are span attributes; no Cloudflare edge span is synthesized.",
+          "type": "table",
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 26
+          },
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "targets": [
+            {
+              "queryType": "traceql",
+              "query": "{ resource.cluster = \"kubevirt-cluster-319\" && span.entrypoint =~ \"campus|istio\" }",
+              "limit": 20,
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }

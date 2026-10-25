@@ -6,6 +6,7 @@ commonLabels:
   app.kubernetes.io/env: staging
 resources:
   - ./echo/
+  - ./waypoint.yaml
   # - ./failed/
   # - ./test-controller/
   # - ./../../../base/debug/

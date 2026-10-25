@@ -54,6 +54,28 @@ spec:
         PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
     meshConfig:
       extensionProviders:
+        - name: mesh-json
+          envoyFileAccessLog:
+            path: /dev/stdout
+            logFormat:
+              labels:
+                timestamp: '%START_TIME%'
+                entrypoint: istio
+                method: '%REQ(:METHOD)%'
+                host: '%REQ(:AUTHORITY)%'
+                path: '%REQ_WITHOUT_QUERY(:PATH)%'
+                status: '%RESPONSE_CODE%'
+                duration_ms: '%DURATION%'
+                response_flags: '%RESPONSE_FLAGS%'
+                trace_id: '%TRACE_ID%'
+                span_id: '%SPAN_ID%'
+                request_id: '%REQ(X-CCSN-REQUEST-ID?X-REQUEST-ID)%'
+                cf_ray: '%REQ(CF-RAY)%'
+                upstream_cluster: '%UPSTREAM_CLUSTER_RAW%'
+        - name: otel-tracing
+          opentelemetry:
+            service: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local
+            port: 4317
         - name: oauth2-proxy
           envoyExtAuthzHttp:
             service: oauth2-proxy.prod.svc.cluster.local

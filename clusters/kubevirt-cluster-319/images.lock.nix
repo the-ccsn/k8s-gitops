@@ -83,11 +83,11 @@
     ];
   }
   {
-    imageName = "docker.dragonflydb.io/dragonflydb/operator";
-    imageDigest = "sha256:b11411142935f92ed0ec30a5ddeb31680e09ab66beecb827cb0224f1c4238638";
-    finalImageName = "docker.dragonflydb.io/dragonflydb/operator";
-    finalImageTag = "v1.6.1";
-    archiveHash = "sha256-d4VjIAjgxAylnFnRP42WMKLZMNYa/ViiapofUJ/Tq8M=";
+    imageName = "ghcr.io/dragonflydb/operator";
+    imageDigest = "sha256:bc0067369a456810d00715d7292da32b82f6df491fd51d6c57f2b2b3193ab490";
+    finalImageName = "ghcr.io/dragonflydb/operator";
+    finalImageTag = "v1.7.1";
+    archiveHash = "sha256-Ot03wEiZSOQRz3VHEdhGQKrSj3wFNIIBPFmjUZ8oQYI=";
     os = "linux";
     arch = "amd64";
     sources = [

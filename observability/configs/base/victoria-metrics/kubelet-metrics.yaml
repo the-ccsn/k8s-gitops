@@ -25,7 +25,8 @@ spec:
   metricsPath: /metrics
   scrapeInterval: 30s
   scrapeTimeout: 10s
-  sampleLimit: 20000
+  # K3s shares its component registry; observed up to 120k samples here.
+  sampleLimit: 200000
   honorLabels: true
   honorTimestamps: false
   kubernetesSDConfigs:

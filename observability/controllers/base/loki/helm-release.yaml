@@ -1,0 +1,279 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: monitoring
+spec:
+  releaseName: loki
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-loki
+    namespace: monitoring
+  # https://github.com/grafana/loki/tree/main/production/helm/loki
+  values:
+    # ==========================================
+    # Deployment Mode & Resources
+    # ==========================================
+    deploymentMode: SingleBinary
+    singleBinary:
+      replicas: 1
+      extraEnv:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: loki-s3-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: loki-s3-credentials
+              key: AWS_SECRET_ACCESS_KEY
+      persistence:
+        enabled: true
+        enableStatefulSetAutoDeletePVC: true
+        whenDeleted: Retain
+        whenScaled: Retain
+        size: 20Gi
+        storageClass: longhorn
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+
+    # -- DEPRECATED Monitoring section
+    monitoring:
+      selfMonitoring:
+        enabled: false
+      # do not use grafana-agent-operator, we use victoriametrics & prometheus-operator's crd instead.
+      grafanaAgent:
+        installOperator: false
+
+    # Zero out replica counts of other deployment modes
+    # https://grafana.com/docs/loki/latest/get-started/deployment-modes/#simple-scalable
+    # https://grafana.com/docs/loki/latest/get-started/components/
+    backend:
+      # -- Backend is Stateful, but its data is not critical.
+      # Contains:
+      #   Compactor - Merge the multiple index files into one & replace them in remote storage
+      #   Index Gateway - handling and serving metadata queries
+      #   Query Scheduler - an optional service
+      #   Ruler - manages and evaluates rule and/or alert expressions provided in a rule configuration.
+      replicas: 0
+    read:
+      # -- Read is stateless
+      # Contains:
+      #   Query Frontend - an optional service
+      #   Querier - executing Log Query Language (LogQL) queries
+      replicas: 0
+    write:
+      # -- The write target is stateful, its PV contains WAL log,
+      # remove the old PV will cause log losing.
+      #
+      # Contains:
+      #   Distributer - handling incoming push requests from clients
+      #   Ingester - persisting data and shipping it to long-term storage(gcs)
+      #
+      # To prevent data losing on rollouts, the ingester requires at least
+      # `floor( replication_factor / 2 ) + 1` instances ready to write successfully.
+      # By default, replication_factor is 3,
+      # So we need at least 3 replicas here for high availability.
+      replicas: 0 # 3
+
+    minio:
+      enabled: false
+
+    ruler:
+      # SingleBinary runs the ruler in the existing Loki process; no separate ruler replicas.
+      enabled: true
+    resultsCache:
+      # -- Specifies whether memcached based results-cache should be enabled
+      enabled: false
+    chunksCache:
+      # -- Specifies whether memcached based chunks-cache should be enabled
+      enabled: false
+      # -- Batchsize for sending and receiving chunks from chunks cache
+      batchSize: 4
+      # -- Parallel threads for sending and receiving chunks from chunks cache
+      parallelism: 5
+      # -- Memcached operation timeout
+      timeout: 2000ms
+      # -- Specify how long cached chunks should be stored in the chunks-cache before being expired
+      defaultValidity: 0s
+      # -- Total number of chunks-cache replicas
+      replicas: 1
+      # -- Amount of memory allocated to chunks-cache for object storage (in MB).
+      allocatedMemory: 1024
+      # -- Maximum item memory for chunks-cache (in MB).
+      maxItemMemory: 5
+      # -- Maximum number of connections allowed
+      connectionLimit: 16384
+      # -- Max memory to use for cache write back
+      writebackSizeLimit: 500MB
+      # -- Max number of objects to use for cache write back
+      writebackBuffer: 500000
+      # -- Number of parallel threads for cache write back
+      writebackParallelism: 1
+      # -- Resource requests and limits for the chunks-cache
+      # By default a safe memory limit will be requested based on allocatedMemory value (floor (* 1.2 allocatedMemory)).
+      resources:
+        limits:
+          cpu: 100m
+          memory: 1500Mi
+        requests:
+          cpu: 50m
+          memory: 1300Mi
+      # -- Persistence settings for the chunks-cache
+      persistence:
+        # -- Enable creating PVCs for the chunks-cache
+        enabled: false
+
+    # Loki Canary is a standalone app that audits the log-capturing performance
+    #  of a Grafana Loki cluster.
+    # This component emits and periodically queries for logs, making sure that Loki
+    #  is ingesting logs without any data loss.
+    # When something is wrong with Loki, the Canary often provides the first indication.
+    #
+    # https://grafana.com/docs/loki/latest/operations/loki-canary/
+    lokiCanary:
+      enabled: true
+      # -- If true, the canary will send directly to Loki via the address configured for verification --
+      # -- If false, it will write to stdout and an Agent(such as OTel/fluentbit) will be needed to scrape and send the logs --
+      push: true
+      # -- If set overwrites the default value set by loki.host helper function. Use this if gateway not enabled.
+      lokiurl: null
+      # -- The name of the label to look for at loki when doing the checks.
+      labelname: pod
+      resources:
+        limits:
+          cpu: 50m
+          memory: 100Mi
+        requests:
+          cpu: 20m
+          memory: 40Mi
+
+    # ==========================================
+    # Loki's Config
+    # ==========================================
+    loki:
+      commonConfig:
+        replication_factor: 1
+      ingester:
+        chunk_encoding: snappy
+        concurrent_flushes: 2
+        wal:
+          enabled: true
+          dir: /var/loki/wal
+          # The pod limit is 2Gi; Loki 3.6.7 otherwise defaults to a 4Gi replay ceiling.
+          replay_memory_ceiling: 512MB
+      querier:
+        # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
+        max_concurrent: 2
+      # used by the pattern feature in Logs Drilldown, which lets you detect similar log lines and add or exclude them from your search.
+      pattern_ingester:
+        enabled: true
+      rulerConfig:
+        storage:
+          type: local
+          local:
+            directory: /rules
+        rule_path: /var/loki/rules-temp
+        alertmanager_url: http://alertmanager-operated.monitoring.svc.cluster.local:9093
+        enable_alertmanager_v2: true
+      # ============================================================================
+      # Storage Retentaion
+      # https://grafana.com/docs/loki/latest/operations/storage/retention/
+      # ============================================================================
+      # Compact multiple index files in the table into a single index file per tenant per day.
+      compactor:
+        working_directory: /var/loki/compactor
+        compaction_interval: 10m
+        retention_enabled: true
+        retention_delete_delay: 2h
+        retention_delete_worker_count: 2
+        max_compaction_parallelism: 1
+        upload_parallelism: 2
+        delete_request_store: s3
+      limits_config:
+        reject_old_samples: true
+        reject_old_samples_max_age: 168h
+        max_query_lookback: 168h # 7 days
+        # delete logs older than this period
+        retention_period: 168h
+        retention_stream:
+          # keey only 1 day for dev logs
+          - selector: '{namespace="dev"}'
+            priority: 1
+            period: 24h
+        max_cache_freshness_per_query: 10m
+        split_queries_by_interval: 15m
+        query_timeout: 60s
+        max_query_parallelism: 4
+        tsdb_max_query_parallelism: 4
+        max_concurrent_tail_requests: 10
+        # OTEL related
+        # https://grafana.com/docs/loki/latest/send-data/otel/
+        allow_structured_metadata: true
+        otlp_config:
+          resource_attributes:
+            ignore_defaults: true
+            attributes_config:
+              - action: index_label
+                attributes:
+                  - service.name
+                  - service.namespace
+                  # common labels created from k8s attributes
+                  - app
+                  - cluster
+                  - environment
+                  - site
+                  - namespace
+                  - component
+                  - pod
+                  - container
+                  - node_name
+      # ============================================================================
+      # Object data uses S3; WAL, index staging, and compactor markers retain the PVC.
+      # ============================================================================
+      storage:
+        type: s3
+        bucketNames:
+          chunks: ccsn-observability-loki
+        s3:
+          endpoint: https://s3.319.ccsn.dev
+          region: us-east-1
+          s3ForcePathStyle: true
+          insecure: false
+          signatureVersion: v4
+          # Loki's AWS client reads the explicitly injected credential environment variables.
+      storage_config:
+        tsdb_shipper:
+          active_index_directory: /var/loki/tsdb-shipper-active
+          cache_location: /var/loki/tsdb-shipper-cache
+        hedging:
+          at: 0s
+      schemaConfig:
+        configs:
+          # Fresh installation: the S3 period is active before the first write.
+          - from: "2024-04-01"
+            store: tsdb
+            object_store: s3
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+
+    # Keep GitOps-owned LogQL rules synchronized into the single-binary pod.
+    sidecar:
+      enableUniqueFilenames: true
+      rules:
+        enabled: true
+        label: loki_rule
+        labelValue: "1"
+        folder: /rules/fake
+        searchNamespace: monitoring
+        resource: configmap

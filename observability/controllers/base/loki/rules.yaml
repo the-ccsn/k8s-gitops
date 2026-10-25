@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: loki-health
+  namespace: monitoring
+  labels:
+    application: loki
+    component: logging
+spec:
+  groups:
+    - name: loki-health
+      rules:
+        - alert: LokiDiscardingLogs
+          expr: sum(rate(loki_discarded_samples_total[5m])) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: Loki is discarding log records
+            description: Check ingestion limits, retention, storage errors, and the discard reason label.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md

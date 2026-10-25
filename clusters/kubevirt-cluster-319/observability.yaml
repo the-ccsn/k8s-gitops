@@ -40,6 +40,50 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: observability-logs
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-controllers-monitoring
+  interval: 30m
+  retryInterval: 30s
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./observability/controllers/overlays/kubevirt-cluster-319/logs
+  prune: true
+  wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability-traces
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-controllers-monitoring
+  interval: 30m
+  retryInterval: 30s
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./observability/controllers/overlays/kubevirt-cluster-319/traces
+  prune: true
+  wait: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: observability-configs
   namespace: flux-system
 spec:

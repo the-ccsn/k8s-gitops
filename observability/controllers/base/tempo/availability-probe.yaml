@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: tempo-internal
+  namespace: monitoring
+  labels:
+    application: tempo
+    component: availability
+spec:
+  jobName: blackbox-tempo-internal
+  module: internal_http_2xx
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [http://tempo.monitoring.svc.cluster.local:3200/ready]
+      labels:
+        application: tempo
+        service: tempo
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 1
+  sampleLimit: 100

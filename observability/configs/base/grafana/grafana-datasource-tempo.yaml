@@ -1,0 +1,36 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: tempo
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  datasource:
+    name: Tempo
+    uid: tempo
+    type: tempo
+    access: proxy
+    url: http://tempo.monitoring.svc.cluster.local:3200
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: -5m
+        spanEndTimeShift: 5m
+        tags:
+          - key: cluster
+        # A request crosses namespaces and service identities. Match its OTLP
+        # trace ID in structured metadata instead of searching the log message.
+        customQuery: true
+        query: '{${__tags}} | trace_id = "${__span.traceId}"'
+        filterByTraceID: false
+        filterBySpanID: false
+      serviceMap:
+        datasourceUid: victoriametrics
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false

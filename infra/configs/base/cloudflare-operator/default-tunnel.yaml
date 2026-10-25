@@ -9,10 +9,20 @@ spec:
     domain: ccsn.dev
     secret: default-tunnel-secret
     accountId: 579df294982535e588d6ab45d1971da2
+  # The selector change requires recreating only the managed Deployment.
   deployPatch: |
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloudflared
     spec:
       replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: cloudflared
       template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: cloudflared
         spec:
           containers:
             - name: cloudflared

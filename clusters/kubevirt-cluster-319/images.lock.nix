@@ -1578,4 +1578,109 @@
       { kind = "Deployment"; namespace = "prod"; name = "external-s5100-compat"; }
     ];
   }
+  {
+    imageName = "docker.io/grafana/loki-canary";
+    imageDigest = "sha256:0dac7d5cb383adb8d3723676a70ed0c65b582e636846f4ce48703556dd509ad1";
+    finalImageName = "docker.io/grafana/loki-canary";
+    finalImageTag = "3.6.7";
+    archiveHash = "sha256-eKbazx1JjKbFi/To34HgNcT6dktfZPVHf1LE/i9xcKY=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-logs"; }
+      ]
+    ];
+    targets = [
+      { kind = "DaemonSet"; namespace = "monitoring"; name = "loki-canary"; }
+    ];
+  }
+  {
+    imageName = "docker.io/grafana/loki";
+    imageDigest = "sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d";
+    finalImageName = "docker.io/grafana/loki";
+    finalImageTag = "3.6.7";
+    archiveHash = "sha256-KfPp8MOm+uNmPtgaoW4fZ3Lc/fabZxeiQQ6aVqH6dHc=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-logs"; }
+      ]
+    ];
+    targets = [
+      { kind = "StatefulSet"; namespace = "monitoring"; name = "loki"; }
+    ];
+  }
+  {
+    imageName = "docker.io/grafana/tempo";
+    imageDigest = "sha256:65a5789759435f1ef696f1953258b9bbdb18eb571d5ce711ff812d2e128288a4";
+    finalImageName = "docker.io/grafana/tempo";
+    finalImageTag = "2.9.0";
+    archiveHash = "sha256-jmN6KGi6VXtKqq4ra4LQmD1yOS8y52Sy4CGQJPy+v8o=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "tempo"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "tempo"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-traces"; }
+      ]
+    ];
+    targets = [
+      { kind = "StatefulSet"; namespace = "monitoring"; name = "tempo"; }
+    ];
+  }
+  {
+    imageName = "docker.io/kiwigrid/k8s-sidecar";
+    imageDigest = "sha256:a6b3f707f883108376514489a94d6629109a327b2978e1d826cd104c4ca436df";
+    finalImageName = "docker.io/kiwigrid/k8s-sidecar";
+    finalImageTag = "2.5.0";
+    archiveHash = "sha256-57Mc0vkChlkqCvy6j0fFvBOq+DQtsDRtHkeOO3qiwik=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-logs"; }
+      ]
+    ];
+    targets = [
+      { kind = "StatefulSet"; namespace = "monitoring"; name = "loki"; }
+    ];
+  }
+  {
+    imageName = "docker.io/nginxinc/nginx-unprivileged";
+    imageDigest = "sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6";
+    finalImageName = "docker.io/nginxinc/nginx-unprivileged";
+    finalImageTag = "1.29-alpine";
+    archiveHash = "sha256-4MzB5ntFLD917eYaouaNA1lyZMCuR4Zl0XfSUke9jGM=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "loki"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-logs"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "monitoring"; name = "loki-gateway"; }
+    ];
+  }
 ]

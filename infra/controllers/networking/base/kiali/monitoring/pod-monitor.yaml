@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kiali
+  namespace: monitoring
+  labels:
+    application: kiali
+    component: server
+spec:
+  sampleLimit: 10000
+  namespaceSelector:
+    matchNames: [kiali-operator]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kiali
+  podMetricsEndpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

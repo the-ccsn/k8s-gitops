@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cert-manager-alerts
+  namespace: monitoring
+  labels:
+    application: cert-manager
+    component: rules
+spec:
+  groups:
+    - name: cert-manager-health
+      rules:
+        - alert: CertManagerCertificateNotReady
+          expr: certmanager_certificate_ready_status{condition="False"} == 1
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready"
+        - alert: CertManagerCertificateExpiresSoon
+          expr: certmanager_certificate_not_after_timestamp_seconds - time() < 604800
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} expires in less than seven days"

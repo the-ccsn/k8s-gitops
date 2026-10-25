@@ -25,8 +25,7 @@ spec:
   metricsPath: /metrics
   scrapeInterval: 30s
   scrapeTimeout: 10s
-  # K3s shares its component registry; observed up to 120k samples here.
-  sampleLimit: 200000
+  sampleLimit: 20000
   honorLabels: true
   honorTimestamps: false
   kubernetesSDConfigs:
@@ -51,6 +50,11 @@ spec:
       regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
       replacement: kubernetes_node_$1
   metricRelabelings:
+    # K3s shares one registry across components. Keep node metrics here;
+    # the API server scrape owns the remaining component metrics.
+    - action: keep
+      sourceLabels: [__name__]
+      regex: (kubelet|volume_manager|storage_operation|csi)_.*
     - action: labeldrop
       regex: (uid|id|name)
     - action: drop

@@ -55,6 +55,11 @@ spec:
     - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
       port: https
       scheme: https
+      metricRelabelings:
+        # K3s also exposes kubelet metrics here; the node scrape owns them.
+        - action: drop
+          sourceLabels: [__name__]
+          regex: (kubelet|volume_manager|storage_operation|csi)_.*
       tlsConfig:
         caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         serverName: kubernetes

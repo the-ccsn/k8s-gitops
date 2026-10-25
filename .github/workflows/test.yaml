@@ -170,6 +170,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      # Keep the base stable if main advances while this workflow is running.
+      DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before || 'main' }}
     strategy:
       matrix:
         cluster:
@@ -200,7 +203,7 @@ jobs:
         uses: ./.local/flux-local/action/diff
         continue-on-error: true
         with:
-          live-branch: main
+          live-branch: ${{ env.DIFF_BASE }}
           path: clusters/${{ matrix.cluster }}
           resource: ${{ matrix.resource }}
       - name: Write diff artifact payload
@@ -222,6 +225,7 @@ jobs:
           payload = {
             "cluster": os.environ["CLUSTER"],
             "resource": os.environ["RESOURCE"],
+            "base_ref": os.environ["DIFF_BASE"],
             "outcome": os.environ["DIFF_OUTCOME"],
             "diff": diff_path.read_text() if diff_path.exists() else "",
             "run_url": os.environ["RUN_URL"],
@@ -277,6 +281,7 @@ jobs:
 
           files = sorted(glob.glob("artifacts/**/*.json", recursive=True))
           grouped = defaultdict(list)
+          base_refs = set()
           total_resources = 0
           total_changed = 0
           total_no_change = 0
@@ -287,6 +292,7 @@ jobs:
               item = json.load(handle)
             cluster = item.get("cluster", "unknown")
             resource = item.get("resource", "unknown")
+            base_refs.add(item.get("base_ref", "unknown"))
             outcome = item.get("outcome", "failure")
             diff = item.get("diff", "") or ""
             has_diff = bool(diff.strip())
@@ -310,10 +316,11 @@ jobs:
               total_failed += 1
 
           short_sha = "${{ github.sha }}"[:7]
+          base_summary = ", ".join(f"`{ref[:7]}`" for ref in sorted(base_refs))
           diff_byte_budget = 48000 // max(1, total_changed)
           print("## flux-local diff summary")
           print()
-          print(f"Commit: `{short_sha}` | Clusters: {len(grouped)} | Resources: {total_resources}")
+          print(f"Commit: `{short_sha}` | Base: {base_summary} | Clusters: {len(grouped)} | Comparisons: {total_resources}")
           print(f"Changed: {total_changed} | No change: {total_no_change} | Failed: {total_failed}")
           print()
 
@@ -321,7 +328,7 @@ jobs:
             print("No matrix diff artifacts were found.")
             print()
           elif total_changed == 0 and total_failed == 0:
-            print("✅ No updates across all clusters/resources.")
+            print("✅ No rendered changes relative to the baseline.")
             print()
           else:
             for cluster in sorted(grouped):
@@ -335,7 +342,7 @@ jobs:
                 print()
                 continue
 
-              print(f"### Cluster: `{cluster}` ({len(entries)} resources: {changed} changed, {no_change} no-change, {failed} failed)")
+              print(f"### Cluster: `{cluster}` ({len(entries)} comparisons: {changed} changed, {no_change} no-change, {failed} failed)")
               print()
 
               for entry in entries:

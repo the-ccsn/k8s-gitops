@@ -1,0 +1,65 @@
+diff --git a/flux_local/manifest.py b/flux_local/manifest.py
+--- a/flux_local/manifest.py
++++ b/flux_local/manifest.py
+@@ -1135,8 +1135,8 @@
+         return GitRepository.parse_doc(obj)
+     if kind == OCI_REPOSITORY:
+         return OCIRepository.parse_doc(obj)
+-    if kind == CONFIG_MAP_KIND:
++    if kind == CONFIG_MAP_KIND and api_version == "v1":
+         return ConfigMap.parse_doc(obj)
+-    if kind == SECRET_KIND:
++    if kind == SECRET_KIND and api_version == "v1":
+         return Secret.parse_doc(obj, wipe_secrets=wipe_secrets)
+     return RawObject.parse_doc(obj)
+diff --git a/flux_local/git_repo.py b/flux_local/git_repo.py
+--- a/flux_local/git_repo.py
++++ b/flux_local/git_repo.py
+@@ -522,9 +522,9 @@
+         config_maps=[
+             ConfigMap.parse_doc(doc)
+             for doc in cfg_docs
+-            if doc.get("kind") == CONFIG_MAP_KIND
++            if doc.get("kind") == CONFIG_MAP_KIND and doc.get("apiVersion") == "v1"
+         ],
+         secrets=[
+-            Secret.parse_doc(doc) for doc in cfg_docs if doc.get("kind") == SECRET_KIND
++            Secret.parse_doc(doc) for doc in cfg_docs if doc.get("kind") == SECRET_KIND and doc.get("apiVersion") == "v1"
+         ],
+     )
+@@ -713,10 +713,10 @@
+         kustomization.config_maps = [
+             ConfigMap.parse_doc(doc)
+             for doc in docs
+-            if doc.get("kind") == CONFIG_MAP_KIND
++            if doc.get("kind") == CONFIG_MAP_KIND and doc.get("apiVersion") == "v1"
+         ]
+         kustomization.secrets = [
+-            Secret.parse_doc(doc) for doc in docs if doc.get("kind") == SECRET_KIND
++            Secret.parse_doc(doc) for doc in docs if doc.get("kind") == SECRET_KIND and doc.get("apiVersion") == "v1"
+         ]
+         kustomization.helm_chart_sources = [
+             HelmChartSource.parse_doc(doc)
+diff --git a/flux_local/helm.py b/flux_local/helm.py
+--- a/flux_local/helm.py
++++ b/flux_local/helm.py
+@@ -156,6 +156,8 @@
+                 f"HelmRelease {release.name}"
+             )
+         if isinstance(repo, OCIRepository):
++            if repo.ref and repo.ref.digest:
++                return repo.versioned_url()
+             return repo.url
+         raise HelmException(
+             f"HelmRelease {release.name} expected OCIRepository but got HelmRepository {repo.repo_name}"
+@@ -433,7 +435,9 @@
+                         release.chart.version,
+                     ]
+                 )
+-            elif isinstance(repo, OCIRepository) and (oci_version := repo.version()):
++            elif (isinstance(repo, OCIRepository)
++                  and not (repo.ref and repo.ref.digest)
++                  and (oci_version := repo.version())):
+                 args.extend(
+                     [
+                         "--version",

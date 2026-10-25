@@ -1,0 +1,39 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-operator-crds
+  namespace: monitoring
+spec:
+  install:
+    crds: CreateReplace
+    replace: true
+  upgrade:
+    crds: CreateReplace
+  releaseName: prometheus-operator-crds
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-prometheus-operator-crds
+    namespace: monitoring
+  values:
+    crds:
+      alertmanagerconfigs:
+        enabled: true
+      podmonitors:
+        enabled: true
+      probes:
+        enabled: true
+      prometheusrules:
+        enabled: true
+      scrapeconfigs:
+        enabled: true
+      servicemonitors:
+        enabled: true
+      alertmanagers:
+        enabled: true
+      prometheuses:
+        enabled: false
+      prometheusagents:
+        enabled: false
+      thanosrulers:
+        enabled: false

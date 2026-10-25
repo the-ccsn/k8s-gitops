@@ -1,0 +1,38 @@
+# Existing private OMV listeners, verified against SeaweedFS 4.48 on 2026-10-24.
+# The campus/direct gateway and volume servers do not yet expose metrics.
+# These targets do not replace the direct S3 HTTPS probe or OMV node/SMART mTLS.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: seaweedfs
+  namespace: monitoring
+  labels:
+    application: seaweedfs
+    component: storage
+spec:
+  jobName: seaweedfs
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  metricsPath: /metrics
+  scheme: HTTP
+  sampleLimit: 10000
+  staticConfigs:
+    - targets: [192.168.1.22:9327]
+      labels:
+        component: master
+    - targets: [192.168.1.22:9328]
+      labels:
+        component: filer
+    - targets: [192.168.1.22:9329]
+      labels:
+        component: legacy-s3
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: seaweedfs
+    - action: replace
+      targetLabel: node
+      replacement: openmediavault-1
+    - action: replace
+      targetLabel: application
+      replacement: seaweedfs

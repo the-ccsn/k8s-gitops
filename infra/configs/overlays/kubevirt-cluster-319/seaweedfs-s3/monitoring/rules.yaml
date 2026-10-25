@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: seaweedfs-health
+  namespace: monitoring
+  labels:
+    application: seaweedfs
+    component: storage
+spec:
+  groups:
+    - name: seaweedfs-health
+      rules:
+        - alert: SeaweedFsMetricsDown
+          expr: up{job="seaweedfs"} == 0
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: "SeaweedFS {{ $labels.component }} metrics are unavailable"
+            description: Check the OMV container, its existing metrics listener, and private network connectivity.
+        - alert: SeaweedFsWriteAllocationFailures
+          expr: rate(SeaweedFS_master_pick_for_write_error{job="seaweedfs",component="master"}[5m]) > 0
+          for: 5m
+          labels: {severity: warning}
+          annotations:
+            summary: SeaweedFS master cannot allocate writes
+            description: Check writable volumes, placement, free space, and volume server connectivity on OMV.
+        - alert: SeaweedFsUnderReplicatedVolumes
+          expr: SeaweedFS_master_under_replicated_volumes{job="seaweedfs",component="master"} > 0
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "SeaweedFS collection {{ $labels.collection }} has insufficient replicas"
+            description: Check the configured replication layout and volume servers; this does not replace backup or restore verification.

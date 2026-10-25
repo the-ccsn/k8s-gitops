@@ -1,0 +1,31 @@
+# Independent of Loki/Tempo health; existing blackbox rules alert on failure
+# and certificate expiry. Success does not prove bucket permissions or disk I/O.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: seaweedfs-s3-transport
+  namespace: monitoring
+  labels:
+    application: seaweedfs-s3
+    component: availability
+spec:
+  jobName: blackbox-seaweedfs-s3-transport
+  module: internal_s3_https
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [https://s3.319.ccsn.dev/]
+      labels:
+        application: seaweedfs-s3
+        service: seaweedfs-s3
+        storage_platform: omv
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+        ip_family: dualstack
+  targetLimit: 1
+  sampleLimit: 100

@@ -1,0 +1,286 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: seaweedfs
+  namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: storage
+  json: |-
+    {
+      "title": "SeaweedFS Storage",
+      "uid": "seaweedfs",
+      "tags": [
+        "seaweedfs",
+        "s3",
+        "omv"
+      ],
+      "description": "Existing OMV master, filer and legacy S3 metrics. Direct S3 transport is monitored separately; direct gateway and volume-server metrics are not exposed yet.",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "templating": {
+        "list": [
+          {
+            "name": "bucket",
+            "label": "Bucket",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics"
+            },
+            "query": {
+              "query": "label_values(SeaweedFS_s3_bucket_size_bytes{job=\"seaweedfs\",component=\"legacy-s3\"}, bucket)",
+              "refId": "StandardVariableQuery"
+            },
+            "definition": "label_values(SeaweedFS_s3_bucket_size_bytes{job=\"seaweedfs\",component=\"legacy-s3\"}, bucket)",
+            "includeAll": true,
+            "multi": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "refresh": 1
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Metrics Targets",
+          "type": "stat",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "up{job=\"seaweedfs\"}",
+              "legendFormat": "{{component}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Master Leader",
+          "type": "stat",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "SeaweedFS_master_is_leader{job=\"seaweedfs\",component=\"master\"}",
+              "legendFormat": "Master leader",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Bucket Logical Size",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "max by (bucket) (SeaweedFS_s3_bucket_size_bytes{job=\"seaweedfs\",component=\"legacy-s3\",bucket=~\"$bucket\"})",
+              "legendFormat": "{{bucket}}",
+              "refId": "A"
+            }
+          ],
+          "description": "Bucket-wide statistics from the existing legacy gateway; logical size excludes replica duplication."
+        },
+        {
+          "id": 4,
+          "title": "Bucket Objects",
+          "type": "stat",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "max by (bucket) (SeaweedFS_s3_bucket_object_count{job=\"seaweedfs\",component=\"legacy-s3\",bucket=~\"$bucket\"})",
+              "legendFormat": "{{bucket}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Filer Requests",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "sum by (type) (rate(SeaweedFS_filer_request_total{job=\"seaweedfs\",component=\"filer\"}[5m]))",
+              "legendFormat": "{{type}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Filer Latency p95",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, type) (rate(SeaweedFS_filer_request_seconds_bucket{job=\"seaweedfs\",component=\"filer\"}[5m])))",
+              "legendFormat": "{{type}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Master Writable Volumes",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 24
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "sum by (collection) (SeaweedFS_master_volume_layout_writable{job=\"seaweedfs\",component=\"master\"})",
+              "legendFormat": "{{collection}}",
+              "refId": "A"
+            }
+          ],
+          "description": "This counts currently writable volumes; it is not free disk capacity or a backup guarantee."
+        },
+        {
+          "id": 8,
+          "title": "Legacy S3 Requests",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 24
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "sum by (type, code) (rate(SeaweedFS_s3_request_total{job=\"seaweedfs\",component=\"legacy-s3\",bucket=~\"$bucket\"}[5m]))",
+              "legendFormat": "{{type}} {{code}}",
+              "refId": "A"
+            }
+          ],
+          "description": "Only the existing seaweed-s3 gateway on port 8333 exposes these metrics. The direct/campus gateway and volume servers have no metrics listener yet."
+        }
+      ]
+    }

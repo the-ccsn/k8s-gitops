@@ -4,3 +4,4 @@ resources:
   - certificate.yaml
   - certificate-reader.yaml
   - dns-writer.yaml
+  - ./monitoring/

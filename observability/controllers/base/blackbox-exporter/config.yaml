@@ -35,3 +35,16 @@ data:
           query_type: A
           valid_rcodes:
           - NOERROR
+      # Private S3 roots may return 403; this checks transport and TLS only.
+      internal_s3_https:
+        prober: http
+        timeout: 10s
+        http:
+          method: GET
+          valid_status_codes: [200, 403]
+          fail_if_not_ssl: true
+          follow_redirects: false
+          preferred_ip_protocol: ip6
+          ip_protocol_fallback: true
+          tls_config:
+            insecure_skip_verify: false

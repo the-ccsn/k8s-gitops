@@ -1,0 +1,132 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: otel-events
+  namespace: monitoring
+spec:
+  releaseName: otel-events
+  interval: 30m
+  install:
+    strategy:
+      name: RetryOnFailure
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-opentelemetry-collector
+    namespace: monitoring
+  values:
+    fullnameOverride: otel-events
+    image:
+      repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+    command:
+      name: otelcol-k8s
+    mode: deployment
+    replicaCount: 1
+    # The chart targets 80% of the 256Mi pod limit without refusing watch events.
+    useGOMEMLIMIT: true
+    rollout:
+      strategy: Recreate
+    podSecurityContext:
+      runAsUser: 10001
+      runAsGroup: 10001
+      fsGroup: 10001
+      fsGroupChangePolicy: OnRootMismatch
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
+    extraVolumes:
+      - name: state
+        persistentVolumeClaim:
+          claimName: otel-events-state
+    extraVolumeMounts:
+      - name: state
+        mountPath: /var/lib/otelcol
+    ports:
+      otlp:
+        enabled: false
+      otlp-http:
+        enabled: false
+      jaeger-compact:
+        enabled: false
+      jaeger-thrift:
+        enabled: false
+      jaeger-grpc:
+        enabled: false
+      zipkin:
+        enabled: false
+      metrics:
+        enabled: true
+    presets:
+      kubernetesAttributes:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
+    config:
+      extensions:
+        file_storage:
+          directory: /var/lib/otelcol/state
+          create_directory: true
+          fsync: true
+          recreate: false
+          compaction:
+            on_rebound: true
+            directory: /var/lib/otelcol/compaction
+            rebound_needed_threshold_mib: 32
+            rebound_trigger_threshold_mib: 8
+      receivers:
+        otlp: null
+        jaeger: null
+        prometheus: null
+        zipkin: null
+        k8sobjects:
+          storage: file_storage
+          error_mode: propagate
+          include_initial_state: false
+      exporters:
+        otlphttp/loki:
+          endpoint: http://loki.monitoring.svc.cluster.local:3100/otlp
+          headers:
+            X-Scope-OrgID: fake
+          retry_on_failure:
+            enabled: true
+            initial_interval: 1s
+            max_interval: 30s
+            max_elapsed_time: 0s
+          sending_queue:
+            enabled: true
+            storage: file_storage
+            sizer: bytes
+            queue_size: 67108864
+            num_consumers: 1
+            block_on_overflow: true
+        debug: null
+      processors:
+        batch: null
+        # k8sobjects 0.152.0 does not retry downstream errors and still advances
+        # its watch checkpoint. A memory limiter here would permanently skip Events.
+        memory_limiter: null
+        transform/labels:
+          log_statements:
+            - context: resource
+              statements:
+                - set(resource.attributes["cluster"], "kubevirt-cluster-319")
+                - set(resource.attributes["environment"], "production")
+                - set(resource.attributes["site"], "ccsn")
+      service:
+        extensions: [health_check, file_storage]
+        pipelines:
+          logs:
+            receivers: [k8sobjects]
+            processors: [k8sattributes, transform/labels]
+            exporters: [otlphttp/loki]
+          traces: null
+          metrics: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi

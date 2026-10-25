@@ -1683,4 +1683,31 @@
       { kind = "Deployment"; namespace = "monitoring"; name = "loki-gateway"; }
     ];
   }
+  {
+    imageName = "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s";
+    imageDigest = "sha256:ed5c94d5173ec5dcfbf2917bd1e95b1ebab2d23f65ac3b78e1aae5bc4559750c";
+    finalImageName = "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s";
+    finalImageTag = "0.152.0";
+    archiveHash = "sha256-+23foMxnWmA3jmxV5tIbp19nwIrItJrIDU5nI48yuqA=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "otel-collector"; }
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "otel-events"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "otel-collector"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-collectors"; }
+      ]
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "otel-events"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-collectors"; }
+      ]
+    ];
+    targets = [
+      { kind = "DaemonSet"; namespace = "monitoring"; name = "otel-collector-opentelemetry-collector-agent"; }
+      { kind = "Deployment"; namespace = "monitoring"; name = "otel-events"; }
+    ];
+  }
 ]

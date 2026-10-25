@@ -152,6 +152,8 @@ spec:
     # https://grafana.com/docs/loki/latest/operations/loki-canary/
     lokiCanary:
       enabled: true
+      podLabels:
+        istio.io/dataplane-mode: ambient
       # -- If true, the canary will send directly to Loki via the address configured for verification --
       # -- If false, it will write to stdout and an Agent(such as OTel/fluentbit) will be needed to scrape and send the logs --
       push: true
@@ -171,6 +173,8 @@ spec:
     # Loki's Config
     # ==========================================
     loki:
+      podLabels:
+        istio.io/dataplane-mode: ambient
       commonConfig:
         replication_factor: 1
       ingester:

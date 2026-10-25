@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: loki-internal
+  namespace: monitoring
+  labels:
+    application: loki
+    component: availability
+spec:
+  jobName: blackbox-loki-internal
+  module: internal_http_2xx
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/status/buildinfo]
+      labels:
+        application: loki
+        service: loki
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 1
+  sampleLimit: 100

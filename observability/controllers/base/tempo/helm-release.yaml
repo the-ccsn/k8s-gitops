@@ -1,0 +1,88 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tempo
+  namespace: monitoring
+spec:
+  releaseName: tempo
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-tempo
+    namespace: monitoring
+  values:
+    replicas: 1
+    tempo:
+      reportingEnabled: false
+      extraEnv:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: tempo-s3-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tempo-s3-credentials
+              key: AWS_SECRET_ACCESS_KEY
+      retention: 168h
+      storage:
+        trace:
+          backend: s3
+          s3:
+            # Tempo's MinIO client expects host:port here, without the URL scheme.
+            endpoint: s3.319.ccsn.dev
+            bucket: ccsn-observability-tempo
+            region: us-east-1
+            forcepathstyle: true
+            insecure: false
+            # The pinned MinIO client reads AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
+            list_blocks_concurrency: 2
+            hedge_requests_at: 0s
+          wal:
+            path: /var/tempo/wal
+          blocklist_poll_concurrency: 2
+          pool:
+            max_workers: 4
+            queue_depth: 100
+      querier:
+        max_concurrent_queries: 2
+      queryFrontend:
+        trace_by_id:
+          query_shards: 4
+          concurrent_shards: 2
+      memBallastSizeMbs: 128
+      metricsGenerator:
+        enabled: true
+        remoteWriteUrl: http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428/api/v1/write
+        processor:
+          service_graphs: {}
+          span_metrics:
+            enable_target_info: true
+        registry:
+          collection_interval: 30s
+          external_labels:
+            cluster: kubevirt-cluster-319
+            environment: production
+        storage:
+          path: /var/tempo/metrics
+        traces_storage:
+          path: /var/tempo/metrics-wal
+      overrides:
+        defaults:
+          metrics_generator:
+            processors: [service-graphs, span-metrics]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
+    persistence:
+      enabled: true
+      enableStatefulSetAutoDeletePVC: false
+      storageClassName: longhorn
+      size: 20Gi
+    serviceMonitor:
+      enabled: false

@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tempo-health
+  namespace: monitoring
+  labels:
+    application: tempo
+    component: tracing
+spec:
+  groups:
+    - name: tempo-health
+      rules:
+        - alert: TempoDiscardingSpans
+          expr: sum(rate(tempo_discarded_spans_total[5m])) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: Tempo is discarding spans
+            description: Check receiver limits, storage errors, and the discard reason label.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md

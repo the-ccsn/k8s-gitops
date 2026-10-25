@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: otel-collector-health
+  namespace: monitoring
+  labels:
+    application: opentelemetry-collector
+    component: telemetry
+spec:
+  groups:
+    - name: otel-collector-health
+      rules:
+        - alert: OtelCollectorTargetDown
+          expr: up{namespace="monitoring",pod=~"otel-(collector|events).*"} == 0
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: "OpenTelemetry Collector target {{ $labels.pod }} is unavailable"
+            description: Check the owning DaemonSet or Deployment, collector configuration, and node health.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: OtelCollectorExportFailures
+          expr: |
+            sum by (namespace, pod, exporter) (rate(otelcol_exporter_send_failed_log_records[5m])) > 0
+            or
+            sum by (namespace, pod, exporter) (rate(otelcol_exporter_send_failed_spans[5m])) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: OpenTelemetry Collector cannot export telemetry
+            description: Check the Loki and Tempo endpoints, collector queues, and exporter logs.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md

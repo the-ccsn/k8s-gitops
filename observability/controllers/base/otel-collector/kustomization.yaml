@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./helm-oci-repo.yaml
+  - ./helm-release.yaml
+  - ./helm-release-events.yaml
+  - ./pvc-events.yaml
+  - ./service-monitor.yaml
+  - ./pod-monitor.yaml
+  - ./rules.yaml
+  - ./dashboard.yaml

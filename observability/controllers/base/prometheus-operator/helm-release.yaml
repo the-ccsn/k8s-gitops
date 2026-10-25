@@ -52,6 +52,8 @@ spec:
       enabled: false
     prometheusOperator:
       enabled: true
+      podLabels:
+        istio.io/dataplane-mode: ambient
       admissionWebhooks:
         enabled: false
       # The disabled webhook does not provision its TLS Secret.

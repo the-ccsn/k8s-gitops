@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - ./config.yaml
+  - ./service-account.yaml
   - ./deployment.yaml
   - ./service.yaml
   - ./service-monitor.yaml

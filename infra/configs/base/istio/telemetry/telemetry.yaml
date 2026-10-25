@@ -12,6 +12,8 @@ spec:
         - name: otel-tracing
       # Start with 1% of new traces; applications must propagate trace headers.
       randomSamplingPercentage: 1.0
+      # Preserve upstream W3C sampling instead of deriving it from Envoy UUIDs.
+      useRequestIdForTraceSampling: false
       customTags:
         entrypoint:
           literal:

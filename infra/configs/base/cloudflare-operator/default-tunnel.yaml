@@ -13,9 +13,6 @@ spec:
     spec:
       replicas: 1
       template:
-        metadata:
-          labels:
-            app.kubernetes.io/name: cloudflared
         spec:
           containers:
             - name: cloudflared

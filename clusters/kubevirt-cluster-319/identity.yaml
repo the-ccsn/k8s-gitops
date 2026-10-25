@@ -37,6 +37,8 @@ metadata:
   name: logto
   namespace: flux-system
 spec:
+  # Preparation barrier; resume only through a later reviewed rollout batch.
+  suspend: true
   dependsOn:
   - name: infra-configs
   - name: identity-providers

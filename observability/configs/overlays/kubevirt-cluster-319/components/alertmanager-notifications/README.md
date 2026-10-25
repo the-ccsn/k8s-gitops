@@ -5,12 +5,17 @@ Enterprise WeChat group robot. Alertmanager's native Telegram receiver is used
 directly. Alertmanager v0.32+'s native custom webhook payload renders the nested
 JSON required by the Enterprise WeChat group robot; no adapter is deployed.
 
-The package is referenced by the active cluster overlay. Its Telegram target is
-the forum topic identified by `chatID: -1001896823188` and
-`messageThreadID: 1`. Telegram and WeCom are separate receivers with separate
+The package is referenced by the active cluster overlay. Its Telegram bot is
+[@ccsn_up_bot](https://t.me/ccsn_up_bot), targeting the
+[General topic](https://t.me/c/1896823188/1) in `chatID: -1001896823188`.
+General is selected by omitting `messageThreadID`; explicitly sending `1` is
+rejected by Telegram. Telegram and WeCom are separate receivers with separate
 least-privilege Secrets, stored only after SOPS encryption. The root route fans
 every alert out to both child routes; `continue: true` on Telegram allows WeCom
 to be evaluated as well.
+
+Messages include the group count and up to five shortened summaries to stay
+within chat message limits. The complete alert list remains available in Grafana.
 
 ## Credentials and rollout
 

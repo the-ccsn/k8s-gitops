@@ -4,7 +4,9 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 data:
-  local.override: |
+  lan.override: |
+    # Use the existing LAN DNS view for all organization domains and record types.
+    forward ccsn.dev 192.168.1.1
     forward local 192.168.1.1 {
         except cluster.local
     }

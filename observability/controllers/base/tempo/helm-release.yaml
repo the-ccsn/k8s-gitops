@@ -9,6 +9,9 @@ spec:
   install:
     strategy:
       name: RetryOnFailure
+  upgrade:
+    strategy:
+      name: RetryOnFailure
   chartRef:
     kind: OCIRepository
     name: helm-chart-tempo
@@ -36,7 +39,7 @@ spec:
           backend: s3
           s3:
             # Tempo's MinIO client expects host:port here, without the URL scheme.
-            endpoint: s3.319.ccsn.dev
+            endpoint: s3.ccsn.dev
             bucket: ccsn-observability-tempo
             region: us-east-1
             forcepathstyle: true

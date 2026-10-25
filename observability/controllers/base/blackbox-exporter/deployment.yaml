@@ -15,7 +15,9 @@ spec:
         app.kubernetes.io/name: blackbox-exporter
         application: blackbox-exporter
         component: prober
+        istio.io/dataplane-mode: ambient
     spec:
+      serviceAccountName: blackbox-exporter
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

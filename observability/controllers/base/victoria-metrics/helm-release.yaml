@@ -29,6 +29,8 @@ spec:
     # https://github.com/VictoriaMetrics/helm-charts/blob/master/charts/victoria-metrics-operator/values.yaml
     victoria-metrics-operator:
       enabled: true
+      podLabels:
+        istio.io/dataplane-mode: ambient
       serviceMonitor:
         enabled: true
         # -- Creates `VMServiceScrape` if `true` and `ServiceMonitor` otherwise.
@@ -45,6 +47,8 @@ spec:
 
     kube-state-metrics:
       enabled: true
+      podLabels:
+        istio.io/dataplane-mode: ambient
       # Scraping policy is owned by observability/configs as ServiceMonitor.
       vmScrape:
         enabled: false

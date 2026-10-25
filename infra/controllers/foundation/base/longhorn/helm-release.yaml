@@ -33,6 +33,8 @@ spec:
       v1DataEngine: "true"
       upgradeChecker: "false"
       defaultDataPath: "/var/lib/longhorn"
+      # The default SSD path is a dedicated XFS filesystem.
+      storageReservedPercentageForDefaultDisk: "10"
       allowEmptyDiskSelectorVolume: "false"
     persistence:
       createStorageClass: true

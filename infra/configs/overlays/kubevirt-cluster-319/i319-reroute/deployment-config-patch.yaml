@@ -7,4 +7,4 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 2688a418a1ae09849d29fb9e066462d66aef7cf46c1aca0387bfeb8e12c02d2a
+        checksum/config: 43bbaa3dd3dfc167e8706d59f0cd0aeeae4f0dfe0eb3571edc5ff135fa740e98

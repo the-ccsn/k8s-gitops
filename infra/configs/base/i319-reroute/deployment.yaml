@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: nginx
-        # Use mainline for guaranteed QUIC and HTTP/2 support
-        image: nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+        # Official Alpine image includes QUIC, HTTP/2 and the native OTel module.
+        image: nginx:1.29.8-alpine-otel@sha256:a80a89af3e19971a631877570f337623907ad33f2a57be628f15fe44a97eb3de
         ports:
         # Expose HTTP TCP port
         - containerPort: 80
@@ -34,6 +34,9 @@ spec:
             cpu: "2"
             memory: "256Mi"
         volumeMounts:
+        - name: observability
+          mountPath: /etc/nginx/observability
+          readOnly: true
         - name: server-timing
           mountPath: /etc/nginx/server-timing
           readOnly: true
@@ -51,6 +54,9 @@ spec:
           mountPath: /etc/nginx/native-modules
           readOnly: true
       volumes:
+      - name: observability
+        configMap:
+          name: i319-reroute-observability
       - name: server-timing
         configMap:
           name: i319-reroute-server-timing

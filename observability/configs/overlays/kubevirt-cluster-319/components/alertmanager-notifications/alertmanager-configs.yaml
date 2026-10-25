@@ -34,10 +34,17 @@ spec:
             name: alertmanager-telegram
             key: bot-token
           chatID: -1001896823188
-          messageThreadID: 1
+          # General (topic 1) is selected by omitting messageThreadID.
           httpConfig:
             proxyURL: http://proxy-svc.egress-system.svc.cluster.local:7890
           sendResolved: true
+          message: |-
+            {{ .Status | toUpper }}: {{ printf "%.100s" .CommonLabels.alertname }}
+            Namespace: {{ .CommonLabels.namespace }}; alerts: {{ len .Alerts }}
+            {{ range $i, $alert := .Alerts }}{{ if lt $i 5 }}
+            - [{{ $alert.Status }}] {{ printf "%.120s" $alert.Annotations.summary }}
+            {{ end }}{{ end }}
+            {{ if gt (len .Alerts) 5 }}Only the first 5 alerts are shown; see Grafana for the full list.{{ end }}
     - name: wecom
       webhookConfigs:
         - urlSecret:
@@ -50,8 +57,11 @@ spec:
           payload: |-
             {{ $state := "✅ 告警恢复" }}
             {{ if eq .Status "firing" }}{{ $state = "🔥 告警触发" }}{{ end }}
-            {{ $content := printf "%s\n" $state }}
-            {{ range .Alerts }}
-            {{ $content = printf "%s\n> **%s**\n> %s" $content .Labels.alertname .Annotations.summary }}
+            {{ $content := printf "%s\n**%.100s** (%d)\n" $state .CommonLabels.alertname (len .Alerts) }}
+            {{ range $i, $alert := .Alerts }}{{ if lt $i 5 }}
+            {{ $content = printf "%s\n> [%s] %.120s" $content $alert.Status $alert.Annotations.summary }}
+            {{ end }}{{ end }}
+            {{ if gt (len .Alerts) 5 }}
+            {{ $content = printf "%s\n仅展示前 5 条，请在 Grafana 查看完整告警。" $content }}
             {{ end }}
             {"msgtype":"markdown","markdown":{"content":{{ $content | toJson }}}}

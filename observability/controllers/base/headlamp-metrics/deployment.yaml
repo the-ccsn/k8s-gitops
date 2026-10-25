@@ -13,7 +13,9 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: headlamp-metrics
+        istio.io/dataplane-mode: ambient
     spec:
+      serviceAccountName: headlamp-metrics
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

@@ -14,5 +14,6 @@ resources:
   - ../../../controllers/base/blackbox-exporter/monitoring/
   - ../../base/victoria-metrics/
   - ../../base/grafana/
+  - ../../base/waypoint/
   # Cluster-selected notification capability.
   - ./components/alertmanager-notifications/

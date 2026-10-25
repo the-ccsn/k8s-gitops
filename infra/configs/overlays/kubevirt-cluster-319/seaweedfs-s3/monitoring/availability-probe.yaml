@@ -17,7 +17,7 @@ spec:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
   targets:
     staticConfig:
-      static: [https://s3.319.ccsn.dev/]
+      static: [https://s3.ccsn.dev/]
       labels:
         application: seaweedfs-s3
         service: seaweedfs-s3

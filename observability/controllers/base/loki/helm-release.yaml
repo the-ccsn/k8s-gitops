@@ -247,7 +247,7 @@ spec:
         bucketNames:
           chunks: ccsn-observability-loki
         s3:
-          endpoint: https://s3.319.ccsn.dev
+          endpoint: https://s3.ccsn.dev
           region: us-east-1
           s3ForcePathStyle: true
           insecure: false

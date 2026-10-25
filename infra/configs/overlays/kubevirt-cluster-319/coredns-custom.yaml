@@ -4,18 +4,9 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 data:
-  # Reuse the LAN resolver's DHCP-maintained S3 view without pinning an endpoint.
-  # Other record types retain the existing public path, including IPv6 and ACME.
-  s3.server: |
-    s3.ccsn.dev s3.319.ccsn.dev {
-        view s3_lan_ipv4 {
-            expr type() == 'A'
-        }
-        forward . 192.168.1.1
-        cache 30
-        errors
-    }
-  local.override: |
+  lan.override: |
+    # Use the existing LAN DNS view for all organization domains and record types.
+    forward ccsn.dev 192.168.1.1
     forward local 192.168.1.1 {
         except cluster.local
     }

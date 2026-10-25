@@ -71,6 +71,16 @@ spec:
   postRenderers:
     - kustomize:
         patches:
+          # The chart ignores service.clusterIP for LoadBalancer Services.
+          # Keep the live IP stable for CoreDNS's S3-only forwarding.
+          - target:
+              version: v1
+              kind: Service
+              name: k8s-gateway
+            patch: |-
+              - op: add
+                path: /spec/clusterIP
+                value: 172.17.119.91
           - target:
               group: apps
               version: v1

@@ -1,0 +1,47 @@
+# These components have dedicated metrics/health listeners on 8443.
+# The API and export proxy share 8443 with control-plane clients; their
+# authenticated collectors and trusted API callers are handled by authorization.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: virt-controller-metrics
+  namespace: kubevirt
+spec:
+  selector:
+    matchLabels:
+      kubevirt.io: virt-controller
+  mtls:
+    mode: PERMISSIVE
+  portLevelMtls:
+    "8443":
+      mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: virt-handler-metrics
+  namespace: kubevirt
+spec:
+  selector:
+    matchLabels:
+      kubevirt.io: virt-handler
+  mtls:
+    mode: PERMISSIVE
+  portLevelMtls:
+    "8443":
+      mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: virt-operator-metrics
+  namespace: kubevirt
+spec:
+  selector:
+    matchLabels:
+      kubevirt.io: virt-operator
+  mtls:
+    mode: PERMISSIVE
+  portLevelMtls:
+    "8443":
+      mode: STRICT

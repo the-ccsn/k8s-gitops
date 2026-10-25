@@ -17,14 +17,80 @@ spec:
   namespaceSelector:
     matchNames:
       - kubevirt
+  # Components use separate certificates signed by the rotating KubeVirt CA.
   endpoints:
     - port: metrics
       path: /metrics
       scheme: https
       tlsConfig:
         insecureSkipVerify: false
+        serverName: virt-exportproxy.kubevirt.svc
         ca:
           configMap:
             name: kubevirt-ca
-            key: tls.crt
+            key: ca-bundle
+      relabelConfigs:
+        - action: keep
+          sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
+          regex: virt-exportproxy
+      interval: 15s
+    - port: metrics
+      path: /metrics
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: false
+        serverName: virt-api.kubevirt.svc
+        ca:
+          configMap:
+            name: kubevirt-ca
+            key: ca-bundle
+      relabelConfigs:
+        - action: keep
+          sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
+          regex: virt-api
+      interval: 15s
+    - port: metrics
+      path: /metrics
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: false
+        serverName: virt-controller.kubevirt.svc
+        ca:
+          configMap:
+            name: kubevirt-ca
+            key: ca-bundle
+      relabelConfigs:
+        - action: keep
+          sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
+          regex: virt-controller
+      interval: 15s
+    - port: metrics
+      path: /metrics
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: false
+        serverName: virt-handler.kubevirt.svc
+        ca:
+          configMap:
+            name: kubevirt-ca
+            key: ca-bundle
+      relabelConfigs:
+        - action: keep
+          sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
+          regex: virt-handler
+      interval: 15s
+    - port: metrics
+      path: /metrics
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: false
+        serverName: kubevirt-operator-webhook.kubevirt.svc
+        ca:
+          configMap:
+            name: kubevirt-ca
+            key: ca-bundle
+      relabelConfigs:
+        - action: keep
+          sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
+          regex: virt-operator
       interval: 15s

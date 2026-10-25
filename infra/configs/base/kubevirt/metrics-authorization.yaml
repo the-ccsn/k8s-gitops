@@ -1,0 +1,24 @@
+# ztunnel authenticates the collector's ServiceAccount using Istio mTLS.
+# Application HTTPS continues to verify the existing KubeVirt server certificate.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: kubevirt-metrics
+  namespace: kubevirt
+spec:
+  selector:
+    matchLabels:
+      prometheus.kubevirt.io: "true"
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["8443"]
+    # Preserve APIs, webhooks and migration traffic on other ports.
+    - to:
+        - operation:
+            notPorts: ["8443"]

@@ -1,0 +1,53 @@
+# These two listeners share metrics with APIs. K3s API servers are host
+# processes outside the mesh. Permit only the current control-plane node IPs
+# without a workload identity; mesh callers still need the collector identity.
+# Node-local kubelet probes use Istio CNI's separate health-probe exemption.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: virt-api-control-plane
+  namespace: kubevirt
+spec:
+  selector:
+    matchLabels:
+      kubevirt.io: virt-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            notPrincipals: ["*"]
+            ipBlocks:
+              - 192.168.1.161/32
+              - 192.168.1.162/32
+              - 192.168.1.163/32
+              - fd0d:d99c:164c:319::161/128
+              - fd0d:d99c:164c:319::162/128
+              - fd0d:d99c:164c:319::163/128
+      to:
+        - operation:
+            ports: ["8443"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: virt-exportproxy-control-plane
+  namespace: kubevirt
+spec:
+  selector:
+    matchLabels:
+      kubevirt.io: virt-exportproxy
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            notPrincipals: ["*"]
+            ipBlocks:
+              - 192.168.1.161/32
+              - 192.168.1.162/32
+              - 192.168.1.163/32
+              - fd0d:d99c:164c:319::161/128
+              - fd0d:d99c:164c:319::162/128
+              - fd0d:d99c:164c:319::163/128
+      to:
+        - operation:
+            ports: ["8443"]

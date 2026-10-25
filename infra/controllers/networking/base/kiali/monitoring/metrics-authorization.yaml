@@ -1,0 +1,20 @@
+# Cover Kiali's metrics listener and the operator's controller-runtime metrics.
+# The Kiali UI/API on 20001 retains its existing login and authorization.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: kiali-metrics
+  namespace: kiali-operator
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["8080", "9090"]
+    - to:
+        - operation:
+            notPorts: ["8080", "9090"]

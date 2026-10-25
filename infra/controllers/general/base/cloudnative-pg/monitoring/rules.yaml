@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cloudnative-pg-alerts
+  namespace: monitoring
+  labels:
+    application: cloudnative-pg
+    component: rules
+spec:
+  groups:
+    - name: cloudnative-pg-health
+      rules:
+        - alert: CloudNativePgDown
+          expr: cnpg_collector_up == 0
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.pod }} cannot reach PostgreSQL"
+        - alert: CloudNativePgReplicationLag
+          expr: cnpg_pg_replication_lag > 60
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.pod }} replication lag exceeds 60 seconds"

@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-alerts
+  namespace: monitoring
+  labels:
+    application: flux
+    component: rules
+spec:
+  groups:
+    - name: flux-health
+      rules:
+        - alert: FluxReconciliationFailed
+          expr: flux_resource_info{ready="False",suspended="False"} == 1
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Flux {{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready"

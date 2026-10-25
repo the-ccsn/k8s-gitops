@@ -6,6 +6,7 @@ resources:
   - ../../base/crossplane/
   - ../../base/cert-manager/
   - ../../base/kubevirt/
+  - ./kubevirt-control-plane-access.yaml
   - ../../base/gateway/
   - ../../base/istio/telemetry/
   - ../../base/harbor/

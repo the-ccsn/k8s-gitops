@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flux-operator
+  namespace: monitoring
+  labels:
+    application: flux
+    component: operator
+spec:
+  sampleLimit: 10000
+  namespaceSelector:
+    matchNames: [flux-system]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flux-operator
+      app.kubernetes.io/instance: flux-operator
+  podMetricsEndpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

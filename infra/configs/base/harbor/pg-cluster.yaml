@@ -5,6 +5,9 @@ metadata:
   namespace: harbor
 spec:
   instances: 1
+  inheritedMetadata:
+    labels:
+      istio.io/dataplane-mode: ambient
 
   bootstrap:
     initdb:

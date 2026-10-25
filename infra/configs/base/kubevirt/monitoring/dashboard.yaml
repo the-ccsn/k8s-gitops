@@ -1,0 +1,130 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+  name: kubevirt
+  namespace: grafana
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: applications
+  json: |-
+    {
+      "title": "KubeVirt",
+      "uid": "kubevirt",
+      "tags": [
+        "kubevirt",
+        "virtualization"
+      ],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "Running VMs",
+          "type": "stat",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "sum(max by (exported_namespace, name) (kubevirt_vmi_info{phase=\"running\"})) or vector(0)",
+              "legendFormat": "Running",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "vCPU Time",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "sum by (exported_namespace, name) (rate(kubevirt_vmi_vcpu_seconds_total[5m]))",
+              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "VM Memory",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "sum by (exported_namespace, name) (kubevirt_vmi_memory_resident_bytes)",
+              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 4,
+          "title": "Network Traffic",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "targets": [
+            {
+              "expr": "sum by (exported_namespace, name) (rate(kubevirt_vmi_network_receive_bytes_total[5m]) + rate(kubevirt_vmi_network_transmit_bytes_total[5m]))",
+              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps"
+            },
+            "overrides": []
+          }
+        }
+      ]
+    }

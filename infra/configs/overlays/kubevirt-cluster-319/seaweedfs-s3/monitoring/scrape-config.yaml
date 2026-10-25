@@ -25,7 +25,7 @@ spec:
         component: filer
     - targets: [192.168.1.22:9329]
       labels:
-        component: legacy-s3
+        component: s3-gateway
   relabelings:
     - action: replace
       targetLabel: job

@@ -4,6 +4,11 @@ resources:
   # Keep owner-local definitions behind the shared monitoring API gate.
   - ../../../../infra/controllers/foundation/base/longhorn/monitoring/
   - ../../../../infra/configs/base/istio/monitoring/
+  - ../../../../infra/configs/base/flux/monitoring/
+  - ../../../../infra/controllers/general/base/cloudnative-pg/monitoring/
+  - ../../../../infra/controllers/networking/base/kiali/monitoring/
+  - ../../../../infra/configs/base/cert-manager/monitoring/
+  - ../../../../infra/configs/base/kubevirt/monitoring/
   - ../../../controllers/base/victoria-metrics/monitoring/
   - ../../base/victoria-metrics/
   - ../../base/grafana/

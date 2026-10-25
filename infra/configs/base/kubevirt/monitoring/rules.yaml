@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubevirt-alerts
+  namespace: monitoring
+  labels:
+    application: kubevirt
+    component: rules
+spec:
+  groups:
+    - name: kubevirt-health
+      rules:
+        - alert: KubeVirtVmNotRunning
+          expr: max by (exported_namespace, name, phase) (kubevirt_vmi_info{phase=~"failed|unknown"}) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "KubeVirt VMI {{ $labels.exported_namespace }}/{{ $labels.name }} is {{ $labels.phase }}"

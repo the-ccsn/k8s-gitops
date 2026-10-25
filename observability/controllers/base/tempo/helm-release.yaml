@@ -6,6 +6,9 @@ metadata:
 spec:
   releaseName: tempo
   interval: 30m
+  install:
+    strategy:
+      name: RetryOnFailure
   chartRef:
     kind: OCIRepository
     name: helm-chart-tempo

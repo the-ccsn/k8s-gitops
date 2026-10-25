@@ -22,6 +22,8 @@ spec:
       create: true
       keep: true
     manager:
+      image:
+        repository: ghcr.io/dragonflydb/operator
       resources:
         limits:
           cpu: 200m

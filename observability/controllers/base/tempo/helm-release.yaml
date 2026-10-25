@@ -26,6 +26,8 @@ spec:
     tempo:
       reportingEnabled: false
       extraEnv:
+        - name: GOMEMLIMIT
+          value: 1536MiB
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
@@ -56,13 +58,20 @@ spec:
           pool:
             max_workers: 4
             queue_depth: 100
+          block:
+            parquet_row_group_size_bytes: 10000000
+      # Bound WAL completion work within the single-binary pod's memory budget.
+      ingester:
+        concurrent_flushes: 1
+        max_block_bytes: 67108864
+        max_block_duration: 5m
       querier:
         max_concurrent_queries: 2
       queryFrontend:
         trace_by_id:
           query_shards: 4
           concurrent_shards: 2
-      memBallastSizeMbs: 128
+      memBallastSizeMbs: 0
       metricsGenerator:
         enabled: true
         remoteWriteUrl: http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428/api/v1/write
@@ -86,10 +95,10 @@ spec:
       resources:
         requests:
           cpu: 50m
-          memory: 256Mi
+          memory: 512Mi
         limits:
           cpu: 1
-          memory: 1Gi
+          memory: 2Gi
     persistence:
       enabled: true
       enableStatefulSetAutoDeletePVC: false

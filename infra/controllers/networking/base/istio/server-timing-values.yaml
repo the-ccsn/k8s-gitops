@@ -1,6 +1,6 @@
 global:
   proxy:
-    image: docker.io/istio/proxyv2:1.31.1-distroless@sha256:15e6087b4033bc6cfbcddc4b47d93cb0c2ec6f1a4730c349ee1f3308108e4acf
+    image: docker.io/istio/proxyv2:1.31.3-distroless@sha256:ca2a25ce888e73e8c3c2b8a3a7d5e8f4b089adc80fa2baf00fe2efd74e55c57e
 sidecarInjectorWebhook:
   templates:
     sidecar: |

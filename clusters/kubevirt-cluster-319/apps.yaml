@@ -5,8 +5,6 @@ metadata:
   name: apps
   namespace: flux-system
 spec:
-  # Preparation barrier; resume only through a later reviewed rollout batch.
-  suspend: true
   interval: 5m
   dependsOn:
     - name: infra-namespaces

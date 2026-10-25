@@ -73,8 +73,6 @@ metadata:
   name: infra-controllers-networking-core
   namespace: flux-system
 spec:
-  # Preparation barrier; resume only through a later reviewed rollout batch.
-  suspend: true
   dependsOn:
     - name: infra-namespaces
     - name: infra-pre-controllers
@@ -100,8 +98,6 @@ metadata:
   name: infra-controllers-networking
   namespace: flux-system
 spec:
-  # Preparation barrier; resume only through a later reviewed rollout batch.
-  suspend: true
   dependsOn:
     - name: infra-controllers-networking-core
     - name: logto
@@ -131,8 +127,6 @@ metadata:
   name: infra-controllers-monitoring
   namespace: flux-system
 spec:
-  # Preparation barrier; resume only through a later reviewed rollout batch.
-  suspend: true
   dependsOn:
     - name: infra-namespaces
     - name: infra-pre-controllers
@@ -158,8 +152,6 @@ metadata:
   name: infra-controllers-general
   namespace: flux-system
 spec:
-  # Preparation barrier; resume only through a later reviewed rollout batch.
-  suspend: true
   dependsOn:
     - name: infra-namespaces
     - name: infra-pre-controllers
@@ -211,8 +203,6 @@ metadata:
   name: infra-configs
   namespace: flux-system
 spec:
-  # Preparation barrier; resume only through a later reviewed rollout batch.
-  suspend: true
   dependsOn:
     - name: infra-controllers-general
     - name: infra-controllers-networking-core

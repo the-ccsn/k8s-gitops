@@ -7,6 +7,9 @@ metadata:
 spec:
   releaseName: loki
   interval: 30m
+  install:
+    strategy:
+      name: RetryOnFailure
   chartRef:
     kind: OCIRepository
     name: helm-chart-loki

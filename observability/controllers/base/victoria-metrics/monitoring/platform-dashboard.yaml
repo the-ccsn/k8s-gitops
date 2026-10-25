@@ -1,0 +1,57 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+  name: observability-platform
+  namespace: grafana
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: platform
+  json: |-
+    {
+      "title": "Observability Platform",
+      "uid": "observability-platform",
+      "tags": ["platform", "victoriametrics", "grafana"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1, "title": "Monitoring Targets Up", "type": "stat",
+          "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(up{namespace=\"monitoring\"})", "refId": "A"}]
+        },
+        {
+          "id": 2, "title": "Samples Ingested", "type": "timeseries",
+          "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(rate(vm_rows_inserted_total[5m]))", "legendFormat": "rows/s", "refId": "A"}]
+        },
+        {
+          "id": 3, "title": "VMSingle Data Size", "type": "timeseries",
+          "gridPos": {"h": 8, "w": 9, "x": 15, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(vm_data_size_bytes)", "legendFormat": "data", "refId": "A"}]
+        },
+        {
+          "id": 4, "title": "vmagent Scrape Errors", "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(rate(vm_promscrape_scrapes_failed_total[5m])) by (job)", "legendFormat": "{{job}}", "refId": "A"}]
+        },
+        {
+          "id": 5, "title": "Remote Write Pending Data", "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(vmagent_remotewrite_pending_data_bytes)", "legendFormat": "pending", "refId": "A"}]
+        }
+      ]
+    }

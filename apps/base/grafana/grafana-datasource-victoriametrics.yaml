@@ -3,14 +3,16 @@ kind: GrafanaDatasource
 metadata:
   name: victoriametrics
 spec:
+  allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       dashboards: "grafana"
   datasource:
     name: VictoriaMetrics
+    uid: victoriametrics
     type: prometheus
     access: proxy
-    url: http://vmselect-victoriametrics-vmks.monitoring.svc.cluster.local:8481/select/0/prometheus
+    url: http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428
     isDefault: true
     jsonData:
       timeInterval: 20s

@@ -1,0 +1,86 @@
+# Istio samples: https://github.com/istio/istio/blob/1.31.1/samples/addons/extras/prometheus-operator.yaml
+# Prometheus Operator CRDs are the authored interface. VictoriaMetrics Operator
+# converts these resources into its native scrape objects.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-stats-monitor
+  namespace: istio-system
+  labels:
+    monitoring: istio-proxies
+    release: istio
+spec:
+  selector:
+    matchExpressions:
+      # Ignore all pods with the 'istio-prometheus-ignore' key.
+      - { key: istio-prometheus-ignore, operator: DoesNotExist }
+  # Selects all pods in all namespaces...
+  namespaceSelector:
+    any: true
+  # This job label will be attached to the metrics scraped
+  jobLabel: envoy-stats
+  podMetricsEndpoints:
+    # Scrape raw Envoy metrics for sidecars, gateways and waypoints. Application
+    # metrics have their own monitors; prometheus.io annotations do not opt out.
+    - port: http-envoy-prom
+      path: /stats/prometheus
+      interval: 20s
+      relabelings:
+        # Only the proxy container owns this endpoint, even if an app reuses the port name.
+        - action: keep
+          sourceLabels: [__meta_kubernetes_pod_container_name]
+          regex: "istio-proxy"
+        - sourceLabels: [__meta_kubernetes_pod_label_gateway_networking_k8s_io_gateway_name]
+          targetLabel: gateway_name
+        # Drop all pod labels to avoid excessive label cardinality.
+        # This is a best practice for performance.
+        - action: labeldrop
+          regex: "__meta_kubernetes_pod_label_(.+)"
+        # Create a clean 'namespace' label from the pod's namespace.
+        - sourceLabels: [__meta_kubernetes_namespace]
+          action: replace
+          targetLabel: namespace
+        # Create a clean 'pod' label from the pod's name.
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          action: replace
+          targetLabel: pod
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: istio-component-monitor
+  namespace: istio-system
+  labels:
+    monitoring: istio-components
+    release: istio
+spec:
+  jobLabel: istio
+  selector:
+    matchExpressions:
+      - { key: istio, operator: In, values: [pilot] }
+  namespaceSelector:
+    any: true
+  endpoints:
+    - port: http-monitoring
+      interval: 20s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ztunnel-stats-monitor
+  namespace: istio-system
+  labels:
+    monitoring: istio-ambient
+    release: istio
+spec:
+  selector:
+    matchLabels:
+      app: ztunnel
+  namespaceSelector:
+    matchNames:
+      - istio-system
+  podMetricsEndpoints:
+    - port: ztunnel-stats
+      path: /stats/prometheus
+      interval: 20s

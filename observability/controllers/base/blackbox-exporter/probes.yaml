@@ -1,0 +1,82 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: blackbox-exporter-internal
+  namespace: monitoring
+  labels:
+    application: blackbox-exporter
+    component: availability
+spec:
+  jobName: blackbox-exporter-internal
+  module: internal_http_2xx
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [http://blackbox-exporter.monitoring.svc.cluster.local:9115/-/healthy]
+      labels:
+        application: blackbox-exporter
+        service: blackbox-exporter
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 1
+  sampleLimit: 100
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: internal-dns-availability
+  namespace: monitoring
+  labels:
+    application: observability
+    component: dns
+spec:
+  jobName: blackbox-internal-dns
+  module: internal_dns_a
+  interval: 30s
+  scrapeTimeout: 10s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - kube-dns.kube-system.svc.cluster.local:53
+      labels:
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 10
+  sampleLimit: 500
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: campus-dns-availability
+  namespace: monitoring
+  labels:
+    application: observability
+    component: dns
+spec:
+  jobName: blackbox-campus-dns
+  module: campus_dns_a
+  interval: 30s
+  scrapeTimeout: 10s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - 202.4.130.100:53 # ns.buct.edu.cn
+        - 202.4.130.101:53 # ns2.buct.edu.cn
+      labels:
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: campus-direct
+  targetLimit: 2
+  sampleLimit: 500

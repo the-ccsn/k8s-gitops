@@ -25,13 +25,16 @@
 # - yq v4.34
 # - kustomize v5.3
 # - kubeconform v0.6
+# - jq v1.6
 
 set -o errexit
 set -o pipefail
 
 strict_missing_schemas="${STRICT_MISSING_SCHEMAS:-false}"
-schema_report_file="/tmp/kubeconform-schema-report.log"
-rm -f "$schema_report_file"
+schema_work_dir="${TMPDIR:-/tmp}"
+schema_report_file="$schema_work_dir/kubeconform-schema-report.log"
+mkdir -p "$schema_work_dir"
+: > "$schema_report_file"
 
 # mirror kustomize-controller build options
 kustomize_flags=("--load-restrictor=LoadRestrictionsNone")
@@ -42,27 +45,45 @@ kubeconform_flags=("-skip=Secret")
 kubeconform_config=(
   "-strict"
   "-ignore-missing-schemas"
-  "-schema-location" "/tmp/cilium-crd-schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
+  "-schema-location" "$schema_work_dir/cilium-crd-schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
+  "-schema-location" "$schema_work_dir/prometheus-operator-crd-schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
   "-schema-location" "default"
-  "-schema-location" "/tmp/flux-crd-schemas"
+  "-schema-location" "$schema_work_dir/flux-crd-schemas"
   "-schema-location" "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
   "-summary"
   "-verbose"
 )
 
 echo "INFO - Downloading Flux OpenAPI schemas"
-mkdir -p /tmp/flux-crd-schemas/master-standalone-strict
-curl -sL https://github.com/fluxcd/flux2/releases/latest/download/crd-schemas.tar.gz | tar zxf - -C /tmp/flux-crd-schemas/master-standalone-strict
+mkdir -p "$schema_work_dir/flux-crd-schemas/master-standalone-strict"
+curl -sL https://github.com/fluxcd/flux2/releases/latest/download/crd-schemas.tar.gz | tar zxf - -C "$schema_work_dir/flux-crd-schemas/master-standalone-strict"
 
 # The catalog's BGP peer schema predates sourceInterface. Validate against the
 # official CRD from the Cilium version selected by this cluster instead.
 cilium_version="$(yq -r '.spec.ref.tag' infra/pre-controllers/base/cilium/helm-oci-repo.yaml)"
 [[ "$cilium_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-mkdir -p /tmp/cilium-crd-schemas/cilium.io
+mkdir -p "$schema_work_dir/cilium-crd-schemas/cilium.io"
 curl --fail --silent --show-error --location --retry 3 \
   "https://raw.githubusercontent.com/cilium/cilium/v${cilium_version}/pkg/k8s/apis/cilium.io/client/crds/v2/ciliumbgppeerconfigs.yaml" | \
   yq -o=json '.spec.versions[] | select(.name == "v2") | .schema.openAPIV3Schema' \
-    > /tmp/cilium-crd-schemas/cilium.io/ciliumbgppeerconfig_v2.json
+    > "$schema_work_dir/cilium-crd-schemas/cilium.io/ciliumbgppeerconfig_v2.json"
+
+# The catalog's AlertmanagerConfig schema predates webhook payload templates.
+# Derive the upstream CRD version from the cluster's pinned chart metadata.
+prometheus_crds_chart_version="$(yq -r '.spec.ref.tag' infra/controllers/foundation/base/prometheus-operator-crds/helm-oci-repo.yaml)"
+[[ "$prometheus_crds_chart_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+prometheus_operator_version="$(curl --fail --silent --show-error --location --retry 3 \
+  "https://raw.githubusercontent.com/prometheus-community/helm-charts/prometheus-operator-crds-${prometheus_crds_chart_version}/charts/prometheus-operator-crds/Chart.yaml" | \
+  yq -er '.appVersion')"
+[[ "$prometheus_operator_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+mkdir -p "$schema_work_dir/prometheus-operator-crd-schemas/monitoring.coreos.com"
+curl --fail --silent --show-error --location --retry 3 \
+  "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/${prometheus_operator_version}/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml" | \
+  yq -e -o=json '.spec.versions[] | select(.name == "v1alpha1") | .schema.openAPIV3Schema' | \
+  jq 'walk(if type == "object" and .type == "object" and has("properties")
+    and (has("additionalProperties") | not) and .["x-kubernetes-preserve-unknown-fields"] != true
+    then . + {"additionalProperties": false} else . end)' \
+    > "$schema_work_dir/prometheus-operator-crd-schemas/monitoring.coreos.com/alertmanagerconfig_v1alpha1.json"
 
 find . -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file;
   do

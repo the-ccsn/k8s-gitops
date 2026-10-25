@@ -1,0 +1,51 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: application-monitoring
+  namespace: monitoring
+  labels:
+    app: monitoring
+spec:
+  groups:
+    - name: application-monitoring
+      rules:
+        - alert: PodFrequentlyRestarting
+          expr: |
+            sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[1h])) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is frequently restarting"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted {{ $value }} times in the last hour"
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md
+        - alert: PodNotReady
+          expr: |
+            kube_pod_status_ready{condition="true"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been not ready for more than 5 minutes"
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md
+        - alert: HighMemoryUsage
+          expr: |
+            (container_memory_working_set_bytes / container_spec_memory_limit_bytes) > 0.9
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} memory usage > 90%"
+            description: "Container memory usage is {{ $value | humanizePercentage }}"
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md
+        - alert: HighCpuUsage
+          expr: |
+            (rate(container_cpu_usage_seconds_total[5m]) / container_spec_cpu_quota{unit="core"}) > 0.9
+          for: 5m
+          labels:
+            severity: info
+          annotations:
+            summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} CPU usage > 90%"
+            description: "CPU usage is {{ $value | humanizePercentage }}"
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md

@@ -1,0 +1,189 @@
+# Operator v0.70.1 has no kubelet Endpoints Service controller. Discover Nodes
+# directly, then use the authenticated API server proxy on 443. The API server
+# connects to each Node's advertised kubelet port (normally 10250); neither the
+# unauthenticated 10255 port nor unverified kubelet TLS is used here.
+#
+# The runtime's explicit kubelet-apiserver scrape class supplies the projected,
+# automatically rotated ServiceAccount token and mounted cluster CA. The locked
+# ScrapeConfig SafeAuthorization/SafeTLSConfig cannot reference mounted files.
+# See operator v0.70.1 factory/converter/v1alpha1/apis.go and
+# factory/vmscrapes/{scrapeconfig,vmscrapes}.go. nodes/proxy GET is explicitly
+# granted to the vmagent ServiceAccount by the pinned stack chart's extra RBAC.
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet
+  namespace: monitoring
+  labels:
+    application: kubelet
+    component: kubelet
+spec:
+  scrapeClass: kubelet-apiserver
+  jobName: kubelet
+  scheme: https
+  metricsPath: /metrics
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  sampleLimit: 20000
+  honorLabels: true
+  honorTimestamps: false
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: instance
+    - targetLabel: job
+      replacement: kubelet
+    - targetLabel: metrics_path
+      replacement: /metrics
+    - targetLabel: __address__
+      replacement: kubernetes.default.svc:443
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: __metrics_path__
+      regex: (.+)
+      replacement: /api/v1/nodes/${1}/proxy/metrics
+    # Deliberately bounded: KubeVirt publishes hundreds of feature labels.
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
+      replacement: kubernetes_node_$1
+  metricRelabelings:
+    - action: labeldrop
+      regex: (uid|id|name)
+    - action: drop
+      sourceLabels: [__name__]
+      regex: rest_client_request_duration_seconds_(bucket|sum|count)
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-cadvisor
+  namespace: monitoring
+  labels:
+    application: kubelet
+    component: cadvisor
+spec:
+  scrapeClass: kubelet-apiserver
+  jobName: kubelet
+  scheme: https
+  metricsPath: /metrics/cadvisor
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  sampleLimit: 40000
+  honorLabels: true
+  honorTimestamps: false
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: instance
+    - targetLabel: job
+      replacement: kubelet
+    - targetLabel: metrics_path
+      replacement: /metrics/cadvisor
+    - targetLabel: __address__
+      replacement: kubernetes.default.svc:443
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: __metrics_path__
+      regex: (.+)
+      replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
+      replacement: kubernetes_node_$1
+  metricRelabelings:
+    - action: labeldrop
+      regex: (uid|id|name)
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-resources
+  namespace: monitoring
+  labels:
+    application: kubelet
+    component: resources
+spec:
+  scrapeClass: kubelet-apiserver
+  jobName: kubelet
+  scheme: https
+  metricsPath: /metrics/resource
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  sampleLimit: 10000
+  honorLabels: true
+  honorTimestamps: false
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: instance
+    - targetLabel: job
+      replacement: kubelet
+    - targetLabel: metrics_path
+      replacement: /metrics/resource
+    - targetLabel: __address__
+      replacement: kubernetes.default.svc:443
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: __metrics_path__
+      regex: (.+)
+      replacement: /api/v1/nodes/${1}/proxy/metrics/resource
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
+      replacement: kubernetes_node_$1
+  metricRelabelings:
+    # Headlamp and the existing dashboards sum these families without a path
+    # filter. cAdvisor owns them; retaining both endpoints would double count.
+    # Keep the resource endpoint's node/pod counters and scrape error metric.
+    - action: drop
+      sourceLabels: [__name__]
+      regex: container_(cpu_usage_seconds_total|memory_working_set_bytes|start_time_seconds)
+    - action: labeldrop
+      regex: (uid|id|name)
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubelet-probes
+  namespace: monitoring
+  labels:
+    application: kubelet
+    component: probes
+spec:
+  scrapeClass: kubelet-apiserver
+  jobName: kubelet
+  scheme: https
+  metricsPath: /metrics/probes
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  sampleLimit: 10000
+  honorLabels: true
+  honorTimestamps: false
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: instance
+    - targetLabel: job
+      replacement: kubelet
+    - targetLabel: metrics_path
+      replacement: /metrics/probes
+    - targetLabel: __address__
+      replacement: kubernetes.default.svc:443
+    - sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: __metrics_path__
+      regex: (.+)
+      replacement: /api/v1/nodes/${1}/proxy/metrics/probes
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
+      replacement: kubernetes_node_$1
+  metricRelabelings:
+    - action: labeldrop
+      regex: (uid|id|name)

@@ -8,6 +8,13 @@ metadata:
     app.kubernetes.io/version: v1
     dashboards: "grafana"
 spec:
+  persistentVolumeClaim:
+    spec:
+      accessModes: [ReadWriteOnce]
+      storageClassName: longhorn
+      resources:
+        requests:
+          storage: 5Gi
   client:
     useKubeAuth: true
   config:
@@ -45,26 +52,34 @@ spec:
     auth.jwt:
       enabled: "true"
       header_name: Authorization
-      expect_claims: '{"aud": ["grafana.ccsn.dev"]}' # Optional security: Rejects default ServiceAccount tokens
+      # Reuse the existing K3s API audience; restrict access by exact subjects below.
+      expect_claims: '{"iss": "https://kubernetes.default.svc.cluster.local", "aud": ["https://kubernetes.default.svc.cluster.local"]}'
       username_claim: sub
       email_claim: sub
       auto_sign_up: "true"
-      role_attribute_strict: "true" # Disables auto_assign_org_role
-      # Assigns the Admin role to the operator service account, replace 'default' with the namespace of the operator
-      role_attribute_path: "contains(sub, 'system:serviceaccount:kiali-operator:kiali-service-account') && 'Viewer' || 'None'"
+      skip_org_role_sync: "false"
+      role_attribute_strict: "true"
+      allow_assign_grafana_admin: "true"
+      # An empty result rejects every subject outside this allowlist.
+      role_attribute_path: "sub == 'system:serviceaccount:grafana-operator:grafana-operator' && 'GrafanaAdmin' || sub == 'system:serviceaccount:kiali-operator:kiali-service-account' && 'Viewer' || ''"
       jwk_set_url: https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT_HTTPS}/openid/v1/jwks
       jwk_set_bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       tls_client_ca: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-  # Default secret with admin credentials is disabled as the username and password are supplied externally
   disableDefaultAdminSecret: true
   deployment:
     spec:
+      strategy:
+        type: Recreate
       template:
         metadata:
           labels:
             app: grafana
             app.kubernetes.io/version: v1
         spec:
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
           containers:
             - name: grafana
               env:

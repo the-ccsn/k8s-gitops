@@ -41,6 +41,7 @@ jobs:
             gitops_related:
               - '.github/workflows/**'
               - '.github/patches/flux-local-8.2.0.patch'
+              - 'scripts/validate.sh'
               - 'infra/**'
               - 'apps/**'
               - 'vms/**'

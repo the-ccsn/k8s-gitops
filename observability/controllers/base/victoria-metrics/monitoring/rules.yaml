@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: victoria-metrics-health
+  namespace: monitoring
+  labels:
+    application: victoria-metrics
+    component: metrics
+spec:
+  groups:
+    - name: victoria-metrics-health
+      rules:
+        - alert: VMAgentRejectedRemoteWriteData
+          expr: sum(increase(vmagent_remotewrite_packets_dropped_total[5m])) without (url) > 0
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: vmagent is dropping rejected remote-write data
+            description: Check the VictoriaMetrics ingestion endpoint, vmagent logs, and rejected block reason.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: VMAgentScrapeErrors
+          expr: increase(vm_promscrape_scrapes_failed_total[5m]) > 0
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "vmagent is failing to scrape {{ $labels.job }}"
+            description: Inspect vmagent targets and the owning ServiceMonitor, PodMonitor, Probe, or ScrapeConfig.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: VMAgentRemoteWriteErrors
+          expr: rate(vmagent_remotewrite_retries_count_total[5m]) > 0
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: vmagent is retrying remote writes
+            description: Check VMSingle availability, network errors, and the vmagent persistent queue.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: VMAgentConfigurationReloadFailed
+          expr: (vm_promscrape_config_last_reload_successful != 1) or (vmagent_relabel_config_last_reload_successful != 1)
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: vmagent failed to reload scrape or relabel configuration
+            description: Check converted Prometheus resources and vmagent configuration logs.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: VMAlertNotificationErrors
+          expr: increase(vmalert_alerts_send_errors_total[5m]) > 0
+          for: 15m
+          labels: {severity: critical}
+          annotations:
+            summary: vmalert cannot deliver alerts to Alertmanager
+            description: Check the notifier URL, Alertmanager service, and vmalert logs.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/notification-delivery.md

@@ -1,0 +1,107 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: infrastructure
+spec:
+  allowCrossNamespaceImport: true
+  uid: infrastructure
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Infrastructure
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: kubernetes
+spec:
+  allowCrossNamespaceImport: true
+  uid: kubernetes
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Kubernetes
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: networking
+spec:
+  allowCrossNamespaceImport: true
+  uid: networking
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Networking
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: storage
+spec:
+  allowCrossNamespaceImport: true
+  uid: storage
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Storage
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: database
+spec:
+  allowCrossNamespaceImport: true
+  uid: database
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Database
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: applications
+spec:
+  allowCrossNamespaceImport: true
+  uid: applications
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Applications
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: platform
+spec:
+  allowCrossNamespaceImport: true
+  uid: platform
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Platform
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: logging
+spec:
+  allowCrossNamespaceImport: true
+  uid: logging
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Logging
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaFolder
+metadata:
+  name: tracing
+spec:
+  allowCrossNamespaceImport: true
+  uid: tracing
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  title: Tracing

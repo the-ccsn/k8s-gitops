@@ -18,6 +18,9 @@ spec:
     namespace: monitoring
   values:
     replicas: 1
+    service:
+      labels:
+        istio.io/use-waypoint: observability-waypoint
     podLabels:
       istio.io/dataplane-mode: ambient
     tempo:

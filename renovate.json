@@ -48,6 +48,12 @@
       "matchDatasources": ["docker"],
       "pinDigests": false,
       "ignoreUnstable": true
+    },
+    {
+      "description": "Update the generated proxy image together with the build-ID-guarded native Server-Timing module",
+      "matchFileNames": ["infra/controllers/networking/base/istio/server-timing-values.yaml"],
+      "matchDatasources": ["docker"],
+      "enabled": false
     }
   ]
 }

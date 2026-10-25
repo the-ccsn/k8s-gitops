@@ -11,6 +11,9 @@ resources:
 namespace: i319-reroute
 
 configMapGenerator:
+  - name: i319-reroute-observability
+    files:
+      - observability-http.conf
   - name: i319-reroute-server-timing
     files:
       - server-timing-headers.conf

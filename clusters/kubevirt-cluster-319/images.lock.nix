@@ -962,10 +962,10 @@
   }
   {
     imageName = "nginx";
-    imageDigest = "sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de";
+    imageDigest = "sha256:a80a89af3e19971a631877570f337623907ad33f2a57be628f15fe44a97eb3de";
     finalImageName = "docker.io/library/nginx";
-    finalImageTag = "mainline-alpine";
-    archiveHash = "sha256-IuU35fXh3ReyujqgasRzaL2WnSifc0kOQWBXNGSMv60=";
+    finalImageTag = "1.29.8-alpine-otel";
+    archiveHash = "sha256-8u3HV4tvk7mbEX67aDWpVQ4v7Z+XqYi1+/xi0nec7no=";
     os = "linux";
     arch = "amd64";
     sources = [

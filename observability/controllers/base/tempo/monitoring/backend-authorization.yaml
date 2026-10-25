@@ -1,0 +1,102 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: tempo-api
+  namespace: monitoring
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: tempo
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/prod/sa/grafana-sa
+              - cluster.local/ns/kiali-operator/sa/kiali-service-account
+      to:
+        - operation:
+            ports: ["3200"]
+            methods: [GET]
+            paths:
+              - /api/traces/*
+              - /api/v2/traces/*
+              - /api/search
+              - /api/search/tags
+              - /api/search/tag/*
+              - /api/v2/search/tags
+              - /api/v2/search/tag/*
+              - /api/metrics
+              - /api/metrics/summary
+              - /api/metrics/query
+              - /api/metrics/query_range
+              - /api/echo
+              - /api/status/buildinfo
+              - /ready
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/otel-collector-opentelemetry-collector
+      to:
+        - operation:
+            ports: ["4317"]
+            methods: [POST]
+            paths: [/opentelemetry.proto.collector.trace.v1.TraceService/Export]
+        - operation:
+            ports: ["4318"]
+            methods: [POST]
+            paths: [/v1/traces]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/blackbox-exporter
+      to:
+        - operation:
+            ports: ["3200"]
+            methods: [GET]
+            paths: [/ready]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["3200"]
+            methods: [GET]
+            paths: [/metrics]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: tempo-transport
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/instance: tempo
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/observability-waypoint
+      to:
+        - operation:
+            ports: ["3200", "4317", "4318"]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/tempo
+      to:
+        - operation:
+            ports: ["3200", "9095", "7946"]
+    - from:
+        - source:
+            principals:
+              # Pod-address scraping requires trust with the entire HTTP port.
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["3200"]

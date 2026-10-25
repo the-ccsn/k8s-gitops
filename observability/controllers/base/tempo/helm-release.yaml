@@ -25,6 +25,14 @@ spec:
       istio.io/dataplane-mode: ambient
     tempo:
       reportingEnabled: false
+      # Ztunnel protects TCP; keep the unused legacy UDP receivers on loopback.
+      receivers:
+        jaeger:
+          protocols:
+            thrift_binary:
+              endpoint: 127.0.0.1:6832
+            thrift_compact:
+              endpoint: 127.0.0.1:6831
       extraEnv:
         - name: GOMEMLIMIT
           value: 1536MiB

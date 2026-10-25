@@ -18,3 +18,13 @@ reconciliation. Switching VMAgent from Deployment to StatefulSet requires a
 controller/Service migration; the old ephemeral queue is not transferred.
 
 Use the existing manifest and flux-local CI checks before merging changes.
+
+The VMSingle Service uses the shared observability waypoint. Its API policy
+allows Grafana, Kiali and Headlamp to query; VMAlert can also query and remote
+write; VMAgent and Tempo can remote write. Blackbox can only check health.
+Other API paths, including GET-based deletion, are denied through the Service.
+
+The workload policy prevents those clients from bypassing the waypoint through
+Pod addresses. VMAgent retains direct Pod access for metrics scraping and must
+remain trusted with the whole backend port. These controls do not isolate
+metrics by namespace or change Grafana/Kiali login roles.

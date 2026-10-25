@@ -1,0 +1,81 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: vmsingle-api
+  namespace: monitoring
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: vmsingle-victoriametrics-vmks
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/prod/sa/grafana-sa
+              - cluster.local/ns/kiali-operator/sa/kiali-service-account
+              - cluster.local/ns/monitoring/sa/headlamp-metrics
+              - cluster.local/ns/monitoring/sa/vmalert-victoriametrics-vmks
+      to:
+        - operation:
+            methods: [GET, POST]
+            paths:
+              - /api/v1/query
+              - /api/v1/query_range
+              - /api/v1/query_exemplars
+              - /api/v1/labels
+              - /api/v1/label/*
+              - /api/v1/series
+              - /api/v1/metadata
+              - /api/v1/status/buildinfo
+              - /api/v1/rules
+              - /api/v1/alerts
+              - /health
+              - /-/healthy
+              - /-/ready
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+              - cluster.local/ns/monitoring/sa/vmalert-victoriametrics-vmks
+              - cluster.local/ns/monitoring/sa/tempo
+      to:
+        - operation:
+            # VMAgent's native protocol handshake also uses this endpoint.
+            methods: [GET, POST]
+            paths: [/api/v1/write]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/blackbox-exporter
+      to:
+        - operation:
+            methods: [GET]
+            paths: [/health, /-/healthy, /-/ready]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: vmsingle-transport
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vmsingle
+      app.kubernetes.io/instance: victoriametrics-vmks
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/observability-waypoint
+              # Pod-address scraping bypasses the Service waypoint. This
+              # collector remains trusted with the entire backend port.
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["8428"]
+    - to:
+        - operation:
+            notPorts: ["8428"]

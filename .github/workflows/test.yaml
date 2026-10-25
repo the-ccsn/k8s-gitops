@@ -40,10 +40,12 @@ jobs:
               - 'scripts/test-mk-multiarch-archive.sh'
             gitops_related:
               - '.github/workflows/**'
+              - '.github/patches/flux-local-8.2.0.patch'
               - 'infra/**'
               - 'apps/**'
               - 'vms/**'
               - 'clusters/**'
+              - 'observability/**'
             terraform_related:
               - '.github/workflows/**'
               - '**/*.tf'
@@ -143,8 +145,7 @@ jobs:
         uses: fluxcd/flux2/action@b9c17924adb533d3617ec7de97a7b0f4acc07b39 # v2.9.6
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@f3ad4b56adec90eb5661af565cdebec997ad4bfb # main
-      # flux-local 8.2.0 identifies Secret/ConfigMap by kind alone. Keep custom
-      # API groups as RawObjects while preserving core Secret handling.
+      # Preserve custom Secret/ConfigMap API groups and OCI chart digests.
       - name: Checkout pinned flux-local source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -152,32 +153,9 @@ jobs:
           ref: 4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
           path: .local/flux-local
           persist-credentials: false
-      - name: Fix flux-local core resource identification
+      - name: Patch flux-local resource groups and OCI digests
         shell: bash
-        run: |
-          python3 - <<'PYTHON'
-          from pathlib import Path
-
-          path = Path(".local/flux-local/flux_local/manifest.py")
-          source = path.read_text()
-          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
-              before = f"if kind == {kind}:"
-              after = f'if kind == {kind} and api_version == "v1":'
-              if source.count(before) != 1:
-                  raise SystemExit(f"Unexpected flux-local parser for {kind}")
-              source = source.replace(before, after)
-          path.write_text(source)
-
-          path = Path(".local/flux-local/flux_local/git_repo.py")
-          source = path.read_text()
-          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
-              before = f'doc.get("kind") == {kind}'
-              after = before + ' and doc.get("apiVersion") == "v1"'
-              if source.count(before) != 2:
-                  raise SystemExit(f"Unexpected flux-local traversal for {kind}")
-              source = source.replace(before, after)
-          path.write_text(source)
-          PYTHON
+        run: git apply --directory=.local/flux-local .github/patches/flux-local-8.2.0.patch
       - name: flux-local test
         uses: ./.local/flux-local/action/test
         with:
@@ -205,8 +183,7 @@ jobs:
         uses: fluxcd/flux2/action@b9c17924adb533d3617ec7de97a7b0f4acc07b39 # v2.9.6
       - name: Setup kustomize
         uses: fluxcd/pkg/actions/kustomize@f3ad4b56adec90eb5661af565cdebec997ad4bfb # main
-      # flux-local 8.2.0 identifies Secret/ConfigMap by kind alone. Keep custom
-      # API groups as RawObjects while preserving core Secret handling.
+      # Preserve custom Secret/ConfigMap API groups and OCI chart digests.
       - name: Checkout pinned flux-local source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -214,32 +191,9 @@ jobs:
           ref: 4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
           path: .local/flux-local
           persist-credentials: false
-      - name: Fix flux-local core resource identification
+      - name: Patch flux-local resource groups and OCI digests
         shell: bash
-        run: |
-          python3 - <<'PYTHON'
-          from pathlib import Path
-
-          path = Path(".local/flux-local/flux_local/manifest.py")
-          source = path.read_text()
-          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
-              before = f"if kind == {kind}:"
-              after = f'if kind == {kind} and api_version == "v1":'
-              if source.count(before) != 1:
-                  raise SystemExit(f"Unexpected flux-local parser for {kind}")
-              source = source.replace(before, after)
-          path.write_text(source)
-
-          path = Path(".local/flux-local/flux_local/git_repo.py")
-          source = path.read_text()
-          for kind in ("SECRET_KIND", "CONFIG_MAP_KIND"):
-              before = f'doc.get("kind") == {kind}'
-              after = before + ' and doc.get("apiVersion") == "v1"'
-              if source.count(before) != 2:
-                  raise SystemExit(f"Unexpected flux-local traversal for {kind}")
-              source = source.replace(before, after)
-          path.write_text(source)
-          PYTHON
+        run: git apply --directory=.local/flux-local .github/patches/flux-local-8.2.0.patch
       - name: flux-local diff
         id: diff
         uses: ./.local/flux-local/action/diff

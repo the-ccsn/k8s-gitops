@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-operator
+  namespace: monitoring
+spec:
+  dependsOn:
+    - name: prometheus-operator-crds
+      namespace: monitoring
+      # The previous CRD release was Ready with the Alertmanager API disabled.
+      readyExpr: >-
+        dep.spec.values.crds.alertmanagers.enabled &&
+        dep.status.conditions.exists(c, c.type == 'Ready' && c.status == 'True') &&
+        dep.metadata.generation == dep.status.observedGeneration
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-kube-prometheus-stack
+    namespace: monitoring
+  values:
+    crds:
+      enabled: false
+    defaultRules:
+      create: false
+    alertmanager:
+      enabled: false
+    grafana:
+      enabled: false
+    kubeStateMetrics:
+      enabled: false
+    nodeExporter:
+      enabled: false
+    windowsMonitoring:
+      enabled: false
+    prometheus:
+      enabled: false
+    kubeApiServer:
+      enabled: false
+    kubelet:
+      enabled: false
+    kubeControllerManager:
+      enabled: false
+    coreDns:
+      enabled: false
+    kubeDns:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    prometheusOperator:
+      enabled: true
+      admissionWebhooks:
+        enabled: false
+      # The disabled webhook does not provision its TLS Secret.
+      tls:
+        enabled: false
+      # Kubelet discovery remains owned by the metrics stack.
+      kubeletService:
+        enabled: false
+      kubeletEndpointsEnabled: false
+      kubeletEndpointSliceEnabled: false
+      serviceMonitor:
+        selfMonitor: true
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          cpu: 300m
+          memory: 256Mi

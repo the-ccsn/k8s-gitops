@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - ./helm-oci-repo.yaml
   - ./helm-release.yaml
-  - ./prometheus-operator-crds/

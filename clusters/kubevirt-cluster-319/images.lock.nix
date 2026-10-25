@@ -1512,4 +1512,25 @@
       { kind = "Deployment"; namespace = "monitoring"; name = "victoria-metrics-k8s-stack-victoria-metrics-operator"; }
     ];
   }
+  {
+    imageName = "quay.io/prometheus-operator/prometheus-operator";
+    imageDigest = "sha256:7d9247d2351480fc74587e24681578f815f387bafb2ee7b86a852a94c4cd3774";
+    finalImageName = "quay.io/prometheus-operator/prometheus-operator";
+    finalImageTag = "v0.92.1";
+    archiveHash = "sha256-jc3gK+yaiiW7MQlrPIGTM/edWxe8C1i/GEDuBcOiqgc=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "monitoring"; name = "prometheus-operator"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "monitoring"; name = "prometheus-operator"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-controllers-monitoring"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "monitoring"; name = "prometheus-operator-kube-p-operator"; }
+    ];
+  }
 ]

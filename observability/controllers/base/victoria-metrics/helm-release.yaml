@@ -1,0 +1,264 @@
+# https://fluxcd.io/flux/components/helm/helmreleases/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: victoria-metrics-k8s-stack
+  namespace: monitoring
+spec:
+  dependsOn:
+    - name: prometheus-operator-crds
+      namespace: monitoring
+  install:
+    crds: CreateReplace
+    replace: true
+  releaseName: victoriametrics
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: helm-chart-victoria-metrics-k8s-stack
+    namespace: monitoring
+  # https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack
+  values:
+    nameOverride: vmks # avoid hitting resource name limits of 63 characters
+
+    # -- Tenant to use for Grafana datasources and remote write, used in Cluster Version
+    tenant: "0"
+
+    # -- VictoriaMetrics Operator dependency chart configuration. More values can be found [here](https://docs.victoriametrics.com/helm/victoriametrics-operator#parameters). Also checkout [here](https://docs.victoriametrics.com/operator/configuration/#environment-variables) possible ENV variables to configure operator behaviour
+    # https://github.com/VictoriaMetrics/helm-charts/blob/master/charts/victoria-metrics-operator/values.yaml
+    victoria-metrics-operator:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        # -- Creates `VMServiceScrape` if `true` and `ServiceMonitor` otherwise.
+        vm: false
+      operator:
+        # -- By default, operator converts prometheus-operator objects.
+        disable_prometheus_converter: false
+        # -- Compare-options and sync-options for prometheus objects converted by operator for properly use with ArgoCD
+        prometheus_converter_add_argocd_ignore_annotations: true
+        # Enables ownership reference for converted prometheus-operator objects, it will remove corresponding victoria-metrics objects in case of deletion prometheus one.
+        enable_converter_ownership: true
+      extraArgs:
+        controller.disableReconcileFor: AlertmanagerConfig
+
+    kube-state-metrics:
+      enabled: true
+      # Scraping policy is owned by observability/configs as ServiceMonitor.
+      vmScrape:
+        enabled: false
+
+    # Kubelet/cAdvisor/resource/probe scrape policy also belongs to neutral
+    # Prometheus Operator resources, rather than chart-generated VMNodeScrapes.
+    kubelet:
+      enabled: false
+
+    # Keep the component Services, but declare their scrape policy as neutral
+    # Prometheus Operator CRDs in observability/configs.
+    kubeApiServer:
+      vmScrape:
+        enabled: false
+    kubeControllerManager:
+      vmScrape:
+        enabled: false
+    coreDns:
+      vmScrape:
+        enabled: false
+    kubeEtcd:
+      vmScrape:
+        enabled: false
+    kubeScheduler:
+      vmScrape:
+        enabled: false
+    vmagent:
+      # vmagent collects metrics from targets and sends them to a remote storage
+      enabled: true
+      # Additional to the operator's discovery RBAC. Node proxy requests are
+      # resource requests; nonResourceURLs: /metrics does not authorize them.
+      # The chart binds this role to the operator-managed vmagent ServiceAccount.
+      # Kubernetes RBAC cannot restrict nodes/proxy to metrics paths: this
+      # ServiceAccount must be trusted with access to the kubelet proxy API.
+      rbac:
+        namespaced: false
+        rules:
+          - apiGroups: [""]
+            resources: [nodes/proxy]
+            verbs: [get]
+      # spec for VMAgent crd
+      # https://docs.victoriametrics.com/operator/api.html#vmagentspec
+      spec:
+        # https://docs.victoriametrics.com/operator/api.html#vmagentremotewritespec
+        # remoteWrite:
+        # - url: https://prometheus.ccsn.dev/api/v1/write
+        #   tlsConfig:
+        #     caFile: /data/ca-certs/ca.crt
+        selectAllByDefault: true
+        replicaCount: 1
+        # ScrapeConfig 30.0.1 only permits Secret-based SafeAuthorization and
+        # SafeTLSConfig. Keep mounted-file authentication in the runtime class,
+        # rather than minting a long-lived ServiceAccount credential Secret.
+        # Operator v0.70.1 preserves scrapeClass during ScrapeConfig conversion
+        # and merges its EndpointAuth before generating scrape configuration.
+        scrapeClasses:
+          - name: kubelet-apiserver
+            default: false
+            authorization:
+              type: Bearer
+              credentialsFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+            tlsConfig:
+              caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              serverName: kubernetes.default.svc
+              insecureSkipVerify: false
+        # Operator chart 0.63.1 supports StatefulStorage via a StatefulSet.
+        # Switching an existing Deployment requires a planned controller/service
+        # migration; its ephemeral queue cannot be transferred by this setting.
+        statefulMode: true
+        statefulStorage:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              storageClassName: longhorn
+              resources:
+                requests:
+                  storage: 2Gi
+        scrapeInterval: 20s
+        externalLabels:
+          platform: kubernetes
+        extraArgs:
+          # Bound the single remote-write queue to 1 GiB on its 2 GiB PVC,
+          # leaving filesystem headroom. The operator mounts the queue path.
+          remoteWrite.maxDiskUsagePerURL: "1073741824"
+          # vmagent automatically switches to VictoriaMetrics remote write protocol when it sends data to VictoriaMetrics components
+          remoteWrite.forceVMProto: "true"
+          remoteWrite.vmProtoCompressLevel: "5" # -22 ~ 22, default to 0
+
+          promscrape.streamParse: "true"
+          # Do not store original labels in vmagent's memory by default. This reduces the amount of memory used by vmagent
+          # but makes vmagent debugging UI less informative. See: https://docs.victoriametrics.com/vmagent/#relabel-debug
+          promscrape.dropOriginalLabels: "false"
+        # https://docs.victoriametrics.com/victoriametrics/relabeling/
+        # NOTE: If a label from the scrape configuration (target_label) conflicts with a label from the scraped metric (scrape-time label),
+        # the original scrape-time label is renamed by adding an `exported_` prefix.
+        globalScrapeMetricRelabelConfigs:
+          # Drop all unused/duplicate labels to avoid excessive label cardinality.
+          # This is a best practice for performance.
+          - action: labeldrop
+            regex: "beta_kubernetes_io_(.+)"
+          - action: labeldrop
+            regex: "failure_domain_(.+)"
+          - action: labeldrop
+            regex: "prometheus"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "100m"
+            memory: "500Mi"
+      ingress:
+        enabled: false
+        ingressClassName: istio
+
+    vmsingle:
+      # Single-node VictoriaMetrics for storing metrics.
+      # https://docs.victoriametrics.com/faq/#which-victoriametrics-type-is-recommended-for-use-in-production---single-node-or-cluster
+      # vmsingle = vmcluster(vmselect + vmstorage + vminsert)
+      enabled: true
+      spec:
+        retentionPeriod: "7d"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: longhorn
+          resources:
+            requests:
+              storage: 20Gi
+
+    vmalert:
+      # vmalert evaluates rules and notifies the separate Alertmanager.
+      enabled: true
+      additionalNotifierConfigs:
+        static_configs:
+          - targets:
+              - http://alertmanager-operated.monitoring.svc.cluster.local:9093
+      spec:
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+    alertmanager:
+      # Alertmanager is managed directly by Prometheus Operator so that neutral
+      # AlertmanagerConfig fields are not lost in VM CRD conversion.
+      enabled: false
+    defaultRules:
+      # Rules are owned by observability/configs as PrometheusRule resources.
+      create: false
+
+    # ================================================================
+    # Disabled components
+    # ================================================================
+
+    prometheus-node-exporter:
+      # instead of deploy node-exporter as pods, we do this via nixos module.
+      # At: nix-config/modules/nixos/base/monitoring.nix
+      enabled: false
+
+    # disable this, we use grafana deployed by grafana-operator instead.
+    grafana:
+      enabled: false
+    # disable this, we use a vmsingle instead.
+    vmcluster:
+      enabled: false
+      # -- Full spec for VMCluster CRD. Allowed values described [here](https://docs.victoriametrics.com/operator/api#vmclusterspec)
+      spec:
+        # -- Data retention period. Possible units character: h(ours), d(ays), w(eeks), y(ears), if no unit character specified - month.
+        # The minimum retention period is 24h. See these [docs](https://docs.victoriametrics.com/single-server-victoriametrics/#retention)
+        # enterprise edition: set different retentionPeriod based on label filter
+        retentionPeriod: "30d"
+        # Store N copies for every ingested sample on N distinct vmstorage nodes.
+        # This guarantees that all the stored data remains available for querying if up to N-1 vmstorage nodes are unavailable.
+        # https://docs.victoriametrics.com/victoriametrics/cluster-victoriametrics/#replication-and-data-safety
+        replicationFactor: 1
+        vmstorage:
+          replicaCount: 3
+          extraArgs:
+            # https://docs.victoriametrics.com/victoriametrics/cluster-victoriametrics/#resource-usage-limits
+            search.maxUniqueTimeseries: "1000000"
+            # Allowed percent of system memory VictoriaMetrics caches may occupy
+            memory.allowedPercent: 60
+          storage:
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 30Gi
+          resources: {}
+        vmselect:
+          # -- Set this value to false to disable VMSelect
+          enabled: true
+          replicaCount: 3
+          extraArgs:
+            search.maxQueryDuration: 60s
+            search.maxConcurrentRequests: 4 # default = 2 * vcpu cores
+            # Allowed percent of system memory VictoriaMetrics caches may occupy
+            memory.allowedPercent: 60
+          resources: {}
+        vminsert:
+          # -- Set this value to false to disable VMInsert
+          enabled: true
+          replicaCount: 3
+          extraArgs:
+            maxInsertRequestSize: 32MB # default to 32MB
+          resources: {}

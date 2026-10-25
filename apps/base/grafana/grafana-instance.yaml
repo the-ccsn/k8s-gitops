@@ -8,6 +8,13 @@ metadata:
     app.kubernetes.io/version: v1
     dashboards: "grafana"
 spec:
+  persistentVolumeClaim:
+    spec:
+      accessModes: [ReadWriteOnce]
+      storageClassName: longhorn
+      resources:
+        requests:
+          storage: 5Gi
   client:
     useKubeAuth: true
   config:
@@ -45,13 +52,16 @@ spec:
     auth.jwt:
       enabled: "true"
       header_name: Authorization
-      expect_claims: '{"aud": ["grafana.ccsn.dev"]}' # Optional security: Rejects default ServiceAccount tokens
+      # Kiali uses its existing rotating API token; access is restricted by exact subjects below.
+      # K3s default audience: verify runtime issuer/audiences before applying to a changed cluster.
+      expect_claims: '{"aud": ["https://kubernetes.default.svc.cluster.local"]}'
       username_claim: sub
       email_claim: sub
       auto_sign_up: "true"
       role_attribute_strict: "true" # Disables auto_assign_org_role
-      # Assigns the Admin role to the operator service account, replace 'default' with the namespace of the operator
-      role_attribute_path: "contains(sub, 'system:serviceaccount:kiali-operator:kiali-service-account') && 'Viewer' || 'None'"
+      allow_assign_grafana_admin: "true"
+      # Strict role mapping rejects subjects outside this ServiceAccount allowlist.
+      role_attribute_path: "sub == 'system:serviceaccount:grafana-operator:grafana-operator' && 'GrafanaAdmin' || sub == 'system:serviceaccount:kiali-operator:kiali-service-account' && 'Viewer' || ''"
       jwk_set_url: https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT_HTTPS}/openid/v1/jwks
       jwk_set_bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       tls_client_ca: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -59,12 +69,18 @@ spec:
   disableDefaultAdminSecret: true
   deployment:
     spec:
+      strategy:
+        type: Recreate
       template:
         metadata:
           labels:
             app: grafana
             app.kubernetes.io/version: v1
         spec:
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
           containers:
             - name: grafana
               env:

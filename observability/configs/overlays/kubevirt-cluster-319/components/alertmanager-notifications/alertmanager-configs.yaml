@@ -1,0 +1,57 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: central-notifications
+  namespace: monitoring
+  labels:
+    application: alertmanager
+    component: notifications
+    observability.ccsn.dev/alertmanager: platform
+spec:
+  route:
+    receiver: discard
+    groupBy: [alertname, cluster, namespace, severity]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    routes:
+      - receiver: telegram
+        matchers:
+          - name: alertname
+            matchType: =~
+            value: .+
+        continue: true
+      - receiver: wecom
+        matchers:
+          - name: alertname
+            matchType: =~
+            value: .+
+  receivers:
+    - name: discard
+    - name: telegram
+      telegramConfigs:
+        - botToken:
+            name: alertmanager-telegram
+            key: bot-token
+          chatID: -1001896823188
+          messageThreadID: 1
+          httpConfig:
+            proxyURL: http://proxy-svc.egress-system.svc.cluster.local:7890
+          sendResolved: true
+    - name: wecom
+      webhookConfigs:
+        - urlSecret:
+            name: alertmanager-wecom
+            key: webhook-url
+          httpConfig:
+            proxyURL: http://proxy-svc.egress-system.svc.cluster.local:7890
+          sendResolved: true
+          timeout: 15s
+          payload: |-
+            {{ $state := "✅ 告警恢复" }}
+            {{ if eq .Status "firing" }}{{ $state = "🔥 告警触发" }}{{ end }}
+            {{ $content := printf "%s\n" $state }}
+            {{ range .Alerts }}
+            {{ $content = printf "%s\n> **%s**\n> %s" $content .Labels.alertname .Annotations.summary }}
+            {{ end }}
+            {"msgtype":"markdown","markdown":{"content":{{ $content | toJson }}}}

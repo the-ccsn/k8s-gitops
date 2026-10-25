@@ -1533,4 +1533,49 @@
       { kind = "Deployment"; namespace = "monitoring"; name = "prometheus-operator-kube-p-operator"; }
     ];
   }
+  {
+    imageName = "docker.io/prom/blackbox-exporter";
+    imageDigest = "sha256:e753ff9f3fc458d02cca5eddab5a77e1c175eee484a8925ac7d524f04366c2fc";
+    finalImageName = "docker.io/prom/blackbox-exporter";
+    finalImageTag = "v0.28.0";
+    archiveHash = "sha256-kxlKJzjeX8RET5/8M7kjXqBY5fftpO0k19FejIYKhjQ=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "Kustomization"; namespace = "flux-system"; name = "observability-runtimes"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-runtimes"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "monitoring"; name = "blackbox-exporter"; }
+    ];
+  }
+  {
+    imageName = "nginx";
+    imageDigest = "sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de";
+    finalImageName = "docker.io/library/nginx";
+    finalImageTag = "1.29.8-alpine";
+    archiveHash = "sha256-cE8SeOEZocSKQBbU5eo88KtTXxLDqIfvRNhuRqoHHPQ=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+      { kind = "Kustomization"; namespace = "flux-system"; name = "observability-runtimes"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+      ]
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-runtimes"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "monitoring"; name = "headlamp-metrics"; }
+      { kind = "Deployment"; namespace = "prod"; name = "external-s5100-compat"; }
+    ];
+  }
 ]

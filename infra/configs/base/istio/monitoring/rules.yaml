@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: istio-alerts
+  namespace: monitoring
+  labels:
+    application: istio
+    component: rules
+spec:
+  groups:
+    - name: istio-health
+      rules:
+        - alert: IstioHighServerErrorRate
+          expr: sum by (destination_workload_namespace, destination_service_name) (rate(istio_requests_total{reporter=~"source|waypoint",response_code=~"5.."}[5m])) / sum by (destination_workload_namespace, destination_service_name) (rate(istio_requests_total{reporter=~"source|waypoint"}[5m])) > 0.05
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Istio service {{ $labels.destination_service_name }} has more than 5% 5xx responses"
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/istio.md

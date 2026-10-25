@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    application: grafana
+    component: server
+spec:
+  namespaceSelector:
+    matchNames: [prod]
+  selector:
+    matchLabels:
+      app: grafana
+  podMetricsEndpoints:
+    - port: grafana-http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

@@ -1,0 +1,40 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: alertmanager-health
+  namespace: monitoring
+  labels:
+    application: alertmanager
+    component: runtime
+spec:
+  groups:
+    - name: alertmanager-health
+      rules:
+        - alert: AlertmanagerDown
+          expr: min_over_time(up{namespace="monitoring",service="alertmanager-operated"}[5m]) == 0
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: Alertmanager is unavailable
+            description: The operated Alertmanager service has not been scrapeable for at least five minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/alertmanager.md
+        - alert: AlertmanagerFailedReload
+          expr: max_over_time(alertmanager_config_last_reload_successful{namespace="monitoring"}[5m]) == 0
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: Alertmanager failed to reload its configuration
+            description: Check the generated configuration Secret, AlertmanagerConfig resources, and reloader logs.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/alertmanager.md
+        - alert: AlertmanagerFailedToSendAlerts
+          expr: |
+            sum by (integration) (rate(alertmanager_notifications_failed_total{namespace="monitoring"}[15m]))
+            /
+            clamp_min(sum by (integration) (rate(alertmanager_notifications_total{namespace="monitoring"}[15m])), 0.001)
+            > 0.01
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Alertmanager delivery failures exceed 1% for {{ $labels.integration }}"
+            description: Check receiver credentials, egress connectivity, rate limits, and Alertmanager logs.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/notification-delivery.md

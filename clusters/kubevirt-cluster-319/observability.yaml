@@ -1,0 +1,61 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability-runtimes
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-controllers-monitoring
+  interval: 30m
+  retryInterval: 30s
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./observability/controllers/overlays/kubevirt-cluster-319/metrics
+  prune: true
+  wait: false
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: victoria-metrics-k8s-stack
+      namespace: monitoring
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: blackbox-exporter
+      namespace: monitoring
+    - apiVersion: monitoring.coreos.com/v1
+      kind: Alertmanager
+      name: platform
+      namespace: monitoring
+  healthCheckExprs:
+    - apiVersion: monitoring.coreos.com/v1
+      kind: Alertmanager
+      current: has(status.availableReplicas) && status.availableReplicas >= spec.replicas
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability-configs
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: observability-runtimes
+    - name: infra-configs
+  interval: 30m
+  retryInterval: 30s
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./observability/configs/overlays/kubevirt-cluster-319
+  prune: true
+  wait: false
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

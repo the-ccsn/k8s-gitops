@@ -1,0 +1,58 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+  name: kubernetes-overview
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: kubernetes
+  json: |-
+    {
+      "title": "Kubernetes Overview",
+      "uid": "kubernetes-overview",
+      "tags": ["kubernetes", "overview"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "CPU Usage by Namespace",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}[5m])) by (namespace)", "legendFormat": "{{namespace}}", "refId": "A"}]
+        },
+        {
+          "id": 2,
+          "title": "Memory Working Set by Namespace",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(container_memory_working_set_bytes{container!=\"\",image!=\"\"}) by (namespace)", "legendFormat": "{{namespace}}", "refId": "A"}]
+        },
+        {
+          "id": 3,
+          "title": "Not Ready Pods",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(kube_pod_status_ready{condition=\"true\"} == 0)", "refId": "A"}]
+        },
+        {
+          "id": 4,
+          "title": "Container Restarts (1h)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 18, "x": 6, "y": 8},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum(increase(kube_pod_container_status_restarts_total[1h])) by (namespace, pod)", "legendFormat": "{{namespace}}/{{pod}}", "refId": "A"}]
+        }
+      ]
+    }

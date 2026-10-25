@@ -76,6 +76,9 @@ spec:
             app: grafana
             app.kubernetes.io/version: v1
         spec:
+          securityContext:
+            # Match the operator's non-root Grafana group for PVC writes.
+            fsGroup: 10001
           volumes:
             - name: grafana-data
               persistentVolumeClaim:

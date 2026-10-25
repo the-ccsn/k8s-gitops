@@ -95,6 +95,9 @@ spec:
         #     caFile: /data/ca-certs/ca.crt
         selectAllByDefault: true
         replicaCount: 1
+        podMetadata:
+          labels:
+            istio.io/dataplane-mode: ambient
         # ScrapeConfig 30.0.1 only permits Secret-based SafeAuthorization and
         # SafeTLSConfig. Keep mounted-file authentication in the runtime class,
         # rather than minting a long-lived ServiceAccount credential Secret.

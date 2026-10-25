@@ -1,0 +1,44 @@
+# Database access on 5432 and the instance-manager API retain their own policy.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: cloudnative-pg-metrics
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["9187"]
+    - to:
+        - operation:
+            notPorts: ["9187"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: cloudnative-pg-metrics
+  namespace: harbor
+spec:
+  selector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["9187"]
+    - to:
+        - operation:
+            notPorts: ["9187"]

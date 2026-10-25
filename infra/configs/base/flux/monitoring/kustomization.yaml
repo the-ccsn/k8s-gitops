@@ -4,5 +4,6 @@ resources:
   - ./pod-monitor.yaml
   - ./operator-pod-monitor.yaml
   - ./metrics-network-policy.yaml
+  - ./metrics-authorization.yaml
   - ./rules.yaml
   - ./dashboard.yaml

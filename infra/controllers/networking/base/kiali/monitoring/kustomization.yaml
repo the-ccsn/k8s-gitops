@@ -2,4 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./pod-monitor.yaml
+  - ./metrics-authorization.yaml
+  - ./metrics-network-policy.yaml
   - ./dashboard.yaml

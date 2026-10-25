@@ -1,0 +1,19 @@
+# The metrics listener is separate from admission webhooks and health probes.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: cert-manager-metrics
+  namespace: cert-manager
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["9402"]
+    - to:
+        - operation:
+            notPorts: ["9402"]

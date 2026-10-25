@@ -122,6 +122,11 @@ spec:
               severity:
                 # First, try to parse from the 'attributes.level' field.
                 parse_from: attributes.level
+            # Keep Flux's large apply-result map in the JSON body; duplicating it
+            # as flattened metadata can exceed Loki's 128-entry limit.
+            - type: remove
+              field: attributes.output
+              if: 'attributes.controllerGroup == "kustomize.toolkit.fluxcd.io" && attributes.output != nil'
             # Promote structured ingress IDs into the OTLP LogRecord context.
             - type: remove
               field: attributes.span_id

@@ -176,6 +176,16 @@ spec:
       # vmsingle = vmcluster(vmselect + vmstorage + vminsert)
       enabled: true
       spec:
+        podMetadata:
+          labels:
+            istio.io/dataplane-mode: ambient
+        serviceSpec:
+          # Label the existing Service instead of creating an additional one.
+          useAsDefault: true
+          metadata:
+            labels:
+              istio.io/use-waypoint: observability-waypoint
+          spec: {}
         retentionPeriod: "7d"
         resources:
           limits:
@@ -200,6 +210,9 @@ spec:
           - targets:
               - http://alertmanager-operated.monitoring.svc.cluster.local:9093
       spec:
+        podMetadata:
+          labels:
+            istio.io/dataplane-mode: ambient
         resources:
           limits:
             cpu: "500m"

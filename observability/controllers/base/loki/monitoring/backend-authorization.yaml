@@ -1,0 +1,110 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: loki-api
+  namespace: monitoring
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: loki
+    - group: ""
+      kind: Service
+      name: loki-gateway
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/prod/sa/grafana-sa
+              - cluster.local/ns/monitoring/sa/loki-canary
+              # The chart's gateway proxies to the Loki Service as this identity.
+              - cluster.local/ns/monitoring/sa/loki
+      to:
+        - operation:
+            methods: [GET, POST]
+            paths:
+              - /loki/api/v1/query
+              - /loki/api/v1/query_range
+              - /loki/api/v1/labels
+              - /loki/api/v1/label/*
+              - /loki/api/v1/series
+              - /loki/api/v1/index/stats
+              - /loki/api/v1/index/volume
+              - /loki/api/v1/index/volume_range
+              - /loki/api/v1/patterns
+              - /loki/api/v1/detected_fields
+              - /loki/api/v1/detected_field/*
+              - /loki/api/v1/format_query
+        - operation:
+            methods: [GET]
+            paths:
+              - /loki/api/v1/tail
+              - /loki/api/v1/status/buildinfo
+              - /loki/api/v1/rules
+              - /loki/api/v1/rules/*
+              - /prometheus/api/v1/rules
+              - /prometheus/api/v1/alerts
+              - /ready
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/otel-collector-opentelemetry-collector
+              - cluster.local/ns/monitoring/sa/otel-events
+              - cluster.local/ns/monitoring/sa/loki-canary
+              - cluster.local/ns/monitoring/sa/loki
+      to:
+        - operation:
+            methods: [POST]
+            paths: [/otlp/v1/logs, /loki/api/v1/push]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/blackbox-exporter
+      to:
+        - operation:
+            methods: [GET]
+            paths: [/loki/api/v1/status/buildinfo, /ready]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            methods: [GET]
+            paths: [/metrics]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: loki-transport
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/instance: loki
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/observability-waypoint
+      to:
+        - operation:
+            ports: ["3100", "8080"]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/loki
+      to:
+        - operation:
+            ports: ["3100", "9095", "7946"]
+    - from:
+        - source:
+            principals:
+              # Direct scraping trusts the Loki API port; 3500 serves Canary metrics.
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["3100", "3500"]

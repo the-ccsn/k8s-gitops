@@ -10,6 +10,8 @@ resources:
   - ../../../../infra/configs/base/cert-manager/monitoring/
   - ../../../../infra/configs/base/kubevirt/monitoring/
   - ../../../controllers/base/victoria-metrics/monitoring/
+  - ../../../controllers/base/loki/monitoring/
+  - ../../../controllers/base/tempo/monitoring/
   - ../../../controllers/base/prometheus-operator/monitoring/
   - ../../../controllers/base/blackbox-exporter/monitoring/
   - ../../base/victoria-metrics/

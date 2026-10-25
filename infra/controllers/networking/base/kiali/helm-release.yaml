@@ -72,6 +72,11 @@ spec:
             is_core: true
             query_scope:
               cluster: "kubevirt-cluster-319"
+            # VictoriaMetrics does not expose Prometheus status/config/runtimeinfo.
+            thanos_proxy:
+              enabled: true
+              scrape_interval: 20s
+              retention_period: 7d
             url: "http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428" # "https://prometheus.ccsn.dev"
           # [Optional] Kiali will query Grafana and try to fetch the configured Istio dashboards.
           # For this reason Kiali must be able to reach Grafana, authenticate, and find the Istio dashboards.
@@ -84,14 +89,25 @@ spec:
               token: /var/run/secrets/kubernetes.io/serviceaccount/token
             enabled: true
             is_core: false
-            # Grafana service name is "grafana" and is in the "telemetry" namespace.
+            dashboards:
+              - name: Istio Service Mesh
+                variables:
+                  namespace: namespace
+            # Grafana is deployed in prod.
             internal_url: 'http://grafana-service.prod.svc.cluster.local:3000/'
             # Public facing URL of Grafana
             external_url: 'https://grafana.ccsn.dev'
-          # [Optional] Jaeger is a highly recommended service because Kiali uses distributed tracing data for
-          # several features, providing an enhanced experience.
+          # Tempo serves trace queries; Grafana provides the public trace view.
           tracing:
-            enabled: false
+            enabled: true
+            provider: tempo
+            use_grpc: false
+            # Native waypoint spans identify the waypoint workload.
+            use_waypoint_name: true
+            internal_url: http://tempo.monitoring.svc.cluster.local:3200
+            external_url: https://grafana.ccsn.dev
+            tempo_config:
+              datasource_uid: tempo
 
         kiali_feature_flags:
           istio_annotation_action: true

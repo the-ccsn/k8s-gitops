@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cloudflared-tunnel-alerts
+  namespace: monitoring
+  labels:
+    application: cloudflare
+    component: tunnel
+spec:
+  groups:
+    - name: cloudflared-tunnel.recording
+      interval: 30s
+      rules:
+        - record: cloudflared:tunnel_ha_connections
+          expr: max by (namespace, pod) (cloudflared_tunnel_ha_connections{namespace="cloudflare-operator-system"})
+        - record: cloudflared:tunnel_request_errors:rate5m
+          expr: sum by (namespace, pod) (rate(cloudflared_tunnel_request_errors{namespace="cloudflare-operator-system"}[5m]))
+    - name: cloudflared-tunnel.alerts
+      rules:
+        - alert: CloudflaredTunnelMetricsMissing
+          expr: absent(cloudflared_tunnel_ha_connections{namespace="cloudflare-operator-system"})
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Cloudflared tunnel metrics are missing
+            description: No cloudflared Tunnel metrics have reached VictoriaMetrics for ten minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/cloudflared-tunnel.md
+        - alert: CloudflaredTunnelDisconnected
+          expr: cloudflared:tunnel_ha_connections < 1
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: Cloudflared tunnel is disconnected for {{ $labels.namespace }}/{{ $labels.pod }}
+            description: The tunnel has reported no active Cloudflare HA connections for three minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/cloudflared-tunnel.md
+        - alert: CloudflaredTunnelOriginErrors
+          expr: increase(cloudflared_tunnel_request_errors{namespace="cloudflare-operator-system"}[10m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Cloudflared is reporting origin proxy errors for {{ $labels.namespace }}/{{ $labels.pod }}
+            description: Cloudflared has reported errors while proxying requests to an origin during the last ten minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/cloudflared-tunnel.md

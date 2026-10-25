@@ -1,0 +1,59 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+  name: cloudflared-tunnel
+  namespace: grafana
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: networking
+  json: |-
+    {
+      "title": "Cloudflared Tunnel",
+      "uid": "cloudflared-tunnel",
+      "tags": ["cloudflare", "tunnel", "availability"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "HA Connections",
+          "type": "stat",
+          "gridPos": {"h": 7, "w": 8, "x": 0, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "cloudflared:tunnel_ha_connections", "legendFormat": "{{pod}}", "refId": "A"}]
+        },
+        {
+          "id": 2,
+          "title": "Tunnel Metrics Target",
+          "type": "stat",
+          "gridPos": {"h": 7, "w": 8, "x": 8, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "up{namespace=\"cloudflare-operator-system\",pod=~\".*tunnel.*\"}", "legendFormat": "{{pod}}", "refId": "A"}]
+        },
+        {
+          "id": 3,
+          "title": "Active Streams",
+          "type": "timeseries",
+          "gridPos": {"h": 7, "w": 8, "x": 16, "y": 0},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum by (pod) (cloudflared_tunnel_active_streams{namespace=\"cloudflare-operator-system\"})", "legendFormat": "{{pod}}", "refId": "A"}]
+        },
+        {
+          "id": 4,
+          "title": "Origin Proxy Errors",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 7},
+          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
+          "targets": [{"expr": "sum by (pod) (rate(cloudflared_tunnel_request_errors{namespace=\"cloudflare-operator-system\"}[5m]))", "legendFormat": "{{pod}}", "refId": "A"}]
+        }
+      ]
+    }

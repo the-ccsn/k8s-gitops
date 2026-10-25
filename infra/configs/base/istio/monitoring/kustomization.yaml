@@ -4,3 +4,4 @@ resources:
   - ./service-monitors.yaml
   - ./rules.yaml
   - ./dashboards.yaml
+  - ./ingress-dashboard.yaml

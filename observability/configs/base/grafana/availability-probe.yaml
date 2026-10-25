@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: grafana-internal
+  namespace: monitoring
+  labels:
+    application: grafana
+    component: availability
+spec:
+  jobName: blackbox-grafana-internal
+  module: internal_http_2xx
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [http://grafana-service.prod.svc.cluster.local:3000/api/health]
+      labels:
+        application: grafana
+        service: grafana
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 1
+  sampleLimit: 100

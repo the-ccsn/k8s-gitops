@@ -79,7 +79,9 @@ spec:
           grafana:
             auth:
               type: bearer
-              use_kiali_token: true
+              use_kiali_token: false
+              # Explicit file credentials also cover dashboard searches in Kiali 2.24.
+              token: /var/run/secrets/kubernetes.io/serviceaccount/token
             enabled: true
             is_core: false
             # Grafana service name is "grafana" and is in the "telemetry" namespace.

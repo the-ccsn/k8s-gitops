@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: kubernetes-nodes
+  namespace: monitoring
+  labels:
+    application: node-exporter
+    component: host
+spec:
+  jobName: node-exporter
+  scrapeInterval: 20s
+  scrapeTimeout: 10s
+  metricsPath: /metrics
+  scheme: HTTP
+  kubernetesSDConfigs:
+    - role: Node
+  relabelings:
+    # Keep the consumer-facing job stable after VM Operator conversion.
+    - action: replace
+      replacement: node-exporter
+      targetLabel: job
+    - action: replace
+      sourceLabels: [__meta_kubernetes_node_address_InternalIP]
+      regex: "((([0-9]+?)(\\.|$)){4})"
+      replacement: "$1:9100"
+      targetLabel: __address__
+    - action: replace
+      sourceLabels: [__meta_kubernetes_node_address_InternalIP]
+      regex: "([A-Fa-f0-9:]+)"
+      replacement: "[$1]:9100"
+      targetLabel: __address__
+    - action: replace
+      sourceLabels: [__meta_kubernetes_node_name]
+      targetLabel: node
+    - action: replace
+      replacement: kubevirt-cluster-319
+      targetLabel: cluster
+    - action: replace
+      replacement: production
+      targetLabel: environment
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(kubernetes_io_(arch|hostname|os)|node_kubernetes_io_instance_type|node_purpose)
+      replacement: kubernetes_node_$1
+  metricRelabelings:
+    - action: labeldrop
+      regex: "(beta_kubernetes_io_.+|failure_domain_.+)"

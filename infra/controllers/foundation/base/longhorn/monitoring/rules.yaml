@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: longhorn-alerts
+  namespace: monitoring
+  labels:
+    application: longhorn
+    component: rules
+spec:
+  groups:
+    - name: longhorn-health
+      rules:
+        - alert: LonghornVolumeNotHealthy
+          expr: longhorn_volume_robustness{state=~"degraded|faulted"} == 1
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is not healthy"
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/longhorn.md

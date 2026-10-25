@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Keep owner-local definitions behind the shared monitoring API gate.
+  - ../../../../infra/controllers/foundation/base/longhorn/monitoring/
+  - ../../../../infra/configs/base/istio/monitoring/
+  - ../../../controllers/base/victoria-metrics/monitoring/
+  - ../../base/victoria-metrics/
+  - ../../base/grafana/
+  # Cluster-selected notification capability.
+  - ./components/alertmanager-notifications/

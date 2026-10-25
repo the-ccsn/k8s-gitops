@@ -1,0 +1,15 @@
+kind: will-be-ignored
+metadata:
+  name: will-be-ignored
+spec:
+  values:
+    vmagent:
+      spec:
+        scrapeInterval: 20s
+        externalLabels:
+          cluster: kubevirt-cluster-319
+          environment: production
+          site: ccsn
+      ingress:
+        hosts:
+          - kubevirt-vmagent.ccsn.dev

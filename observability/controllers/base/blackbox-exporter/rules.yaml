@@ -1,0 +1,68 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: observability-platform
+  namespace: monitoring
+  labels:
+    application: observability
+    component: rules
+spec:
+  groups:
+    - name: observability.recording
+      interval: 30s
+      rules:
+        - record: probe:success:ratio5m
+          expr: avg_over_time(probe_success[5m])
+        - record: probe:http_duration_seconds:p95_5m
+          expr: quantile_over_time(0.95, probe_duration_seconds[5m])
+        - record: node:network_receive_bytes:rate5m
+          expr: sum by (cluster, node, device) (rate(node_network_receive_bytes_total{device!~"lo|veth.*|cali.*"}[5m]))
+        - record: node:network_transmit_bytes:rate5m
+          expr: sum by (cluster, node, device) (rate(node_network_transmit_bytes_total{device!~"lo|veth.*|cali.*"}[5m]))
+    - name: observability.alerts
+      rules:
+        - alert: BlackboxProbeMetricsMissing
+          expr: absent(probe_success)
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: No blackbox probe metrics are being received
+            description: All blackbox availability metrics have been absent for more than ten minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/blackbox-probe-failed.md
+        - alert: BlackboxProbeFailed
+          expr: probe_success == 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: Probe failed for {{ $labels.instance }}
+            description: The {{ $labels.probe_path }} {{ $labels.ip_family }} probe has failed for more than three minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/blackbox-probe-failed.md
+        - alert: BlackboxProbeSlow
+          expr: probe_duration_seconds > 2
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Probe latency is high for {{ $labels.instance }}
+            description: The {{ $labels.probe_path }} {{ $labels.ip_family }} probe duration has remained above two seconds for ten minutes.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/blackbox-probe-slow.md
+        - alert: TLSCertificateExpiresSoon
+          expr: probe_ssl_earliest_cert_expiry - time() < 14 * 24 * 60 * 60
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: TLS certificate expires within 14 days for {{ $labels.instance }}
+            description: The earliest certificate in the probed chain is close to expiry.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/tls-certificate-expires.md
+        - alert: BlackboxExporterDown
+          expr: up{service="blackbox-exporter"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Blackbox exporter is unavailable
+            description: vmagent cannot scrape the blackbox exporter itself.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/exporter-down.md

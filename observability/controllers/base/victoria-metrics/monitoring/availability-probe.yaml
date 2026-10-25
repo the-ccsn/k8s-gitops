@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: victoriametrics-internal
+  namespace: monitoring
+  labels:
+    application: victoriametrics
+    component: availability
+spec:
+  jobName: blackbox-victoriametrics-internal
+  module: internal_http_2xx
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428/health]
+      labels:
+        application: victoriametrics
+        service: vmsingle
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 1
+  sampleLimit: 100

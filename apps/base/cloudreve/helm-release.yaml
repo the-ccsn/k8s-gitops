@@ -103,7 +103,7 @@ spec:
             - command:
               - python3
               - /bootstrap/bootstrap-config.py
-              image: docker.ccsn.dev/library/python:3.13-alpine
+              image: docker.ccsn.dev/library/python:3.15-alpine@sha256:d44b1254cb92329418d164b22b20d86bbd3869d48e80e09e476531a409a728bb
               name: managed-bootstrap
               resources:
                 limits:
@@ -187,7 +187,7 @@ spec:
                         key: password
                 initContainers:
                 - name: cloudreve-search-wait
-                  image: docker.ccsn.dev/library/python:3.13-alpine
+                  image: docker.ccsn.dev/library/python:3.15-alpine@sha256:d44b1254cb92329418d164b22b20d86bbd3869d48e80e09e476531a409a728bb
                   command:
                   - python3
                   - -c

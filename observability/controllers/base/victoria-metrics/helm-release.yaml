@@ -31,6 +31,13 @@ spec:
       enabled: true
       podLabels:
         istio.io/dataplane-mode: ambient
+      resources:
+        requests:
+          cpu: 20m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
       serviceMonitor:
         enabled: true
         # -- Creates `VMServiceScrape` if `true` and `ServiceMonitor` otherwise.
@@ -49,6 +56,13 @@ spec:
       enabled: true
       podLabels:
         istio.io/dataplane-mode: ambient
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
       # Scraping policy is owned by observability/configs as ServiceMonitor.
       vmScrape:
         enabled: false
@@ -99,6 +113,14 @@ spec:
         #     caFile: /data/ca-certs/ca.crt
         selectAllByDefault: true
         replicaCount: 1
+        # The operator uses this for both config-reloader and config-init.
+        configReloaderResources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         podMetadata:
           labels:
             istio.io/dataplane-mode: ambient
@@ -213,6 +235,13 @@ spec:
         podMetadata:
           labels:
             istio.io/dataplane-mode: ambient
+        configReloaderResources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         resources:
           limits:
             cpu: "500m"

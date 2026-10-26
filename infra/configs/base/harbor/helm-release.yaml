@@ -7,6 +7,10 @@ metadata:
 spec:
   releaseName: harbor
   interval: 30m
+  timeout: 10m
+  upgrade:
+    strategy:
+      name: RetryOnFailure
   chart:
     spec:
       chart: harbor

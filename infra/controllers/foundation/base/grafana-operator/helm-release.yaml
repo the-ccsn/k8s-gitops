@@ -20,6 +20,13 @@ spec:
       name: RetryOnFailure
   # https://github.com/grafana/grafana-operator/blob/master/deploy/helm/grafana-operator/values.yaml
   values:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
     kubeAuth:
       audience: https://kubernetes.default.svc.cluster.local
     crds:

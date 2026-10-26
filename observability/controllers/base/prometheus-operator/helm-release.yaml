@@ -66,6 +66,15 @@ spec:
       kubeletEndpointSliceEnabled: false
       serviceMonitor:
         selfMonitor: true
+      # Applies to both the Alertmanager reloader and its init container.
+      prometheusConfigReloader:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
       resources:
         requests:
           cpu: 20m

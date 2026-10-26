@@ -139,6 +139,13 @@ spec:
         enabled: false
 
     gateway:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
       service:
         labels:
           istio.io/use-waypoint: observability-waypoint
@@ -285,6 +292,13 @@ spec:
     # Keep GitOps-owned LogQL rules synchronized into the single-binary pod.
     sidecar:
       enableUniqueFilenames: true
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 256Mi
       rules:
         enabled: true
         label: loki_rule

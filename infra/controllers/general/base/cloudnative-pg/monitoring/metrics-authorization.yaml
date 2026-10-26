@@ -1,4 +1,27 @@
-# Database access on 5432 and the instance-manager API retain their own policy.
+# Webhooks, database access and instance-manager APIs retain their own policy.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: cloudnative-pg-operator-metrics
+  namespace: cnpg-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: cnpg
+      app.kubernetes.io/name: cloudnative-pg
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["8080"]
+    - to:
+        - operation:
+            notPorts: ["8080"]
+---
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:

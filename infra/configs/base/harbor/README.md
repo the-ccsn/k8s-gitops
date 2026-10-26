@@ -10,6 +10,8 @@ dedicated management credentials to create and configure projects; normal OIDC
 logins have no system-administrator group mapping. The non-default Logto role
 `harbor:maintainer` grants Maintainer access to the seven proxy-cache projects
 through the native MemberGroup declarations in `managed-resources/project-access.yaml`.
+The same file creates the shared OIDC Group first; memberships resolve its observed
+name through `groupNameRef`, so an empty installation needs no manual group setup.
 Assign this role explicitly in Logto and sign in to Harbor again to refresh claims.
 Maintainers can push, scan and delete images and manage tag policies, but cannot
 edit project configuration, manage members or delete projects. Proxy-cache projects

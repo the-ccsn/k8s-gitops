@@ -1,3 +1,20 @@
+apiVersion: harbor.m.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  name: harbor-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    groupName: harbor:maintainer
+    groupType: 3 # OIDC
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
 apiVersion: project.harbor.m.crossplane.io/v1alpha1
 kind: MemberGroup
 metadata:
@@ -14,7 +31,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -36,7 +56,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -58,7 +81,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -80,7 +106,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -102,7 +131,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -124,7 +156,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -146,7 +181,10 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupName: harbor:maintainer
+    groupNameRef:
+      name: harbor-maintainers
+      policy:
+        resolve: Always
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor

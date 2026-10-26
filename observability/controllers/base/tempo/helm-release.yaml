@@ -79,6 +79,8 @@ spec:
         trace_by_id:
           query_shards: 4
           concurrent_shards: 2
+        metrics:
+          concurrent_jobs: 2
       memBallastSizeMbs: 0
       metricsGenerator:
         enabled: true
@@ -87,6 +89,16 @@ spec:
           service_graphs: {}
           span_metrics:
             enable_target_info: true
+          # Traces Drilldown needs TraceQL metrics blocks, including proxy/client spans.
+          local_blocks:
+            filter_server_spans: false
+            flush_to_storage: true
+            max_live_traces_bytes: 33554432
+            max_block_bytes: 67108864
+            concurrency: 1
+            concurrent_blocks: 2
+            block:
+              parquet_row_group_size_bytes: 10000000
         registry:
           collection_interval: 30s
           external_labels:
@@ -99,7 +111,7 @@ spec:
       overrides:
         defaults:
           metrics_generator:
-            processors: [service-graphs, span-metrics]
+            processors: [service-graphs, span-metrics, local-blocks]
       resources:
         requests:
           cpu: 50m

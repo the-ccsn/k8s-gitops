@@ -1,0 +1,22 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: harbor
+  namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+    observability.ccsn.dev/upstream-sha256: 68be6a11e6cc4665c8a9918d7a83d6875fba1cfebb4ab17139c048d8c02c6db4
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: applications
+  # Official Harbor v2.15.4 example, pinned to the release commit.
+  url: https://raw.githubusercontent.com/goharbor/harbor/0a6bf30d54e779962ad5b862fc67e3e9f6b010d8/contrib/grafana-dashboard/metrics-example.json
+  datasources:
+    # The upstream placeholder is in datasource UID fields.
+    - inputName: datasource
+      datasourceName: victoriametrics

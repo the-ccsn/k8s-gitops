@@ -146,6 +146,27 @@
     ];
   }
   {
+    imageName = "docker.io/goharbor/harbor-exporter";
+    imageDigest = "sha256:9ffede33dc519b4be035596a72f00f354754a22a3769077731f81ee7d6852f4f";
+    finalImageName = "docker.io/goharbor/harbor-exporter";
+    finalImageTag = "v2.15.4";
+    archiveHash = "sha256-1l6QkdoA6Htpt4gmlxZMvPYjaZvLRP2z34LkwFVJC9I=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "HelmRelease"; namespace = "harbor"; name = "harbor"; }
+        { kind = "Kustomization"; namespace = "flux-system"; name = "infra-configs"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "harbor"; name = "harbor-exporter"; }
+    ];
+  }
+  {
     imageName = "docker.io/goharbor/harbor-jobservice";
     imageDigest = "sha256:f71a4452a095bcd2a8f0683648a3ae28415432df87ccfb00ec7625f3e340a598";
     finalImageName = "docker.io/goharbor/harbor-jobservice";

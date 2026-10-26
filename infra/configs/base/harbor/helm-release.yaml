@@ -65,11 +65,29 @@ spec:
     trivy:
       enabled: false
 
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: false
+
+    exporter:
+      podLabels:
+        istio.io/dataplane-mode: ambient
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
     # Shared filesystem volumes allow Registry and Jobservice to overlap on updates.
     updateStrategy:
       type: RollingUpdate
 
     core:
+      podLabels:
+        istio.io/dataplane-mode: ambient
       extraEnvVars:
       - name: PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE
         value: ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr
@@ -96,6 +114,8 @@ spec:
           cpu: '1'
           memory: 512Mi
     registry:
+      podLabels:
+        istio.io/dataplane-mode: ambient
       # Require two successful readiness probes before accepting traffic.
       registry:
         readinessProbe:
@@ -126,6 +146,8 @@ spec:
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: ScheduleAnyway
     jobservice:
+      podLabels:
+        istio.io/dataplane-mode: ambient
       # Require two successful readiness probes before accepting traffic.
       readinessProbe:
         successThreshold: 2

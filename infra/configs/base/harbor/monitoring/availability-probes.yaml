@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: harbor-internal
+  namespace: monitoring
+  labels:
+    application: harbor
+    component: availability
+spec:
+  jobName: blackbox-harbor-internal
+  module: internal_http_2xx
+  interval: 30s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [http://harbor-core.harbor.svc.cluster.local/api/v2.0/health]
+      labels:
+        application: harbor
+        service: harbor
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: internal
+  targetLimit: 1
+  sampleLimit: 100
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: harbor-external
+  namespace: monitoring
+  labels:
+    application: harbor
+    component: availability
+spec:
+  jobName: blackbox-harbor-external
+  module: internal_http_2xx
+  interval: 60s
+  scrapeTimeout: 15s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static: [https://harbor.ccsn.dev/api/v2.0/health]
+      labels:
+        application: harbor
+        service: harbor
+        cluster: kubevirt-cluster-319
+        environment: production
+        site: ccsn
+        probe_path: external
+  targetLimit: 1
+  sampleLimit: 100

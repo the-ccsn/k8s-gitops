@@ -1,10 +1,12 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  annotations:
-    kustomize.toolkit.fluxcd.io/substitute: disabled
   name: cloudnative-pg
   namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+    observability.ccsn.dev/upstream-url: https://raw.githubusercontent.com/cloudnative-pg/grafana-dashboards/47e4c51219fdbb3c7ef2c4d91a2d8855e9ca1880/charts/cluster/grafana-dashboard.json
+    observability.ccsn.dev/upstream-sha256: 89290731e516104f57673746fff65916ba2e749c4b942144a03eb53ff9dae7a8
   labels:
     dashboards: grafana
 spec:
@@ -13,112 +15,6 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: database
-  json: |-
-    {
-      "title": "PostgreSQL / CloudNativePG",
-      "uid": "cloudnative-pg",
-      "tags": [
-        "postgresql",
-        "cnpg"
-      ],
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "PostgreSQL Up",
-          "type": "stat",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "cnpg_collector_up",
-              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "title": "Connections",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "sum by (k8s_cluster_name, namespace, cnpg_cluster_name, pod, datname) (cnpg_backends_total)",
-              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}} {{datname}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "title": "Transactions",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "sum by (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (rate(cnpg_pg_stat_database_xact_commit[5m]) + rate(cnpg_pg_stat_database_xact_rollback[5m]))",
-              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "title": "Replication Lag",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "cnpg_pg_replication_lag",
-              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "s"
-            },
-            "overrides": []
-          }
-        }
-      ]
-    }
+  configMapRef:
+    name: cloudnative-pg-dashboard
+    key: dashboard.json

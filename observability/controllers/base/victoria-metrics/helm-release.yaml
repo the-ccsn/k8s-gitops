@@ -54,6 +54,8 @@ spec:
 
     kube-state-metrics:
       enabled: true
+      metricLabelsAllowlist:
+        - nodes=[topology.kubernetes.io/zone]
       podLabels:
         istio.io/dataplane-mode: ambient
       resources:

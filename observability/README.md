@@ -104,11 +104,10 @@ shared by NGINX and Istio where they describe the same request. Istio's temporar
 before export. W3C trace/span IDs keep their protocol-defined identity, and
 `X-Request-ID`, `X-CCSN-Request-ID` and `CF-Ray` headers retain their wire names.
 
-The Collector accepts the previous `entrypoint`, `request_id`, `proxy_request_id`
-and `cf_ray` attributes only for our recognized ingress records/spans during
-independent producer rollouts. It emits the canonical names and leaves unrelated
-application attributes alone. Query-string redaction and nil/empty request-ID
-fallback still apply after normalization.
+Producers and consumers use only these canonical names. Do not introduce old-key
+aliases or transitional conversions. The Collector leaves unrelated application
+attributes alone. Query-string redaction and nil/empty request-ID fallback apply
+to recognized ingress spans.
 Ingress HTTP status sets both OTLP severity number and text consistently; Loki
 rules and the log-volume panel use `severity_text`, not a payload's `level`.
 
@@ -139,15 +138,13 @@ does not delete, rewrite or backfill history. New dashboard filters use the new
 keys; older time ranges require the prior field names in Explore. Rates need
 fresh samples after the change, and current-range queries can briefly encounter
 both generations of a series during independent Flux reconciliations.
-The one-day dev-log retention selector covers both the old and new stream keys
-so historical dev logs do not fall back to the seven-day global policy.
+The one-day dev-log retention selector uses only `k8s_namespace_name`.
 
 Merge producer and consumer configuration together. Check VMAgent reload,
 nonempty qualified labels, object-namespace alert annotations, sampled ingress
 span/log request-ID equality and Grafana trace-to-log navigation after Flux has
-applied it. Collector compatibility covers old ingress producers; it is not a
-historical-data migration. Existing PVCs, S3 buckets, tenant settings and login
-roles are unchanged.
+applied it. No runtime compatibility layer or historical-data migration is
+maintained. Existing PVCs, S3 buckets, tenant settings and login roles are unchanged.
 
 When adding a component, review its native metric prefixes and label meanings,
 normalize real collisions in its own monitor, and check dashboard variables,

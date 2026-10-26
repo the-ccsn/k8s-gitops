@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./kubernetes-component-monitors.yaml
   - ./kubernetes-alerts.yaml
+  - ./kubernetes-recording-rules.yaml
   - ./node-metrics.yaml
   - ./kubernetes-dashboards.yaml
   - ./kubelet-metrics.yaml

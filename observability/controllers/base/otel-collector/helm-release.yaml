@@ -293,18 +293,7 @@ spec:
             - context: log
               conditions:
                 - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
-                - attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio"
               statements:
-                # Accept the previous ingress wire keys during rolling upgrades.
-                - set(attributes["ccsn.ingress.entrypoint"], attributes["entrypoint"])
-                  where attributes["ccsn.ingress.entrypoint"] == nil and attributes["entrypoint"] != nil
-                - delete_key(attributes, "entrypoint") where attributes["entrypoint"] != nil
-                - set(attributes["ccsn.request.id"], attributes["request_id"])
-                  where attributes["ccsn.request.id"] == nil and attributes["request_id"] != nil
-                - delete_key(attributes, "request_id") where attributes["request_id"] != nil
-                - set(attributes["cloudflare.ray.id"], attributes["cf_ray"])
-                  where attributes["cloudflare.ray.id"] == nil and attributes["cf_ray"] != nil
-                - delete_key(attributes, "cf_ray") where attributes["cf_ray"] != nil
                 - set(resource.attributes["service.name"], attributes["service_name"])
                   where attributes["service_name"] != nil
                 - set(resource.attributes["service.namespace"], attributes["service_namespace"])
@@ -333,24 +322,6 @@ spec:
                   where resource.attributes["deployment.environment.name"] == nil
                 - set(resource.attributes["ccsn.site.name"], "ccsn")
                   where resource.attributes["ccsn.site.name"] == nil
-            - context: span
-              conditions:
-                - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
-                - attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio"
-              statements:
-                # Normalize older NGINX/Istio spans before correlation and redaction.
-                - set(attributes["ccsn.ingress.entrypoint"], attributes["entrypoint"])
-                  where attributes["ccsn.ingress.entrypoint"] == nil and attributes["entrypoint"] != nil
-                - delete_key(attributes, "entrypoint") where attributes["entrypoint"] != nil
-                - set(attributes["ccsn.request.id"], attributes["request_id"])
-                  where attributes["ccsn.request.id"] == nil and attributes["request_id"] != nil
-                - delete_key(attributes, "request_id") where attributes["request_id"] != nil
-                - set(attributes["cloudflare.ray.id"], attributes["cf_ray"])
-                  where attributes["cloudflare.ray.id"] == nil and attributes["cf_ray"] != nil
-                - delete_key(attributes, "cf_ray") where attributes["cf_ray"] != nil
-                - set(attributes["istio.proxy.request_id"], attributes["proxy_request_id"])
-                  where attributes["istio.proxy.request_id"] == nil and attributes["proxy_request_id"] != nil
-                - delete_key(attributes, "proxy_request_id") where attributes["proxy_request_id"] != nil
             - context: span
               conditions:
                 - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"

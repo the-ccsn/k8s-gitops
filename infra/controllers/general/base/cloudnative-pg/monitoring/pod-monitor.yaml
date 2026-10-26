@@ -29,3 +29,25 @@ spec:
         # The Pod label above is authoritative. Avoid a second, ambiguous key.
         - action: labeldrop
           regex: "server|cluster"
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cloudnative-pg-operator
+  namespace: monitoring
+  labels:
+    application: cloudnative-pg
+    component: operator
+spec:
+  sampleLimit: 10000
+  namespaceSelector:
+    matchNames: [cnpg-system]
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: cnpg
+      app.kubernetes.io/name: cloudnative-pg
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

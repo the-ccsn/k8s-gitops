@@ -5,3 +5,13 @@ resources:
   - ./metrics-authorization.yaml
   - ./rules.yaml
   - ./dashboard.yaml
+
+configMapGenerator:
+  - name: cloudnative-pg-dashboard
+    namespace: grafana
+    files: [dashboard.json]
+    options:
+      # Grafana Operator watches the referenced ConfigMap for content changes.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

@@ -227,12 +227,8 @@ spec:
         # delete logs older than this period
         retention_period: 168h
         retention_stream:
-          # keey only 1 day for dev logs
+          # Keep only one day of dev logs.
           - selector: '{k8s_namespace_name="dev"}'
-            priority: 1
-            period: 24h
-          # Preserve the same policy for pre-migration streams until they expire.
-          - selector: '{namespace="dev"}'
             priority: 1
             period: 24h
         max_cache_freshness_per_query: 10m

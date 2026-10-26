@@ -1,0 +1,16 @@
+# Bound chart-generated wait/init/Job containers without a native resource option.
+# Explicit application/database budgets take precedence. New Pods only.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: application-container-defaults
+  namespace: prod
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: '1'
+      memory: 1Gi
+    defaultRequest:
+      cpu: 10m
+      memory: 64Mi

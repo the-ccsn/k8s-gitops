@@ -54,6 +54,7 @@ spec:
               memory: "64Mi"
             limits:
               memory: "1Gi"
+              cpu: '1'
           view_only_mode: false
         
         installation_tag: "Kiali@kubevirt-cluster-319"
@@ -135,3 +136,10 @@ spec:
                 enabled: false
                 max_consecutive_na: 3
               port: 9090
+    resources:
+      requests:
+        cpu: 20m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi

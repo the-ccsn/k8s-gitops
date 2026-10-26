@@ -1,0 +1,16 @@
+# CNAO v0.102.0 does not expose resource overrides for its generated DaemonSets.
+# Defaults preserve explicit requests and take effect when Pods are recreated.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: network-addon-container-defaults
+  namespace: cluster-network-addons
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: 500m
+      memory: 256Mi
+    defaultRequest:
+      cpu: 10m
+      memory: 32Mi

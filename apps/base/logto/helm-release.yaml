@@ -42,12 +42,12 @@ spec:
         hostnames:
           - login-dash.ccsn.dev
     resources:
+      requests:
+        cpu: 50m
+        memory: 384Mi
       limits:
         cpu: 1500m
         memory: 2Gi
-      requests:
-        cpu: 1m
-        memory: 128Mi
 
     ## High availability
     replicaCount: 2
@@ -70,3 +70,37 @@ spec:
 
     topologySpreadConstraints:
       enabled: false # Only one AZ in our cluster, so this doesn't make sense to enable
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: logto
+        patch: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: logto
+          spec:
+            template:
+              spec:
+                containers:
+                - name: logto
+                  resources:
+                    requests:
+                      cpu: 50m
+                      memory: 384Mi
+                    limits:
+                      cpu: 1500m
+                      memory: 2Gi
+                initContainers:
+                - name: wait-for-pre-app-job
+                  resources:
+                    requests:
+                      cpu: 10m
+                      memory: 32Mi
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi

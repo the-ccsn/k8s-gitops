@@ -92,6 +92,7 @@ spec:
         memory: "64Mi"
       limits:
         memory: "256Mi"
+        cpu: 500m
     podSecurityContext:
       runAsNonRoot: true
       seccompProfile:

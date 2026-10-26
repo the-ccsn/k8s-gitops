@@ -15,6 +15,7 @@ resources:
   - ./../../../base/base/
   - ./../../../base/share/
   - ./../../../base/cloudreve/
+  - ./resource-defaults.yaml
 # Apply after commonLabels to preserve the adapter's existing selector.
 patchesJson6902:
   - target:

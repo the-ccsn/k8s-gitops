@@ -104,3 +104,28 @@ spec:
         size: 5Gi
         storageClass: longhorn-backup
         accessMode: ReadWriteMany
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: vaultwarden-vaultwarden
+        patch: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: vaultwarden-vaultwarden
+          spec:
+            template:
+              spec:
+                initContainers:
+                - name: wait-for-db
+                  resources:
+                    requests:
+                      cpu: 10m
+                      memory: 32Mi
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi

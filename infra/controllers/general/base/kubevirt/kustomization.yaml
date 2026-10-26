@@ -24,4 +24,70 @@ patches:
   # so we need to delete the namespaces' creation in kubevirt-operator.yaml
   - path: delete-ns-kubevirt.yaml
   - path: delete-ns-cdi.yaml
+  - target:
+      kind: Deployment
+      name: virt-operator
+      namespace: kubevirt
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: virt-operator
+        namespace: kubevirt
+      spec:
+        template:
+          spec:
+            containers:
+            - name: virt-operator
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 450Mi
+                limits:
+                  cpu: '1'
+                  memory: 1Gi
+  - target:
+      kind: Deployment
+      name: cdi-operator
+      namespace: cdi
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cdi-operator
+        namespace: cdi
+      spec:
+        template:
+          spec:
+            containers:
+            - name: cdi-operator
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 192Mi
+                limits:
+                  cpu: '1'
+                  memory: 512Mi
+  - target:
+      kind: Deployment
+      name: cluster-network-addons-operator
+      namespace: cluster-network-addons
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cluster-network-addons-operator
+        namespace: cluster-network-addons
+      spec:
+        template:
+          spec:
+            containers:
+            - name: cluster-network-addons-operator
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
   # - path: delete-ns-cluster-network-addons.yaml

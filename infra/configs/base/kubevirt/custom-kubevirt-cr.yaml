@@ -65,7 +65,24 @@ spec:
           selectors:
             - vendor: "152d" # JMicron Technology Corp. / JMicron USA Technology Corp.
               product: "0567" # JMS567 SATA 6Gb/s bridge
-  customizeComponents: {}
+  customizeComponents:
+    patches:
+    - resourceType: Deployment
+      resourceName: virt-api
+      type: strategic
+      patch: '{"spec":{"template":{"spec":{"containers":[{"name":"virt-api","resources":{"requests":{"cpu":"5m","memory":"500Mi"},"limits":{"cpu":"1","memory":"1Gi"}}}]}}}}'
+    - resourceType: Deployment
+      resourceName: virt-controller
+      type: strategic
+      patch: '{"spec":{"template":{"spec":{"containers":[{"name":"virt-controller","resources":{"requests":{"cpu":"10m","memory":"275Mi"},"limits":{"cpu":"1","memory":"1Gi"}}}]}}}}'
+    - resourceType: Deployment
+      resourceName: virt-exportproxy
+      type: strategic
+      patch: '{"spec":{"template":{"spec":{"containers":[{"name":"exportproxy","resources":{"requests":{"cpu":"5m","memory":"150Mi"},"limits":{"cpu":"500m","memory":"512Mi"}}}]}}}}'
+    - resourceType: DaemonSet
+      resourceName: virt-handler
+      type: strategic
+      patch: '{"spec":{"template":{"spec":{"containers":[{"name":"virt-handler","resources":{"requests":{"cpu":"10m","memory":"325Mi"},"limits":{"cpu":"1","memory":"1Gi"}}}],"initContainers":[{"name":"virt-launcher","resources":{"requests":{"cpu":"10m","memory":"32Mi"},"limits":{"cpu":"200m","memory":"128Mi"}}}]}}}}'
   imagePullPolicy: IfNotPresent
   workloadUpdateStrategy:
     # live migration is preferred

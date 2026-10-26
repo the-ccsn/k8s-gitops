@@ -1,0 +1,16 @@
+# CoreDNS and metrics-server are owned by K3s Addons, outside Flux workload ownership.
+# Explicit Cilium/CSI budgets override these admission defaults. New Pods only.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: system-container-defaults
+  namespace: kube-system
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: '1'
+      memory: 512Mi
+    defaultRequest:
+      cpu: 10m
+      memory: 64Mi

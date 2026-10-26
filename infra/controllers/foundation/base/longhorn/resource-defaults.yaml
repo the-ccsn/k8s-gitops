@@ -1,0 +1,17 @@
+# Longhorn generates CSI/engine/share/instance Pods without limit fields.
+# Keep the existing per-node instance-manager CPU requests (currently up to 4.2 cores).
+# Admission defaults affect new Pods; existing storage Pods need a separate rollout.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: longhorn-container-defaults
+  namespace: longhorn-system
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: '8'
+      memory: 8Gi
+    defaultRequest:
+      cpu: 10m
+      memory: 64Mi

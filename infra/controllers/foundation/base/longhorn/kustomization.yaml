@@ -11,3 +11,4 @@ resources:
   - ./longhorn-vm-state-storageclass.yaml
   - ./longhorn-volumesnapshotclass.yaml
   - ./longhorn-vm-storageclass.yaml
+  - ./resource-defaults.yaml

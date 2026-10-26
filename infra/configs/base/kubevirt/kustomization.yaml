@@ -25,3 +25,4 @@ resources:
   - ./metrics-authorization.yaml
 
   - ./vm-state-storageprofile.yaml
+  - ./network-resource-defaults.yaml

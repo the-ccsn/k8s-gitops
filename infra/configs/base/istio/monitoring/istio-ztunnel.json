@@ -1,0 +1,745 @@
+{
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Process",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Version number of each running instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(istio_build{component=\"ztunnel\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(tag)",
+          "legendFormat": "Version ({{tag}})",
+          "refId": "A"
+        }
+      ],
+      "title": "Ztunnel Versions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Memory usage of each running instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 3,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(container_memory_working_set_bytes{container=\"istio-proxy\",pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod)",
+          "legendFormat": "Container ({{pod}})",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "CPU usage of each running instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "id": 4,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(irate(container_cpu_usage_seconds_total{container=\"istio-proxy\",pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "Container ({{pod}})",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 5,
+      "panels": [],
+      "title": "Network",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Connections opened and closed per instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          },
+          "unit": "cps"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      },
+      "id": 6,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(istio_tcp_connections_opened_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "Opened ({{pod}})",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "0 - sum(rate(istio_tcp_connections_closed_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "Closed ({{pod}})",
+          "refId": "B"
+        }
+      ],
+      "title": "Connections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Bytes sent and received per instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          },
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 10
+      },
+      "id": 7,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(istio_tcp_sent_bytes_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "Sent ({{pod}})",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(istio_tcp_received_bytes_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "Received ({{pod}})",
+          "refId": "B"
+        }
+      ],
+      "title": "Bytes Transmitted",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "DNS queries received per instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          },
+          "unit": "qps"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      },
+      "id": 8,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(istio_dns_requests_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "Request ({{pod}})",
+          "refId": "A"
+        }
+      ],
+      "title": "DNS Request",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Operations",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Count of XDS connection terminations.\nThis will typically spike every 30min for each instance.\n",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "id": 10,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(istio_xds_connection_terminations_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(pod)",
+          "legendFormat": "XDS Connection Terminations ({{pod}})",
+          "refId": "A"
+        }
+      ],
+      "title": "XDS Connections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ops"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cds"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Clusters"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "eds"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Endpoints"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "lds"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Listeners"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rds"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Routes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "nds"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "DNS Tables"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "istio.io/debug"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Debug"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "istio.io/debug/syncz"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Debug"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "wads"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Authorization"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "wds"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Workloads"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type.googleapis.com/istio.security.Authorization"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Authorizations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type.googleapis.com/istio.workload.Address"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Addresses"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 19
+      },
+      "id": 11,
+      "interval": "15s",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(irate(istio_xds_message_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(url)",
+          "legendFormat": "{{url}}",
+          "refId": "A"
+        }
+      ],
+      "title": "XDS Pushes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Count of active and pending proxies managed by each instance.\nPending is expected to converge to zero.\n",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "id": 12,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(workload_manager_active_proxy_count{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod)",
+          "legendFormat": "Active Proxies ({{pod}})",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(workload_manager_pending_proxy_count{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod)",
+          "legendFormat": "Pending Proxies ({{pod}})",
+          "refId": "B"
+        }
+      ],
+      "title": "Workload Manager",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 13,
+      "panels": [],
+      "title": "Network Resources",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Active TCP connections, open file descriptors, and open sockets per instance",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "gradientMode": "hue",
+            "showPoints": "never"
+          },
+          "decimals": 0,
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 14,
+      "interval": "5s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table"
+        }
+      },
+      "pluginVersion": "v11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(istio_tcp_connections_opened_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod) - sum(istio_tcp_connections_closed_total{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod)",
+          "legendFormat": "TCP Connections ({{pod}})",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(process_open_fds{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod)",
+          "legendFormat": "Open File Descriptors ({{pod}})",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(istio_tcp_sockets_open{pod=~\"ztunnel-.*\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(pod)",
+          "legendFormat": "Open Sockets ({{pod}})",
+          "refId": "C"
+        }
+      ],
+      "title": "Resource Usage",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "query": "label_values(istio_build, k8s_cluster_name)",
+        "definition": "label_values(istio_build, k8s_cluster_name)",
+        "refresh": 1,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "Istio Ztunnel Dashboard",
+  "uid": "istio-ztunnel",
+  "id": null,
+  "version": 1
+}

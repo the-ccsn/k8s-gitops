@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seaweedfs-admin
+  labels:
+    app.kubernetes.io/name: seaweedfs-admin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seaweedfs-admin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: seaweedfs-admin
+        app.kubernetes.io/version: '4.48'
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: admin
+          image: docker.io/chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
+          command: [weed]
+          args:
+            - admin
+            - -master=192.168.1.22:9333
+            # The shared Gateway authenticates users; strict mesh policy admits
+            # only that Gateway to this listener and denies the worker gRPC port.
+            - '-ip=::'
+            - -allowInsecureBind
+            - -port=23646
+            - -dataDir=/data
+            - -iceberg.port=0
+            - -lance.port=0
+          workingDir: /data
+          env:
+            - name: WEED_MAINTENANCE_ENABLED
+              value: 'false'
+          ports:
+            - name: http
+              containerPort: 23646
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: seaweedfs-admin
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

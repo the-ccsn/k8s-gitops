@@ -1,0 +1,36 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: seaweedfs-admin-ext-auth
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default-gateway
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+    - to:
+        - operation:
+            hosts: [swfs-admin.ccsn.dev, 'swfs-admin.ccsn.dev:*']
+            ports: ['443', '8080']
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: seaweedfs-admin-deny-non-admin
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default-gateway
+  action: DENY
+  rules:
+    - to:
+        - operation:
+            hosts: [swfs-admin.ccsn.dev, 'swfs-admin.ccsn.dev:*']
+            ports: ['443', '8080']
+      when:
+        - key: request.auth.claims[roles]
+          notValues: [swfs:admin]

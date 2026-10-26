@@ -15,6 +15,10 @@ spec:
 
   releaseName: vaultwarden
   interval: 30m
+  timeout: 10m
+  upgrade:
+    strategy:
+      name: RetryOnFailure
   chartRef:
     kind: OCIRepository
     name: helm-chart-vaultwarden

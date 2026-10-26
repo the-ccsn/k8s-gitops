@@ -42,7 +42,8 @@ spec:
     proxy:
       httpProxy: http://proxy-svc.egress-system.svc.cluster.local:7890
       httpsProxy: http://proxy-svc.egress-system.svc.cluster.local:7890
-      noProxy: 127.0.0.1,localhost,.svc,.cluster.local,harbor.harbor.svc,core,jobservice,registry,portal
+      # Resolve and reach internal CCSN endpoints without the public egress proxy.
+      noProxy: 127.0.0.1,localhost,.svc,.cluster.local,.ccsn.dev,harbor.harbor.svc,core,jobservice,registry,portal
 
     database:
       type: external

@@ -5,6 +5,11 @@ comes from the SOPS-encrypted `harbor-admin-auth` Secret; do not assume a defaul
 password. OAuth configuration reads the Logto-generated connection Secret through
 `core.extraEnvVars` and `CONFIG_OVERWRITE_JSON`.
 
+The owner-local Logto role `harbor:admin` grants Harbor system-administrator access
+through the existing OIDC admin-group mapping. It is not a default role; assign it
+explicitly in Logto and sign in to Harbor again to update the role claim. Other
+project permissions are managed through Harbor project memberships.
+
 ## Proxy-cache and robot management
 
 Crossplane is the only writer for the seven proxy-cache registries/projects and

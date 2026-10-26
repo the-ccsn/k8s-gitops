@@ -1,0 +1,16 @@
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: harbor-admin
+  namespace: harbor
+spec:
+  managementPolicies: [Observe, Create, Update, LateInitialize]
+  forProvider:
+    name: harbor:admin
+    description: Harbor system administrator
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

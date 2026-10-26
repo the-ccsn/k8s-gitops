@@ -1,13 +1,13 @@
 apiVersion: role.logto.m.crossplane.io/v1alpha1
 kind: Role
 metadata:
-  name: harbor-admin
+  name: harbor-maintainer
   namespace: harbor
 spec:
   managementPolicies: [Observe, Create, Update, LateInitialize]
   forProvider:
-    name: harbor:admin
-    description: Harbor system administrator
+    name: harbor:maintainer
+    description: Image operations in GitOps-managed Harbor projects
     type: User
     isDefault: false
     scopeIds: []

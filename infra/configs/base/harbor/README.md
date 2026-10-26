@@ -5,10 +5,18 @@ comes from the SOPS-encrypted `harbor-admin-auth` Secret; do not assume a defaul
 password. OAuth configuration reads the Logto-generated connection Secret through
 `core.extraEnvVars` and `CONFIG_OVERWRITE_JSON`.
 
-The owner-local Logto role `harbor:admin` grants Harbor system-administrator access
-through the existing OIDC admin-group mapping. It is not a default role; assign it
-explicitly in Logto and sign in to Harbor again to update the role claim. Other
-project permissions are managed through Harbor project memberships.
+Project creation is restricted to system administrators. Crossplane uses its
+dedicated management credentials to create and configure projects; normal OIDC
+logins have no system-administrator group mapping. The non-default Logto role
+`harbor:maintainer` grants Maintainer access to the seven proxy-cache projects
+through the native MemberGroup declarations in `managed-resources/project-access.yaml`.
+Assign this role explicitly in Logto and sign in to Harbor again to refresh claims.
+Maintainers can push, scan and delete images and manage tag policies, but cannot
+edit project configuration, manage members or delete projects. Proxy-cache projects
+retain Harbor's native restriction against manual pushes. New projects need an
+explicit membership declaration. The local administrator remains available for
+GitOps management and recovery; existing administrator grants must not be used for
+daily access because Harbor combines permissions from all memberships.
 
 ## Proxy-cache and robot management
 

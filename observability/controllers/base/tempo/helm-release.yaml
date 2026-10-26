@@ -102,8 +102,8 @@ spec:
         registry:
           collection_interval: 30s
           external_labels:
-            cluster: kubevirt-cluster-319
-            environment: production
+            k8s_cluster_name: kubevirt-cluster-319
+            deployment_environment_name: production
         storage:
           path: /var/tempo/metrics
         traces_storage:

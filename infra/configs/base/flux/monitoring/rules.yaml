@@ -15,4 +15,4 @@ spec:
           for: 15m
           labels: {severity: warning}
           annotations:
-            summary: "Flux {{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready"
+            summary: "Flux {{ $labels.kind }} {{ $labels.flux_resource_namespace_name }}/{{ $labels.name }} is not ready"

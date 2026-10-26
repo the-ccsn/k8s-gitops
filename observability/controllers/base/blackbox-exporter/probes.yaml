@@ -19,9 +19,6 @@ spec:
       labels:
         application: blackbox-exporter
         service: blackbox-exporter
-        cluster: kubevirt-cluster-319
-        environment: production
-        site: ccsn
         probe_path: internal
   targetLimit: 1
   sampleLimit: 100
@@ -46,9 +43,6 @@ spec:
       static:
         - kube-dns.kube-system.svc.cluster.local:53
       labels:
-        cluster: kubevirt-cluster-319
-        environment: production
-        site: ccsn
         probe_path: internal
   targetLimit: 10
   sampleLimit: 500
@@ -74,9 +68,6 @@ spec:
         - 202.4.130.100:53 # ns.buct.edu.cn
         - 202.4.130.101:53 # ns2.buct.edu.cn
       labels:
-        cluster: kubevirt-cluster-319
-        environment: production
-        site: ccsn
         probe_path: campus-direct
   targetLimit: 2
   sampleLimit: 500

@@ -22,7 +22,7 @@ spec:
         - alert: PodNotReady
           expr: |
             (kube_pod_status_ready{condition="true"} == 0)
-            unless on (cluster, namespace, pod)
+            unless on (k8s_cluster_name, namespace, pod)
             (kube_pod_status_phase{phase="Succeeded"} == 1)
           for: 5m
           labels:
@@ -34,10 +34,10 @@ spec:
         - alert: HighMemoryUsage
           expr: |
             (
-              max by (cluster, namespace, pod, container) (
+              max by (k8s_cluster_name, namespace, pod, container) (
                 container_memory_working_set_bytes{container!="", container!="POD", pod!=""}
               )
-              / max by (cluster, namespace, pod, container) (
+              / max by (k8s_cluster_name, namespace, pod, container) (
                 kube_pod_container_resource_limits{resource="memory", unit="byte"} > 0
               )
             ) > 0.9
@@ -51,10 +51,10 @@ spec:
         - alert: HighCpuUsage
           expr: |
             (
-              sum by (cluster, namespace, pod, container) (
+              sum by (k8s_cluster_name, namespace, pod, container) (
                 rate(container_cpu_usage_seconds_total{container!="", container!="POD", pod!=""}[5m])
               )
-              / max by (cluster, namespace, pod, container) (
+              / max by (k8s_cluster_name, namespace, pod, container) (
                 kube_pod_container_resource_limits{resource="cpu", unit="core"} > 0
               )
             ) > 0.9
@@ -68,16 +68,16 @@ spec:
         - alert: ContainerMemoryLimitMissing
           expr: |
             (
-              max by (cluster, namespace, pod, container) (
+              max by (k8s_cluster_name, namespace, pod, container) (
                 kube_pod_container_info or kube_pod_init_container_info
               )
-              unless on (cluster, namespace, pod, container)
+              unless on (k8s_cluster_name, namespace, pod, container)
               (
                 (kube_pod_container_resource_limits{resource="memory", unit="byte"} > 0)
                 or (kube_pod_init_container_resource_limits{resource="memory", unit="byte"} > 0)
               )
             )
-            and on (cluster, namespace, pod)
+            and on (k8s_cluster_name, namespace, pod)
             (kube_pod_status_phase{phase!~"Succeeded|Failed"} == 1)
           for: 5m
           labels:
@@ -89,16 +89,16 @@ spec:
         - alert: ContainerCpuLimitMissing
           expr: |
             (
-              max by (cluster, namespace, pod, container) (
+              max by (k8s_cluster_name, namespace, pod, container) (
                 kube_pod_container_info or kube_pod_init_container_info
               )
-              unless on (cluster, namespace, pod, container)
+              unless on (k8s_cluster_name, namespace, pod, container)
               (
                 (kube_pod_container_resource_limits{resource="cpu", unit="core"} > 0)
                 or (kube_pod_init_container_resource_limits{resource="cpu", unit="core"} > 0)
               )
             )
-            and on (cluster, namespace, pod)
+            and on (k8s_cluster_name, namespace, pod)
             (kube_pod_status_phase{phase!~"Succeeded|Failed"} == 1)
           for: 5m
           labels:

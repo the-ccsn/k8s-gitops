@@ -23,8 +23,8 @@ spec:
       "refresh": "30s",
       "templating": {
         "list": [
-          {"name": "namespace", "label": "Namespace", "type": "query", "datasource": {"type": "loki", "uid": "loki"}, "query": "label_values(namespace)", "includeAll": true, "allValue": ".+"},
-          {"name": "app", "label": "Application", "type": "query", "datasource": {"type": "loki", "uid": "loki"}, "query": "label_values({namespace=~\"$namespace\"}, app)", "includeAll": true, "allValue": ".+"}
+          {"name": "namespace", "label": "Namespace", "type": "query", "datasource": {"type": "loki", "uid": "loki"}, "query": "label_values(k8s_namespace_name)", "includeAll": true, "allValue": ".+"},
+          {"name": "service", "label": "Service", "type": "query", "datasource": {"type": "loki", "uid": "loki"}, "query": "label_values({k8s_namespace_name=~\"$namespace\"}, service_name)", "includeAll": true, "allValue": ".+"}
         ]
       },
       "panels": [
@@ -32,13 +32,13 @@ spec:
           "id": 1, "title": "Log Volume", "type": "timeseries",
           "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
           "datasource": {"type": "loki", "uid": "loki"},
-          "targets": [{"expr": "sum by (level) (count_over_time({namespace=~\"$namespace\",app=~\"$app\"}[5m]))", "legendFormat": "{{level}}", "refId": "A"}]
+          "targets": [{"expr": "sum by (severity_text) (count_over_time({k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"}[5m]))", "legendFormat": "{{severity_text}}", "refId": "A"}]
         },
         {
           "id": 2, "title": "Logs", "type": "logs",
           "gridPos": {"h": 14, "w": 24, "x": 0, "y": 8},
           "datasource": {"type": "loki", "uid": "loki"},
-          "targets": [{"expr": "{namespace=~\"$namespace\",app=~\"$app\"}", "refId": "A"}]
+          "targets": [{"expr": "{k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"}", "refId": "A"}]
         }
       ]
     }

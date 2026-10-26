@@ -21,7 +21,8 @@ spec:
         spanStartTimeShift: -5m
         spanEndTimeShift: 5m
         tags:
-          - key: cluster
+          - key: k8s.cluster.name
+            value: k8s_cluster_name
         # A request crosses namespaces and service identities. Match its OTLP
         # trace ID in structured metadata instead of searching the log message.
         customQuery: true

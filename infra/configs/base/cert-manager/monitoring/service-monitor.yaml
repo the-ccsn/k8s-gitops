@@ -24,3 +24,9 @@ spec:
         - action: replace
           targetLabel: job
           replacement: cert-manager
+      metricRelabelings:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: cert_manager_certificate_namespace_name
+        - action: labeldrop
+          regex: exported_namespace

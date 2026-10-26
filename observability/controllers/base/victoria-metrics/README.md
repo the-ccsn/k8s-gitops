@@ -19,6 +19,12 @@ controller/Service migration; the old ephemeral queue is not transferred.
 
 Use the existing manifest and flux-local CI checks before merging changes.
 
+Scraped metrics use qualified infrastructure metadata such as `k8s_cluster_name`;
+component-specific identities follow the [shared naming contract](../../../README.md).
+Keep the standard `job`, `instance` and Kubernetes metric labels used by upstream
+dashboards and Headlamp. Renaming a label changes series identity; historical
+samples retain their previous keys until retention expires.
+
 The VMSingle Service uses the shared observability waypoint. Its API policy
 allows Grafana, Kiali and Headlamp to query; VMAlert can also query and remote
 write; VMAgent and Tempo can remote write. Blackbox can only check health.

@@ -72,7 +72,7 @@ spec:
             health_check_url: ""
             is_core: true
             query_scope:
-              cluster: "kubevirt-cluster-319"
+              k8s_cluster_name: "kubevirt-cluster-319"
             # VictoriaMetrics does not expose Prometheus status/config/runtimeinfo.
             thanos_proxy:
               enabled: true

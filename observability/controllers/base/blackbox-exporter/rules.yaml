@@ -16,9 +16,9 @@ spec:
         - record: probe:http_duration_seconds:p95_5m
           expr: quantile_over_time(0.95, probe_duration_seconds[5m])
         - record: node:network_receive_bytes:rate5m
-          expr: sum by (cluster, node, device) (rate(node_network_receive_bytes_total{device!~"lo|veth.*|cali.*"}[5m]))
+          expr: sum by (k8s_cluster_name, node, device) (rate(node_network_receive_bytes_total{device!~"lo|veth.*|cali.*"}[5m]))
         - record: node:network_transmit_bytes:rate5m
-          expr: sum by (cluster, node, device) (rate(node_network_transmit_bytes_total{device!~"lo|veth.*|cali.*"}[5m]))
+          expr: sum by (k8s_cluster_name, node, device) (rate(node_network_transmit_bytes_total{device!~"lo|veth.*|cali.*"}[5m]))
     - name: observability.alerts
       rules:
         - alert: BlackboxProbeMetricsMissing

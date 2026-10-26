@@ -71,6 +71,8 @@ spec:
             template:
               spec:
                 containers:
+                # The post-upgrade hook reads the manager image from containers[0].
+                - name: longhorn-manager
                 - name: pre-pull-share-manager-image
                   resources:
                     requests:

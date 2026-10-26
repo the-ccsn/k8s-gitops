@@ -21,6 +21,17 @@ explicit membership declaration. The local administrator remains available for
 GitOps management and recovery; existing administrator grants must not be used for
 daily access because Harbor combines permissions from all memberships.
 
+Metrics for core, registry, jobservice and exporter are enabled on port 8001.
+Their pods join Istio ambient; only vmagent can access that listener. The
+access policy is installed by `infra-configs` before metrics are enabled. The
+remaining owner-local `monitoring/` resources are included by `observability-configs`
+after the shared monitoring APIs. They provide the Harbor dashboard, backend health
+and finite-quota alerts, plus internal and public health probes. The public probe
+checks transport availability; `harbor_health` reports backend health separately.
+The dashboard imports Harbor's official v2.15.4 example from a fixed release commit;
+its source SHA-256 is recorded on the resource. The native datasource mapping uses
+the `victoriametrics` UID because the upstream placeholder occupies UID fields.
+
 ## Proxy-cache and robot management
 
 Crossplane is the only writer for the seven proxy-cache registries/projects and

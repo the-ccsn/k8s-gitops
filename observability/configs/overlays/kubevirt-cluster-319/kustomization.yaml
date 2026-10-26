@@ -8,6 +8,7 @@ resources:
   - ../../../../infra/controllers/general/base/cloudnative-pg/monitoring/
   - ../../../../infra/controllers/networking/base/kiali/monitoring/
   - ../../../../infra/configs/base/cert-manager/monitoring/
+  - ../../../../infra/configs/base/harbor/monitoring/
   - ../../../../infra/configs/base/kubevirt/monitoring/
   - ../../../controllers/base/victoria-metrics/monitoring/
   - ../../../controllers/base/loki/monitoring/

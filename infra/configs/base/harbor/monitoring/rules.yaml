@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: harbor
+  namespace: monitoring
+spec:
+  groups:
+    - name: harbor.rules
+      rules:
+        - alert: HarborMetricsTargetDown
+          expr: up{namespace="harbor",job="harbor"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: A Harbor metrics target is unreachable
+            description: 'Metrics scraping failed for {{ $labels.instance }}; check the component and its ambient identity policy.'
+        - alert: HarborUnhealthy
+          expr: harbor_health{namespace="harbor",job="harbor"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Harbor reports an unhealthy backend
+            description: Check the Harbor dashboard's component health, database and Redis status.
+        - alert: HarborHealthMetricsMissing
+          expr: absent(harbor_health{namespace="harbor",job="harbor"})
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Harbor health metrics are missing
+            description: Check the exporter, its database/API access and the authenticated metrics scrape.
+        - alert: HarborProjectQuotaNearFull
+          expr: |
+            (
+              harbor_project_quota_usage_byte{namespace="harbor",job="harbor"}
+              / harbor_project_quota_byte{namespace="harbor",job="harbor"} > 0.9
+            )
+            and harbor_project_quota_byte{namespace="harbor",job="harbor"} > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Harbor project storage quota is nearly full
+            description: 'Project {{ $labels.project_name }} has used over 90% of its finite storage quota.'

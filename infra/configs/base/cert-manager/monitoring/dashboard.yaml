@@ -5,6 +5,8 @@ metadata:
   namespace: grafana
   annotations:
     kustomize.toolkit.fluxcd.io/substitute: disabled
+    observability.ccsn.dev/upstream-url: https://raw.githubusercontent.com/monitoring-mixins/website/7b1f6de899ffdbdf59c807a32cd8a9a514231915/assets/cert-manager/dashboards/cert-manager-overview.json
+    observability.ccsn.dev/upstream-sha256: 733b08670ce7c93d6ea9efcc04c1c0a86bdd53ad2ceaf33d414200886916d582
   labels:
     dashboards: grafana
 spec:
@@ -13,131 +15,6 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: platform
-  json: |-
-    {
-      "title": "cert-manager",
-      "uid": "cert-manager",
-      "tags": [
-        "cert-manager",
-        "certificates"
-      ],
-      "description": "Controller metrics and managed certificate readiness/validity. Certificate namespaces use cert_manager_certificate_namespace_name; external TLS probes are available in the TLS Certificates dashboard.",
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "Controller Up",
-          "type": "stat",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "targets": [
-            {
-              "expr": "up{job=\"cert-manager\"}",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "title": "Certificate Readiness",
-          "type": "stat",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "targets": [
-            {
-              "expr": "certmanager_certificate_ready_status{condition=\"True\"}",
-              "legendFormat": "{{cert_manager_certificate_namespace_name}}/{{name}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "title": "Certificate Validity",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "d"
-            },
-            "overrides": []
-          },
-          "targets": [
-            {
-              "expr": "(certmanager_certificate_not_after_timestamp_seconds - time()) / 86400",
-              "legendFormat": "{{cert_manager_certificate_namespace_name}}/{{name}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "title": "Controller Sync Errors",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "ops"
-            },
-            "overrides": []
-          },
-          "targets": [
-            {
-              "expr": "sum by (controller) (rate(certmanager_controller_sync_error_count[5m]))",
-              "legendFormat": "{{controller}}",
-              "refId": "A"
-            }
-          ]
-        }
-      ]
-    }
+  configMapRef:
+    name: cert-manager-dashboard
+    key: dashboard.json

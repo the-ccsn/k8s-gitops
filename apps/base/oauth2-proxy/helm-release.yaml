@@ -33,6 +33,9 @@ spec:
             provider: oidc
             clientSecretFile: /etc/oauth2-proxy/credentials/clientSecret
             scope: openid profile email roles offline_access
+            loginURLParameters:
+              - name: prompt
+                default: [consent]
             additionalClaims:
               - roles
             oidcConfig:

@@ -31,3 +31,10 @@ spec:
       platform: k3s
       # In order to use native nftable rules instead of iptable rules, set this flag to true.
       nativeNftables: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: '1'
+        memory: 512Mi

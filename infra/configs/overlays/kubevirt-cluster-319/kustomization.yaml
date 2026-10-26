@@ -19,6 +19,7 @@ resources:
   - ./i319-reroute/
   - ./coredns-custom.yaml
   - ./seaweedfs-s3/
+  - ./kube-system-resource-defaults.yaml
 
 patches:
   - target:

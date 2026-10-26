@@ -107,6 +107,7 @@ spec:
               name: managed-bootstrap
               resources:
                 limits:
+                  cpu: 100m
                   memory: 128Mi
                 requests:
                   cpu: 20m
@@ -210,6 +211,7 @@ spec:
                       cpu: 10m
                       memory: 32Mi
                     limits:
+                      cpu: 100m
                       memory: 128Mi
                   securityContext:
                     allowPrivilegeEscalation: false
@@ -218,6 +220,13 @@ spec:
                     readOnlyRootFilesystem: true
                 - name: cloudreve-system-cnpg-wait
                   image: docker.ccsn.dev/library/postgres:16-alpine
+                  resources:
+                    requests:
+                      cpu: 10m
+                      memory: 32Mi
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi
                   command:
                   - /bin/sh
                   - -ec
@@ -241,4 +250,5 @@ spec:
                       cpu: 10m
                       memory: 32Mi
                     limits:
+                      cpu: 100m
                       memory: 128Mi

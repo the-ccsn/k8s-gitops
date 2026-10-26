@@ -22,9 +22,6 @@ spec:
         application: seaweedfs-s3
         service: seaweedfs-s3
         storage_platform: omv
-        cluster: kubevirt-cluster-319
-        environment: production
-        site: ccsn
         probe_path: internal
         ip_family: dualstack
   targetLimit: 1

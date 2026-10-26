@@ -14,55 +14,55 @@ data:
         rules:
           - alert: ApplicationCriticalLogs
             expr: |
-              sum by (app, namespace, container) (
-                rate({namespace=~".+"} | severity_text=~"(?i:error|critical|fatal)" [5m])
+              sum by (k8s_cluster_name, service_name, k8s_namespace_name, k8s_container_name) (
+                rate({k8s_namespace_name=~".+"} | severity_text=~"(?i:error|critical|fatal)" [5m])
               ) > 0
             for: 1m
             labels:
               severity: critical
               component: logging
             annotations:
-              summary: "Critical logs from {{ $labels.app }}/{{ $labels.namespace }}"
-              description: "Container {{ $labels.container }} is producing critical-level logs."
+              summary: "Critical logs from {{ $labels.service_name }}/{{ $labels.k8s_namespace_name }}"
+              description: "Container {{ $labels.k8s_container_name }} is producing critical-level logs."
               runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/application-logs.md
           - alert: ApplicationHighErrorLogs
             expr: |
-              sum by (app, namespace) (
-                rate({namespace=~".+"} | severity_text=~"(?i:error|err)" [5m])
+              sum by (k8s_cluster_name, service_name, k8s_namespace_name) (
+                rate({k8s_namespace_name=~".+"} | severity_text=~"(?i:error|err)" [5m])
               ) > 10
             for: 5m
             labels:
               severity: warning
               component: logging
             annotations:
-              summary: "High error rate from {{ $labels.app }}"
-              description: "Error log rate is above 10/s for {{ $labels.app }}/{{ $labels.namespace }}."
+              summary: "High error rate from {{ $labels.service_name }}"
+              description: "Error log rate is above 10/s for {{ $labels.service_name }}/{{ $labels.k8s_namespace_name }}."
               runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/application-logs.md
       - name: application-logs-info
         rules:
           - alert: ApplicationPanicLogs
             expr: |
-              sum by (app, namespace) (
-                rate({namespace=~".+"} |~ "(?i)panic" [5m])
+              sum by (k8s_cluster_name, service_name, k8s_namespace_name) (
+                rate({k8s_namespace_name=~".+"} |~ "(?i)panic" [5m])
               ) > 0
             for: 30s
             labels:
               severity: critical
               component: logging
             annotations:
-              summary: "Panic detected in {{ $labels.app }}"
-              description: "Application {{ $labels.app }}/{{ $labels.namespace }} is producing panic logs."
+              summary: "Panic detected in {{ $labels.service_name }}"
+              description: "Application {{ $labels.service_name }}/{{ $labels.k8s_namespace_name }} is producing panic logs."
               runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/application-logs.md
           - alert: ApplicationWarningLogs
             expr: |
-              sum by (app, namespace) (
-                rate({namespace=~".+"} | severity_text=~"(?i:warn|warning)" [5m])
+              sum by (k8s_cluster_name, service_name, k8s_namespace_name) (
+                rate({k8s_namespace_name=~".+"} | severity_text=~"(?i:warn|warning)" [5m])
               ) > 50
             for: 10m
             labels:
               severity: info
               component: logging
             annotations:
-              summary: "High warning rate from {{ $labels.app }}"
-              description: "Warning log rate is above 50/s for {{ $labels.app }}/{{ $labels.namespace }}."
+              summary: "High warning rate from {{ $labels.service_name }}"
+              description: "Warning log rate is above 50/s for {{ $labels.service_name }}/{{ $labels.k8s_namespace_name }}."
               runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/application-logs.md

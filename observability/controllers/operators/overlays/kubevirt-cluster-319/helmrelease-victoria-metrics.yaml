@@ -7,9 +7,9 @@ spec:
       spec:
         scrapeInterval: 20s
         externalLabels:
-          cluster: kubevirt-cluster-319
-          environment: production
-          site: ccsn
+          k8s_cluster_name: kubevirt-cluster-319
+          deployment_environment_name: production
+          ccsn_site_name: ccsn
       ingress:
         hosts:
           - kubevirt-vmagent.ccsn.dev

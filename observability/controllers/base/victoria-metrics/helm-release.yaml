@@ -154,7 +154,7 @@ spec:
                   storage: 2Gi
         scrapeInterval: 20s
         externalLabels:
-          platform: kubernetes
+          ccsn_platform_name: kubernetes
         extraArgs:
           # Bound the single remote-write queue to 1 GiB on its 2 GiB PVC,
           # leaving filesystem headroom. The operator mounts the queue path.

@@ -21,6 +21,11 @@ spec:
       path: /metrics
       interval: 30s
       scrapeTimeout: 10s
+      relabelings:
+        # Apply to every sample, including exporter health and backup metrics.
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
+          targetLabel: cnpg_cluster_name
       metricRelabelings:
+        # The Pod label above is authoritative. Avoid a second, ambiguous key.
         - action: labeldrop
-          regex: "server"
+          regex: "server|cluster"

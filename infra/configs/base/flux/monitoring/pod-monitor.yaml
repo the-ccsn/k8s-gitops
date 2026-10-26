@@ -20,3 +20,9 @@ spec:
       path: /metrics
       interval: 30s
       scrapeTimeout: 10s
+      metricRelabelings:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: flux_resource_namespace_name
+        - action: labeldrop
+          regex: exported_namespace

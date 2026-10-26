@@ -15,10 +15,10 @@ spec:
           for: 5m
           labels: {severity: critical}
           annotations:
-            summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.pod }} cannot reach PostgreSQL"
+            summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}/{{ $labels.pod }} cannot reach PostgreSQL"
         - alert: CloudNativePgReplicationLag
           expr: cnpg_pg_replication_lag > 60
           for: 10m
           labels: {severity: warning}
           annotations:
-            summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.pod }} replication lag exceeds 60 seconds"
+            summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}/{{ $labels.pod }} replication lag exceeds 60 seconds"

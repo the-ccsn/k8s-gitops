@@ -245,6 +245,9 @@ See [FAQ](./FAQ.md).
 
 ## Cluster Security & Stability
 
+Observability metadata, component identities and cross-signal mappings follow
+the [observability naming contract](./observability/README.md).
+
 To prevent damage to the cluster, we have to follow some rules:
 
 1. **Do not use `kubectl apply` to apply changes to the cluster.** FluxCD will take care

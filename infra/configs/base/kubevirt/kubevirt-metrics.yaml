@@ -33,6 +33,12 @@ spec:
         - action: keep
           sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
           regex: virt-exportproxy
+      metricRelabelConfigs:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: kubevirt_resource_namespace_name
+        - action: labeldrop
+          regex: exported_namespace
       interval: 15s
     - port: metrics
       path: /metrics
@@ -48,6 +54,12 @@ spec:
         - action: keep
           sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
           regex: virt-api
+      metricRelabelConfigs:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: kubevirt_resource_namespace_name
+        - action: labeldrop
+          regex: exported_namespace
       interval: 15s
     - port: metrics
       path: /metrics
@@ -63,6 +75,12 @@ spec:
         - action: keep
           sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
           regex: virt-controller
+      metricRelabelConfigs:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: kubevirt_resource_namespace_name
+        - action: labeldrop
+          regex: exported_namespace
       interval: 15s
     - port: metrics
       path: /metrics
@@ -78,6 +96,12 @@ spec:
         - action: keep
           sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
           regex: virt-handler
+      metricRelabelConfigs:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: kubevirt_resource_namespace_name
+        - action: labeldrop
+          regex: exported_namespace
       interval: 15s
     - port: metrics
       path: /metrics
@@ -93,4 +117,10 @@ spec:
         - action: keep
           sourceLabels: [__meta_kubernetes_pod_label_kubevirt_io]
           regex: virt-operator
+      metricRelabelConfigs:
+        - sourceLabels: [exported_namespace]
+          regex: (.+)
+          targetLabel: kubevirt_resource_namespace_name
+        - action: labeldrop
+          regex: exported_namespace
       interval: 15s

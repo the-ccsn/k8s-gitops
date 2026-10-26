@@ -49,7 +49,7 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (namespace) (rate(istio_requests_total{cluster=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
+              "expr": "sum by (namespace) (rate(istio_requests_total{k8s_cluster_name=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -77,7 +77,7 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (namespace) (rate(istio_requests_total{cluster=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\",response_code=~\"5..\"}[5m])) / sum by (namespace) (rate(istio_requests_total{cluster=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
+              "expr": "sum by (namespace) (rate(istio_requests_total{k8s_cluster_name=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\",response_code=~\"5..\"}[5m])) / sum by (namespace) (rate(istio_requests_total{k8s_cluster_name=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -148,7 +148,7 @@ spec:
         {
           "id": 5,
           "title": "Ingress Request Logs",
-          "description": "Sampled requests and HTTP errors. Expand a record to filter cf_ray/request_id or open its TraceID link. Unsampled errors may have no stored trace. Query strings and credentials are excluded.",
+          "description": "Sampled requests and HTTP errors. Expand a record to filter cloudflare_ray_id/ccsn_request_id or open its TraceID link. Unsampled errors may have no stored trace. Query strings and credentials are excluded.",
           "type": "logs",
           "gridPos": {
             "h": 12,
@@ -162,7 +162,7 @@ spec:
           },
           "targets": [
             {
-              "expr": "{cluster=\"kubevirt-cluster-319\"} | entrypoint=~\"campus|istio\"",
+              "expr": "{k8s_cluster_name=\"kubevirt-cluster-319\"} | ccsn_ingress_entrypoint=~\"campus|istio\"",
               "refId": "A"
             }
           ],
@@ -191,7 +191,7 @@ spec:
           "targets": [
             {
               "queryType": "traceql",
-              "query": "{ resource.cluster = \"kubevirt-cluster-319\" && span.entrypoint =~ \"campus|istio\" }",
+              "query": "{ resource.k8s.cluster.name = \"kubevirt-cluster-319\" && span.ccsn.ingress.entrypoint =~ \"campus|istio\" }",
               "limit": 20,
               "refId": "A"
             }

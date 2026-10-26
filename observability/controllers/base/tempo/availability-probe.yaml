@@ -19,9 +19,6 @@ spec:
       labels:
         application: tempo
         service: tempo
-        cluster: kubevirt-cluster-319
-        environment: production
-        site: ccsn
         probe_path: internal
   targetLimit: 1
   sampleLimit: 100

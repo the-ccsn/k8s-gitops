@@ -43,7 +43,7 @@ spec:
           "targets": [
             {
               "expr": "cnpg_collector_up",
-              "legendFormat": "{{namespace}}/{{pod}}",
+              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}}",
               "refId": "A"
             }
           ]
@@ -64,8 +64,8 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (namespace, pod, datname) (cnpg_backends_total)",
-              "legendFormat": "{{namespace}}/{{pod}} {{datname}}",
+              "expr": "sum by (k8s_cluster_name, namespace, cnpg_cluster_name, pod, datname) (cnpg_backends_total)",
+              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}} {{datname}}",
               "refId": "A"
             }
           ]
@@ -86,8 +86,8 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (namespace, pod) (rate(cnpg_pg_stat_database_xact_commit[5m]) + rate(cnpg_pg_stat_database_xact_rollback[5m]))",
-              "legendFormat": "{{namespace}}/{{pod}}",
+              "expr": "sum by (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (rate(cnpg_pg_stat_database_xact_commit[5m]) + rate(cnpg_pg_stat_database_xact_rollback[5m]))",
+              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}}",
               "refId": "A"
             }
           ]
@@ -109,7 +109,7 @@ spec:
           "targets": [
             {
               "expr": "cnpg_pg_replication_lag",
-              "legendFormat": "{{namespace}}/{{pod}}",
+              "legendFormat": "{{namespace}}/{{cnpg_cluster_name}}/{{pod}}",
               "refId": "A"
             }
           ],

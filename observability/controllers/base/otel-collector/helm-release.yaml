@@ -227,19 +227,13 @@ spec:
           extract:
             # Extract pod labels
             labels:
-              # Extract specific pod labels needed for subsequent relabeling
+              # Standard service identity fallback and one component-specific resource.
               - key: "app.kubernetes.io/name"
                 tag_name: "k8s.pod.label.app_kubernetes_io_name"
               - key: "app"
                 tag_name: "k8s.pod.label.app"
-              - key: "app.kubernetes.io/instance"
-                tag_name: "k8s.pod.label.app_kubernetes_io_instance"
-              - key: "instance"
-                tag_name: "k8s.pod.label.instance"
-              - key: "app.kubernetes.io/component"
-                tag_name: "k8s.pod.label.app_kubernetes_io_component"
-              - key: "component"
-                tag_name: "k8s.pod.label.component"
+              - key: "cnpg.io/cluster"
+                tag_name: "cnpg.cluster.name"
 
             # Extract all pod annotations
             # annotations:
@@ -278,66 +272,39 @@ spec:
         # https://opentelemetry.io/docs/collector/transforming-telemetry/
         transform:
           log_statements:
-            - context: resource # Modifying resource attributes
+            - context: resource
               statements:
-                # app (coalescing)
-                - set(resource.attributes["app"],
-                  resource.attributes["k8s.pod.label.app_kubernetes_io_name"]) where
-                  resource.attributes["k8s.pod.label.app_kubernetes_io_name"]!= nil
-                - set(resource.attributes["app"],
-                  resource.attributes["k8s.pod.label.app"]) where
-                  resource.attributes["app"] == nil and
-                  resource.attributes["k8s.pod.label.app"]!= nil
-                - set(resource.attributes["app"], resource.attributes["k8s.pod.name"])
-                  where resource.attributes["app"] == nil and
-                  resource.attributes["k8s.pod.name"]!= nil
-
-                # instance (coalescing)
-                - set(resource.attributes["instance"],
-                  resource.attributes["k8s.pod.label.app_kubernetes_io_instance"]) where
-                  resource.attributes["k8s.pod.label.app_kubernetes_io_instance"]!= nil
-                - set(resource.attributes["instance"],
-                  resource.attributes["k8s.pod.label.instance"]) where
-                  resource.attributes["instance"] == nil and
-                  resource.attributes["k8s.pod.label.instance"]!= nil
-
-                # component (coalescing)
-                - set(resource.attributes["component"],
-                  resource.attributes["k8s.pod.label.app_kubernetes_io_component"]) where
-                  resource.attributes["k8s.pod.label.app_kubernetes_io_component"]!= nil
-                - set(resource.attributes["component"],
-                  resource.attributes["k8s.pod.label.component"]) where
-                  resource.attributes["component"] == nil and
-                  resource.attributes["k8s.pod.label.component"]!= nil
-
-                # Rename and create other common labels.
-                # - node_name <- __meta_kubernetes_pod_node_name
-                # - namespace <- __meta_kubernetes_namespace
-                # - pod       <- __meta_kubernetes_pod_name
-                # - container <- __meta_kubernetes_pod_container_name
-                - set(resource.attributes["node_name"],
-                  resource.attributes["k8s.node.name"]) where
-                  resource.attributes["k8s.node.name"]!= nil
-                - set(resource.attributes["namespace"],
-                  resource.attributes["k8s.namespace.name"]) where
-                  resource.attributes["k8s.namespace.name"]!= nil
-                - set(resource.attributes["pod"], resource.attributes["k8s.pod.name"])
-                  where resource.attributes["k8s.pod.name"]!= nil
-                - set(resource.attributes["container"],
-                  resource.attributes["k8s.container.name"]) where
-                  resource.attributes["k8s.container.name"]!= nil
-                - set(resource.attributes["cluster"], "kubevirt-cluster-319")
-                - set(resource.attributes["environment"], "production")
-                - set(resource.attributes["site"], "ccsn")
-
-                # ----------------------------------------------------------------------
-                # **Cleanup**
-                # After all desired labels have been created, delete all temporary and original source attributes.
-                # This is a crucial step to avoid sending unnecessary data to the backend, saving bandwidth and storage costs.
-                # ----------------------------------------------------------------------
+                # Preserve SDK identity; derive missing log identity from the Pod.
+                - set(resource.attributes["service.name"], resource.attributes["k8s.pod.label.app_kubernetes_io_name"])
+                  where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.label.app_kubernetes_io_name"] != nil
+                - set(resource.attributes["service.name"], resource.attributes["k8s.pod.label.app"])
+                  where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.label.app"] != nil
+                - set(resource.attributes["service.name"], resource.attributes["k8s.pod.name"])
+                  where resource.attributes["service.name"] == nil and resource.attributes["k8s.pod.name"] != nil
+                - set(resource.attributes["service.namespace"], resource.attributes["k8s.namespace.name"])
+                  where resource.attributes["service.namespace"] == nil and resource.attributes["k8s.namespace.name"] != nil
+                - set(resource.attributes["k8s.cluster.name"], "kubevirt-cluster-319")
+                  where resource.attributes["k8s.cluster.name"] == nil
+                - set(resource.attributes["deployment.environment.name"], "production")
+                  where resource.attributes["deployment.environment.name"] == nil
+                - set(resource.attributes["ccsn.site.name"], "ccsn")
+                  where resource.attributes["ccsn.site.name"] == nil
                 - delete_matching_keys(resource.attributes, "^k8s\\.pod\\.label\\..*")
             - context: log
+              conditions:
+                - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
+                - attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio"
               statements:
+                # Accept the previous ingress wire keys during rolling upgrades.
+                - set(attributes["ccsn.ingress.entrypoint"], attributes["entrypoint"])
+                  where attributes["ccsn.ingress.entrypoint"] == nil and attributes["entrypoint"] != nil
+                - delete_key(attributes, "entrypoint") where attributes["entrypoint"] != nil
+                - set(attributes["ccsn.request.id"], attributes["request_id"])
+                  where attributes["ccsn.request.id"] == nil and attributes["request_id"] != nil
+                - delete_key(attributes, "request_id") where attributes["request_id"] != nil
+                - set(attributes["cloudflare.ray.id"], attributes["cf_ray"])
+                  where attributes["cloudflare.ray.id"] == nil and attributes["cf_ray"] != nil
+                - delete_key(attributes, "cf_ray") where attributes["cf_ray"] != nil
                 - set(resource.attributes["service.name"], attributes["service_name"])
                   where attributes["service_name"] != nil
                 - set(resource.attributes["service.namespace"], attributes["service_namespace"])
@@ -345,28 +312,53 @@ spec:
                 - delete_key(attributes, "service_name") where attributes["service_name"] != nil
                 - delete_key(attributes, "service_namespace") where attributes["service_namespace"] != nil
                 - set(severity_number, SEVERITY_NUMBER_ERROR)
-                  where (attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio")
+                  where (attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio")
                   and Int(attributes["status"]) >= 500
                 - set(severity_number, SEVERITY_NUMBER_WARN)
-                  where (attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio")
+                  where (attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio")
                   and Int(attributes["status"]) >= 400 and Int(attributes["status"]) < 500
                 - set(severity_number, SEVERITY_NUMBER_INFO)
-                  where (attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio")
+                  where (attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio")
                   and Int(attributes["status"]) < 400
+                # Loki's rules consume OTLP severity text as well as its number.
+                - set(severity_text, "ERROR") where severity_number == SEVERITY_NUMBER_ERROR
+                - set(severity_text, "WARN") where severity_number == SEVERITY_NUMBER_WARN
+                - set(severity_text, "INFO") where severity_number == SEVERITY_NUMBER_INFO
           trace_statements:
             - context: resource
               statements:
-                - set(resource.attributes["cluster"], "kubevirt-cluster-319")
-                - set(resource.attributes["environment"], "production")
-                - set(resource.attributes["site"], "ccsn")
+                - set(resource.attributes["k8s.cluster.name"], "kubevirt-cluster-319")
+                  where resource.attributes["k8s.cluster.name"] == nil
+                - set(resource.attributes["deployment.environment.name"], "production")
+                  where resource.attributes["deployment.environment.name"] == nil
+                - set(resource.attributes["ccsn.site.name"], "ccsn")
+                  where resource.attributes["ccsn.site.name"] == nil
             - context: span
               conditions:
+                - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
                 - attributes["entrypoint"] == "campus" or attributes["entrypoint"] == "istio"
               statements:
-                - set(attributes["request_id"], attributes["proxy_request_id"])
-                  where (attributes["request_id"] == nil or attributes["request_id"] == "")
-                  and attributes["proxy_request_id"] != nil
-                - delete_key(attributes, "proxy_request_id")
+                # Normalize older NGINX/Istio spans before correlation and redaction.
+                - set(attributes["ccsn.ingress.entrypoint"], attributes["entrypoint"])
+                  where attributes["ccsn.ingress.entrypoint"] == nil and attributes["entrypoint"] != nil
+                - delete_key(attributes, "entrypoint") where attributes["entrypoint"] != nil
+                - set(attributes["ccsn.request.id"], attributes["request_id"])
+                  where attributes["ccsn.request.id"] == nil and attributes["request_id"] != nil
+                - delete_key(attributes, "request_id") where attributes["request_id"] != nil
+                - set(attributes["cloudflare.ray.id"], attributes["cf_ray"])
+                  where attributes["cloudflare.ray.id"] == nil and attributes["cf_ray"] != nil
+                - delete_key(attributes, "cf_ray") where attributes["cf_ray"] != nil
+                - set(attributes["istio.proxy.request_id"], attributes["proxy_request_id"])
+                  where attributes["istio.proxy.request_id"] == nil and attributes["proxy_request_id"] != nil
+                - delete_key(attributes, "proxy_request_id") where attributes["proxy_request_id"] != nil
+            - context: span
+              conditions:
+                - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
+              statements:
+                - set(attributes["ccsn.request.id"], attributes["istio.proxy.request_id"])
+                  where (attributes["ccsn.request.id"] == nil or attributes["ccsn.request.id"] == "")
+                  and attributes["istio.proxy.request_id"] != nil
+                - delete_key(attributes, "istio.proxy.request_id")
                 # Envoy's native HTTP URL includes the query string by default.
                 - 'replace_pattern(attributes["http.url"], "\\?.*$", "") where attributes["http.url"] != nil'
                 - 'replace_pattern(attributes["http.target"], "\\?.*$", "") where attributes["http.target"] != nil'

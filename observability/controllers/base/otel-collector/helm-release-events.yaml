@@ -113,9 +113,12 @@ spec:
           log_statements:
             - context: resource
               statements:
-                - set(resource.attributes["cluster"], "kubevirt-cluster-319")
-                - set(resource.attributes["environment"], "production")
-                - set(resource.attributes["site"], "ccsn")
+                - set(resource.attributes["k8s.cluster.name"], "kubevirt-cluster-319")
+                  where resource.attributes["k8s.cluster.name"] == nil
+                - set(resource.attributes["deployment.environment.name"], "production")
+                  where resource.attributes["deployment.environment.name"] == nil
+                - set(resource.attributes["ccsn.site.name"], "ccsn")
+                  where resource.attributes["ccsn.site.name"] == nil
       service:
         extensions: [health_check, file_storage]
         pipelines:

@@ -60,7 +60,7 @@ spec:
             logFormat:
               labels:
                 timestamp: '%START_TIME%'
-                entrypoint: istio
+                ccsn.ingress.entrypoint: istio
                 method: '%REQ(:METHOD)%'
                 host: '%REQ(:AUTHORITY)%'
                 path: '%REQ_WITHOUT_QUERY(:PATH)%'
@@ -69,8 +69,8 @@ spec:
                 response_flags: '%RESPONSE_FLAGS%'
                 trace_id: '%TRACE_ID%'
                 span_id: '%SPAN_ID%'
-                request_id: '%REQ(X-CCSN-REQUEST-ID?X-REQUEST-ID)%'
-                cf_ray: '%REQ(CF-RAY)%'
+                ccsn.request.id: '%REQ(X-CCSN-REQUEST-ID?X-REQUEST-ID)%'
+                cloudflare.ray.id: '%REQ(CF-RAY)%'
                 upstream_cluster: '%UPSTREAM_CLUSTER_RAW%'
         - name: otel-tracing
           opentelemetry:

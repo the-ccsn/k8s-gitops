@@ -15,19 +15,19 @@ spec:
       # Preserve upstream W3C sampling instead of deriving it from Envoy UUIDs.
       useRequestIdForTraceSampling: false
       customTags:
-        entrypoint:
+        ccsn.ingress.entrypoint:
           literal:
             value: istio
-        cf_ray:
+        cloudflare.ray.id:
           header:
             name: cf-ray
             defaultValue: ''
-        request_id:
+        ccsn.request.id:
           header:
             # Envoy regenerates X-Request-ID at the external trust boundary.
             name: x-ccsn-request-id
             defaultValue: ''
-        proxy_request_id:
+        istio.proxy.request_id:
           header:
             name: x-request-id
             defaultValue: ''

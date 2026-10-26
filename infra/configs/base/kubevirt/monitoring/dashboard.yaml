@@ -42,7 +42,7 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum(max by (exported_namespace, name) (kubevirt_vmi_info{phase=\"running\"})) or vector(0)",
+              "expr": "sum(max by (k8s_cluster_name, kubevirt_resource_namespace_name, name) (kubevirt_vmi_info{phase=\"running\"})) or vector(0)",
               "legendFormat": "Running",
               "refId": "A"
             }
@@ -64,8 +64,8 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (exported_namespace, name) (rate(kubevirt_vmi_vcpu_seconds_total[5m]))",
-              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "expr": "sum by (k8s_cluster_name, kubevirt_resource_namespace_name, name) (rate(kubevirt_vmi_vcpu_seconds_total[5m]))",
+              "legendFormat": "{{kubevirt_resource_namespace_name}}/{{name}}",
               "refId": "A"
             }
           ]
@@ -86,8 +86,8 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (exported_namespace, name) (kubevirt_vmi_memory_resident_bytes)",
-              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "expr": "sum by (k8s_cluster_name, kubevirt_resource_namespace_name, name) (kubevirt_vmi_memory_resident_bytes)",
+              "legendFormat": "{{kubevirt_resource_namespace_name}}/{{name}}",
               "refId": "A"
             }
           ],
@@ -114,8 +114,8 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (exported_namespace, name) (rate(kubevirt_vmi_network_receive_bytes_total[5m]) + rate(kubevirt_vmi_network_transmit_bytes_total[5m]))",
-              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "expr": "sum by (k8s_cluster_name, kubevirt_resource_namespace_name, name) (rate(kubevirt_vmi_network_receive_bytes_total[5m]) + rate(kubevirt_vmi_network_transmit_bytes_total[5m]))",
+              "legendFormat": "{{kubevirt_resource_namespace_name}}/{{name}}",
               "refId": "A"
             }
           ],

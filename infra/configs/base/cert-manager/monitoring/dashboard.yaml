@@ -21,7 +21,7 @@ spec:
         "cert-manager",
         "certificates"
       ],
-      "description": "Controller metrics and managed certificate readiness/validity. Certificate namespaces use exported_namespace; external TLS probes are available in the TLS Certificates dashboard.",
+      "description": "Controller metrics and managed certificate readiness/validity. Certificate namespaces use cert_manager_certificate_namespace_name; external TLS probes are available in the TLS Certificates dashboard.",
       "timezone": "browser",
       "schemaVersion": 39,
       "version": 1,
@@ -78,7 +78,7 @@ spec:
           "targets": [
             {
               "expr": "certmanager_certificate_ready_status{condition=\"True\"}",
-              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "legendFormat": "{{cert_manager_certificate_namespace_name}}/{{name}}",
               "refId": "A"
             }
           ]
@@ -106,7 +106,7 @@ spec:
           "targets": [
             {
               "expr": "(certmanager_certificate_not_after_timestamp_seconds - time()) / 86400",
-              "legendFormat": "{{exported_namespace}}/{{name}}",
+              "legendFormat": "{{cert_manager_certificate_namespace_name}}/{{name}}",
               "refId": "A"
             }
           ]

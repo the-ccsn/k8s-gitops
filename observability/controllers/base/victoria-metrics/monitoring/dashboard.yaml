@@ -1,10 +1,11 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  annotations:
-    kustomize.toolkit.fluxcd.io/substitute: disabled
   name: victoriametrics
   namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+    observability.ccsn.dev/upstream-sha256: 13cc3979ae86be735a50d1fb45e6395aa8aad44bb19458fac9e8381c5a79cc84
   labels:
     dashboards: grafana
 spec:
@@ -13,106 +14,55 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: database
-  json: |-
-    {
-      "title": "VictoriaMetrics",
-      "uid": "victoriametrics",
-      "tags": [
-        "victoriametrics",
-        "metrics"
-      ],
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "Ingestion",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "sum(rate(vm_rows_inserted_total[5m]))",
-              "legendFormat": "{{instance}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "title": "Active Time Series",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "vm_cache_entries{type=\"storage/hour_metric_ids\"}",
-              "legendFormat": "{{instance}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "title": "Data Size",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "sum(vm_data_size_bytes)",
-              "legendFormat": "{{instance}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "title": "Slow Inserts",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "sum(rate(vm_slow_row_inserts_total[5m]))",
-              "legendFormat": "{{instance}}",
-              "refId": "A"
-            }
-          ]
-        }
-      ]
-    }
+  # Official v1.143.0 dashboard, pinned to the deployed application's commit.
+  url: https://raw.githubusercontent.com/VictoriaMetrics/VictoriaMetrics/5e9324673ed3baf83d13456a5af9bd3539ed456e/dashboards/victoriametrics.json
+  datasources:
+    # Bind braced datasource references; upstream's $ds variable refreshes on load.
+    - inputName: ds
+      datasourceName: victoriametrics
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: vmagent
+  namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+    observability.ccsn.dev/upstream-sha256: c3522aac9413cbd8865ddeb7766070eb12fd518c90890a8636b9794ffcd5bc0d
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: platform
+  # Official v1.143.0 dashboard, pinned to the deployed application's commit.
+  url: https://raw.githubusercontent.com/VictoriaMetrics/VictoriaMetrics/5e9324673ed3baf83d13456a5af9bd3539ed456e/dashboards/vmagent.json
+  datasources:
+    # Bind braced datasource references; upstream's $ds variable refreshes on load.
+    - inputName: ds
+      datasourceName: victoriametrics
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: vmalert
+  namespace: grafana
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+    observability.ccsn.dev/upstream-sha256: e09cda624c5d6ede58bd83e1141f6a0b823b5a7893090b326f2aadac0c47796b
+  labels:
+    dashboards: grafana
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  folderUID: platform
+  # Official v1.143.0 dashboard, pinned to the deployed application's commit.
+  url: https://raw.githubusercontent.com/VictoriaMetrics/VictoriaMetrics/5e9324673ed3baf83d13456a5af9bd3539ed456e/dashboards/vmalert.json
+  datasources:
+    # Bind braced datasource references; upstream's $ds variable refreshes on load.
+    - inputName: ds
+      datasourceName: victoriametrics

@@ -28,3 +28,15 @@ The workload policy prevents those clients from bypassing the waypoint through
 Pod addresses. VMAgent retains direct Pod access for metrics scraping and must
 remain trusted with the whole backend port. These controls do not isolate
 metrics by namespace or change Grafana/Kiali login roles.
+
+The three component dashboards use unmodified official JSON from the deployed
+`v1.143.0` release, pinned by commit and recorded SHA-256. Grafana Operator
+binds `${ds}` references to the `victoriametrics` datasource UID; the upstream
+`$ds` variable refreshes from Prometheus-compatible datasources on load.
+VMSingle stays in Database; vmagent and vmalert are in Platform. The separate
+Observability Platform overview remains specific to this installation.
+
+VMSingle now uses upstream dashboard UID `wNf0q_kZk`; existing bookmarks using
+`victoriametrics` must be updated. The pinned operator handles the UID change
+through its normal dashboard reconciliation. vmagent and vmalert use upstream
+UIDs `G7Z9GzMGz` and `LzldHAVnz`.

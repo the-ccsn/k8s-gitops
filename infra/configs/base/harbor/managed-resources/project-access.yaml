@@ -1,0 +1,153 @@
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: dockerhub-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: dockerhub
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: gcr-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: gcr
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: ghcr-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: ghcr
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: istio-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: istio
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: mcr-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: mcr
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: quay-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: quay
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig
+---
+apiVersion: project.harbor.m.crossplane.io/v1alpha1
+kind: MemberGroup
+metadata:
+  name: registry-k8s-maintainers
+  namespace: harbor
+spec:
+  managementPolicies:
+  - Observe
+  - Create
+  - Update
+  forProvider:
+    projectIdRef:
+      name: registry-k8s
+      policy:
+        resolve: Always
+    type: oidc
+    groupName: harbor:maintainer
+    role: maintainer
+  providerConfigRef:
+    name: ccsn-harbor
+    kind: ProviderConfig

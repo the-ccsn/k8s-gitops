@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - oidc-application.yaml
 - oidc-credential.yaml
+- role.yaml

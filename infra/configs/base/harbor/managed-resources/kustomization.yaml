@@ -4,5 +4,6 @@ resources:
 - harbor-k8s-robot-credential.yaml
 - harbor-management.yaml
 - proxy-caches.yaml
+- project-access.yaml
 - provider-config.yaml
 - robot.yaml

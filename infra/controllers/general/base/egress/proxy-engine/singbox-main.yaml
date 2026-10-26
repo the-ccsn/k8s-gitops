@@ -19,7 +19,7 @@ data:
         ],
         "servers": [
           { "type": "tls", "server": "one.one.one.one", "detour": "AllNodes", "tag": "remote", "domain_resolver": "local" },
-          { "type": "tls", "server": "dot.pub", "detour": "direct", "tag": "local", "domain_resolver": "local-raw" },
+          { "type": "https", "server": "dns.alidns.com", "detour": "direct", "tag": "local", "domain_resolver": "local-raw" },
           {
             "type": "tls",
             "server": "223.5.5.5",

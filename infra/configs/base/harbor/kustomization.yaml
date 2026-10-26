@@ -8,6 +8,7 @@ resources:
   - ./harbor-redis-auth-secret.yaml
   - ./pg-cluster.yaml
   - ./dragonfly.yaml
+  - ./monitoring/metrics-authorization.yaml
 
   - ./identity/
   - ./managed-resources/

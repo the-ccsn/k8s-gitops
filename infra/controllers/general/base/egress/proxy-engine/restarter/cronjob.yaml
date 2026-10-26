@@ -20,10 +20,12 @@ spec:
           containers:
           - name: restarter
             image: rancher/kubectl:v1.36.2@sha256:06c7a7a9772737494ae1e0c3af90f1b5385630c147e47c1c7cea92f4bed55fbe
-            command:
-            - /bin/sh
-            - -c
-            - "kubectl rollout restart statefulset/proxy-engine -n egress-system && echo \"Triggered sing-box restart at $(date)\""
+            # Use the image's kubectl entrypoint; it does not include a shell.
+            args:
+            - rollout
+            - restart
+            - statefulset/proxy-engine
+            - --namespace=egress-system
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -31,4 +33,11 @@ spec:
                 drop: ["ALL"]
               seccompProfile:
                 type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 25m
+                memory: 64Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
           restartPolicy: OnFailure

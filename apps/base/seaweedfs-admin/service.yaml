@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-admin
+spec:
+  selector:
+    app.kubernetes.io/name: seaweedfs-admin
+  ports:
+    - name: http
+      port: 23646
+      targetPort: http
+      appProtocol: http

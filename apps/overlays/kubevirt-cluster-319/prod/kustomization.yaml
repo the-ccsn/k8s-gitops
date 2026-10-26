@@ -9,6 +9,7 @@ resources:
   - ./../../../base/grafana/
   - ./../../../base/oauth2-proxy/
   - ./../../../base/headlamp/
+  - ./../../../base/seaweedfs-admin/
   - ./../../../base/flux-operator/
   - ./../../../base/vaultwarden/
   - ./../../../components/openlist/
@@ -16,13 +17,21 @@ resources:
   - ./../../../base/share/
   - ./../../../base/cloudreve/
   - ./resource-defaults.yaml
-# Apply after commonLabels to preserve the adapter's existing selector.
+# Apply after commonLabels to preserve existing immutable workload selectors.
 patchesJson6902:
   - target:
       group: apps
       version: v1
       kind: Deployment
       name: external-s5624p-compat
+    patch: |-
+      - op: remove
+        path: /spec/selector/matchLabels/app.kubernetes.io~1env
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: seaweedfs-admin
     patch: |-
       - op: remove
         path: /spec/selector/matchLabels/app.kubernetes.io~1env

@@ -1,0 +1,29 @@
+# SeaweedFS 4.48 skips its session CSRF checks when its local login is disabled.
+# Validate browser origins at the shared SSO Gateway instead.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: seaweedfs-admin-origin
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default-gateway
+  action: DENY
+  rules:
+    - to:
+        - operation:
+            hosts: [swfs-admin.ccsn.dev, 'swfs-admin.ccsn.dev:*']
+            ports: ['443', '8080']
+      when:
+        - key: request.headers[origin]
+          values: ['*']
+          notValues: [https://swfs-admin.ccsn.dev]
+    - to:
+        - operation:
+            hosts: [swfs-admin.ccsn.dev, 'swfs-admin.ccsn.dev:*']
+            ports: ['443', '8080']
+            notMethods: [GET, HEAD, OPTIONS]
+      when:
+        - key: request.headers[origin]
+          notValues: [https://swfs-admin.ccsn.dev]

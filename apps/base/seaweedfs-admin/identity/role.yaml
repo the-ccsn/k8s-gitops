@@ -1,0 +1,16 @@
+apiVersion: role.logto.m.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  name: seaweedfs-admin
+  namespace: prod
+spec:
+  managementPolicies: [Observe, Create, Update, LateInitialize]
+  forProvider:
+    name: swfs:admin
+    description: Full administration of the SeaweedFS management console
+    type: User
+    isDefault: false
+    scopeIds: []
+  providerConfigRef:
+    name: ccsn-logto
+    kind: ClusterProviderConfig

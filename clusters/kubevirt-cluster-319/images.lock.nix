@@ -105,6 +105,26 @@
     ];
   }
   {
+    imageName = "docker.io/chrislusf/seaweedfs";
+    imageDigest = "sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d";
+    finalImageName = "docker.io/chrislusf/seaweedfs";
+    finalImageTag = "4.48";
+    archiveHash = "sha256-ZVPMlWTuxlMNqzW/uuqfifJLRdJrOyRQ6BSx1Mz5HZI=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "apps"; }
+      ]
+    ];
+    targets = [
+      { kind = "Deployment"; namespace = "prod"; name = "seaweedfs-admin"; }
+    ];
+  }
+  {
     imageName = "docker.io/goharbor/harbor-core";
     imageDigest = "sha256:d7b780d23721a000f0fb8e181add6675eafa336de5d033b77fd7da0c171ff7f7";
     finalImageName = "docker.io/goharbor/harbor-core";

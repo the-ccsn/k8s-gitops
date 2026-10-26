@@ -7,6 +7,7 @@ spec:
     app.kubernetes.io/name: seaweedfs-admin
   ports:
     - name: http
-      port: 23646
+      # Preserve the existing Service port when Flux adopts this resource.
+      port: 4180
       targetPort: http
       appProtocol: http

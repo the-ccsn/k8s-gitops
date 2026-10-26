@@ -20,4 +20,4 @@ spec:
               - X-OAuth2-Gateway-Id-Token
       backendRefs:
         - name: seaweedfs-admin
-          port: 23646
+          port: 4180

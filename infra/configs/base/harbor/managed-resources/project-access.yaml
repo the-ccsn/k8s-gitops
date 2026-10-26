@@ -31,10 +31,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -56,10 +53,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -81,10 +75,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -106,10 +97,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -131,10 +119,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -156,10 +141,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor
@@ -181,10 +163,7 @@ spec:
       policy:
         resolve: Always
     type: oidc
-    groupNameRef:
-      name: harbor-maintainers
-      policy:
-        resolve: Always
+    groupName: harbor:maintainer
     role: maintainer
   providerConfigRef:
     name: ccsn-harbor

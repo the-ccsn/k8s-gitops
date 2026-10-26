@@ -22,7 +22,8 @@ spec:
     postLogoutRedirectUris:
     - https://base.ccsn.dev/
     corsAllowedOrigins: []
-    customClientMetadataExtra: '{"idTokenTtl":3600,"rotateRefreshToken":true,"allowTokenExchange":false}'
+    # OpenList's OIDC role session needs refresh tokens, but its redirect cannot set prompt=consent.
+    customClientMetadataExtra: '{"idTokenTtl":3600,"alwaysIssueRefreshToken":true,"rotateRefreshToken":true,"allowTokenExchange":false}'
   providerConfigRef:
     name: ccsn-logto
     kind: ClusterProviderConfig

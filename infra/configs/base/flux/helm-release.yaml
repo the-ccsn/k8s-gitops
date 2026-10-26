@@ -21,6 +21,8 @@ spec:
           oauth2:
             provider: OIDC
             issuerURL: https://login.ccsn.dev/oidc
+            authURLParams:
+              prompt: consent
             scopes:
               - openid
               - profile

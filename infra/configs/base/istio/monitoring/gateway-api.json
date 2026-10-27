@@ -1,0 +1,1407 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 91,
+      "panels": [],
+      "title": "Outbound Services",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 70,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "round(sum(irate(istio_requests_total{destination_principal=~\"spiffe.*\",reporter=~\"source|waypoint\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,response_code), 0.001)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} : {{ response_code }} (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "round(sum(irate(istio_requests_total{destination_principal!~\"spiffe.*\",reporter=~\"source|waypoint\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,response_code), 0.001)",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} : {{ response_code }}",
+          "refId": "B",
+          "step": 2
+        }
+      ],
+      "title": "Outgoing Requests By Destination And Response Code",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1.01,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 38
+      },
+      "id": 71,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(irate(istio_requests_total{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",response_code!~\"5.*\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service) / sum(irate(istio_requests_total{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service)",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(irate(istio_requests_total{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",response_code!~\"5.*\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service) / sum(irate(istio_requests_total{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service)",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }}",
+          "refId": "B",
+          "step": 2
+        }
+      ],
+      "title": "Outgoing Success Rate (non-5xx responses) By Destination",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 44
+      },
+      "id": 72,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P50 (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P90 (\ud83d\udd10mTLS)",
+          "refId": "B",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P95 (\ud83d\udd10mTLS)",
+          "refId": "C",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P99 (\ud83d\udd10mTLS)",
+          "refId": "D",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P50",
+          "refId": "E",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P90",
+          "refId": "F",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P95",
+          "refId": "G",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(istio_request_duration_milliseconds_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le)) / 1000",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P99",
+          "refId": "H",
+          "step": 2
+        }
+      ],
+      "title": "Outgoing Request Duration By Destination",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 44
+      },
+      "id": 73,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P50 (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P90 (\ud83d\udd10mTLS)",
+          "refId": "B",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P95 (\ud83d\udd10mTLS)",
+          "refId": "C",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P99 (\ud83d\udd10mTLS)",
+          "refId": "D",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P50",
+          "refId": "E",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P90",
+          "refId": "F",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P95",
+          "refId": "G",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(istio_request_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P99",
+          "refId": "H",
+          "step": 2
+        }
+      ],
+      "title": "Outgoing Request Size By Destination",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 44
+      },
+      "id": 74,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P50 (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P90 (\ud83d\udd10mTLS)",
+          "refId": "B",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P95 (\ud83d\udd10mTLS)",
+          "refId": "C",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }}  P99 (\ud83d\udd10mTLS)",
+          "refId": "D",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P50",
+          "refId": "E",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P90",
+          "refId": "F",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P95",
+          "refId": "G",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(istio_response_bytes_bucket{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service,le))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} P99",
+          "refId": "H",
+          "step": 2
+        }
+      ],
+      "title": "Response Size By Destination",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 50
+      },
+      "id": 76,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "round(sum(irate(istio_tcp_received_bytes_total{connection_security_policy=\"mutual_tls\",reporter=~\"source|waypoint\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service), 0.001)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "round(sum(irate(istio_tcp_received_bytes_total{connection_security_policy!=\"mutual_tls\",reporter=~\"source|waypoint\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service), 0.001)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }}",
+          "refId": "B",
+          "step": 2
+        }
+      ],
+      "title": "Bytes Sent on Outgoing TCP Connection",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 50
+      },
+      "id": 78,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "round(sum(irate(istio_tcp_sent_bytes_total{reporter=~\"source|waypoint\",connection_security_policy=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service), 0.001)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }} (\ud83d\udd10mTLS)",
+          "refId": "A",
+          "step": 2
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "round(sum(irate(istio_tcp_sent_bytes_total{reporter=~\"source|waypoint\",connection_security_policy!=\"mutual_tls\",destination_service=~\"$dstsvc\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\"}[$__rate_interval])) by(destination_service), 0.001)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{ destination_service }}",
+          "refId": "B",
+          "step": 2
+        }
+      ],
+      "title": "Bytes Received from Outgoing TCP Connection",
+      "type": "timeseries"
+    },
+    {
+      "id": 191,
+      "type": "row",
+      "title": "Gateway Summary",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      }
+    },
+    {
+      "id": 192,
+      "title": "Request Rate",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 57
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{gateway_name=\"$gateway\",reporter=~\"source|waypoint\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) by(response_code)",
+          "legendFormat": "HTTP {{response_code}}",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "id": 193,
+      "title": "Error Rate",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 57
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{gateway_name=\"$gateway\",reporter=~\"source|waypoint\",response_code=~\"5..\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) / sum(rate(istio_requests_total{gateway_name=\"$gateway\",reporter=~\"source|waypoint\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]))",
+          "legendFormat": "{{instance}}",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      }
+    },
+    {
+      "id": 194,
+      "title": "Latency p99",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 65
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{gateway_name=\"$gateway\",reporter=~\"source|waypoint\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) by(le))",
+          "legendFormat": "{{instance}}",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "id": 195,
+      "title": "Metrics endpoints up",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 65
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "sum(up{gateway_name=\"$gateway\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"})",
+          "legendFormat": "{{instance}}",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "query": "label_values(up{gateway_name!=\"\"}, k8s_cluster_name)",
+        "definition": "label_values(up{gateway_name!=\"\"}, k8s_cluster_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "namespace",
+        "label": "Gateway namespace",
+        "type": "query",
+        "query": "label_values(up{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\"}, namespace)",
+        "definition": "label_values(up{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\"}, namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "gateway",
+        "label": "Gateway / waypoint",
+        "type": "query",
+        "query": "label_values(up{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name!=\"\"}, gateway_name)",
+        "definition": "label_values(up{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name!=\"\"}, gateway_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "dstsvc",
+        "label": "Destination service",
+        "type": "query",
+        "query": "label_values({__name__=~\"istio_requests_total|istio_tcp_sent_bytes_total\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\",reporter=~\"source|waypoint\"}, destination_service)",
+        "definition": "label_values({__name__=~\"istio_requests_total|istio_tcp_sent_bytes_total\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",gateway_name=\"$gateway\",reporter=~\"source|waypoint\"}, destination_service)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "",
+  "title": "Gateway API",
+  "version": 1,
+  "weekStart": "",
+  "id": null,
+  "uid": "gateway-api",
+  "description": "Official Istio outbound workload charts bound to the selected Gateway API dataplane namespace/name. Supports ingress gateways and ambient waypoints; source and waypoint reporters are used once each, without destination copies."
+}

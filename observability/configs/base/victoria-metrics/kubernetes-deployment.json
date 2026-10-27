@@ -1,0 +1,1150 @@
+{
+  "editable": false,
+  "links": [
+    {
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "kubernetes-mixin"
+      ],
+      "targetBlank": false,
+      "title": "Kubernetes",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(sum(rate(container_cpu_usage_seconds_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",image!=\"\",container!=\"\",container!=\"POD\",pod!=\"\"}[$__rate_interval])) by(k8s_cluster_name,namespace,pod,container)) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/%/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Drill down to pods",
+                    "url": "/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 2,
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(sum(rate(container_cpu_usage_seconds_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",image!=\"\",container!=\"\",container!=\"POD\",pod!=\"\"}[$__rate_interval])) by(k8s_cluster_name,namespace,pod,container)) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(kube_pod_container_resource_requests{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"cpu\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(sum(rate(container_cpu_usage_seconds_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",image!=\"\",container!=\"\",container!=\"POD\",pod!=\"\"}[$__rate_interval])) by(k8s_cluster_name,namespace,pod,container)) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod) / sum(max(kube_pod_container_resource_requests{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"cpu\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(kube_pod_container_resource_limits{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"cpu\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(sum(rate(container_cpu_usage_seconds_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",image!=\"\",container!=\"\",container!=\"POD\",pod!=\"\"}[$__rate_interval])) by(k8s_cluster_name,namespace,pod,container)) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod) / sum(max(kube_pod_container_resource_limits{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"cpu\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "E"
+        }
+      ],
+      "title": "CPU Quota",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "pod",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true
+            },
+            "indexByName": {
+              "Time 1": 0,
+              "Time 2": 1,
+              "Time 3": 2,
+              "Time 4": 3,
+              "Time 5": 4,
+              "Value #A": 6,
+              "Value #B": 7,
+              "Value #C": 8,
+              "Value #D": 9,
+              "Value #E": 10,
+              "pod": 5
+            },
+            "renameByName": {
+              "Value #A": "CPU Usage",
+              "Value #B": "CPU Requests",
+              "Value #C": "CPU Requests %",
+              "Value #D": "CPU Limits",
+              "Value #E": "CPU Limits %",
+              "pod": "Pod"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 3,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(container_memory_working_set_bytes{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",container!=\"\",image!=\"\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",container!=\"POD\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/%/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Drill down to pods",
+                    "url": "/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 4,
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(container_memory_working_set_bytes{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",container!=\"\",image!=\"\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",container!=\"POD\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(kube_pod_container_resource_requests{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"memory\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(container_memory_working_set_bytes{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",container!=\"\",image!=\"\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",container!=\"POD\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod) / sum(max(kube_pod_container_resource_requests{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"memory\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(kube_pod_container_resource_limits{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"memory\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(max(container_memory_working_set_bytes{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",container!=\"\",image!=\"\",job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",container!=\"POD\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod) / sum(max(kube_pod_container_resource_limits{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",resource=\"memory\"}) by(k8s_cluster_name,namespace,pod,container) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "E"
+        }
+      ],
+      "title": "Memory Quota",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "pod",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true
+            },
+            "indexByName": {
+              "Time 1": 0,
+              "Time 2": 1,
+              "Time 3": 2,
+              "Time 4": 3,
+              "Time 5": 4,
+              "Value #A": 9,
+              "Value #B": 10,
+              "Value #C": 11,
+              "Value #D": 12,
+              "Value #E": 13,
+              "pod": 8
+            },
+            "renameByName": {
+              "Value #A": "Memory Usage",
+              "Value #B": "Memory Requests",
+              "Value #C": "Memory Requests %",
+              "Value #D": "Memory Limits",
+              "Value #E": "Memory Limits %",
+              "pod": "Pod"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/Bandwidth/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/Packets/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "pps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Drill down to pods",
+                    "url": "/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 5,
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum((8 * rate(container_network_receive_bytes_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum((8 * rate(container_network_transmit_bytes_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_receive_packets_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_transmit_packets_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "format": "table",
+          "instant": true,
+          "refId": "F"
+        }
+      ],
+      "title": "Current Network Usage",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "pod",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true
+            },
+            "indexByName": {
+              "Time 1": 0,
+              "Time 2": 1,
+              "Time 3": 2,
+              "Time 4": 3,
+              "Time 5": 4,
+              "Time 6": 5,
+              "Value #A": 7,
+              "Value #B": 8,
+              "Value #C": 9,
+              "Value #D": 10,
+              "Value #E": 11,
+              "Value #F": 12,
+              "pod": 6
+            },
+            "renameByName": {
+              "Value #A": "Current Receive Bandwidth",
+              "Value #B": "Current Transmit Bandwidth",
+              "Value #C": "Rate of Received Packets",
+              "Value #D": "Rate of Transmitted Packets",
+              "Value #E": "Rate of Received Packets Dropped",
+              "Value #F": "Rate of Transmitted Packets Dropped",
+              "pod": "Pod"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "id": 6,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum((8 * rate(container_network_receive_bytes_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Receive Bandwidth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "id": 7,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum((8 * rate(container_network_transmit_bytes_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Transmit Bandwidth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "id": 8,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "avg((8 * rate(container_network_receive_bytes_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Container Bandwidth by Pod: Received",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "id": 9,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "avg((8 * rate(container_network_transmit_bytes_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Container Bandwidth by Pod: Transmitted",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "pps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 49
+      },
+      "id": 10,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_receive_packets_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Rate of Received Packets",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "pps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 49
+      },
+      "id": 11,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_transmit_packets_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Rate of Transmitted Packets",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "pps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 56
+      },
+      "id": 12,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Rate of Received Packets Dropped",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "pps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 56
+      },
+      "id": 13,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval]) * on(k8s_cluster_name,namespace,pod) group_left() max(label_replace(max(kube_pod_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"ReplicaSet\",owner_is_controller=\"true\"}) by(k8s_cluster_name,namespace,pod,owner_name), \"replicaset\", \"$1\", \"owner_name\", \"(.+)\") * on(k8s_cluster_name,namespace,replicaset) group_left() max(kube_replicaset_owner{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",owner_kind=\"Deployment\",owner_is_controller=\"true\",owner_name=\"$deployment\"}) by(k8s_cluster_name,namespace,replicaset)) by(k8s_cluster_name,namespace,pod)) by(pod)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Rate of Transmitted Packets Dropped",
+      "type": "timeseries"
+    },
+    {
+      "id": 113,
+      "type": "row",
+      "title": "Deployment Replica State",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 63
+      }
+    },
+    {
+      "id": 114,
+      "title": "Unavailable Replicas",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 64
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_unavailable{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",deployment=\"$deployment\"}",
+          "legendFormat": "{{namespace}}/{{deployment}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "title": "Available Replicas",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 64
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",deployment=\"$deployment\"}",
+          "legendFormat": "{{namespace}}/{{deployment}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 116,
+      "title": "Observed Generation Lag",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 72
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_metadata_generation{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",deployment=\"$deployment\"} - kube_deployment_status_observed_generation{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"kube-state-metrics\",deployment=\"$deployment\"}",
+          "legendFormat": "{{namespace}}/{{deployment}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "kubernetes-mixin"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "query": "label_values(kube_deployment_status_replicas{job=\"kube-state-metrics\"}, k8s_cluster_name)",
+        "definition": "label_values(kube_deployment_status_replicas{job=\"kube-state-metrics\"}, k8s_cluster_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "namespace",
+        "label": "Deployment namespace",
+        "type": "query",
+        "query": "label_values(kube_deployment_status_replicas{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "definition": "label_values(kube_deployment_status_replicas{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "deployment",
+        "label": "Deployment",
+        "type": "query",
+        "query": "label_values(kube_deployment_status_replicas{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, deployment)",
+        "definition": "label_values(kube_deployment_status_replicas{job=\"kube-state-metrics\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, deployment)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Kubernetes Deployment",
+  "uid": "kubernetes-deployment",
+  "id": null,
+  "version": 1,
+  "annotations": {
+    "list": []
+  },
+  "description": "Adapted from the Kubernetes mixin distributed by kube-prometheus 174e45d20337d6cdfd5d8bfd042acdf479a38424 (Apache-2.0). Deployment membership uses exact Pod -> ReplicaSet -> Deployment ownership; no recording-rule aliases are installed."
+}

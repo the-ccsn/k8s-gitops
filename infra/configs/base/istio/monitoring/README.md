@@ -1,6 +1,6 @@
 # Istio dashboards
 
-The five JSON dashboards come from the official Istio **1.31.1** release,
+The six JSON dashboards come from the official Istio **1.31.1** release,
 commit `190ae921b848ec010b8be4457533837ed8fce258`, matching our Istio version.
 Sources are under
 [`manifests/addons/dashboards`](https://github.com/istio/istio/tree/190ae921b848ec010b8be4457533837ed8fce258/manifests/addons/dashboards).
@@ -13,6 +13,7 @@ Sources are under
 | `istio-workload.json` | `istio-workload-dashboard.json` | `0a9b4c2cec355b85fe941db9215467b0ca0bfd85c44598c99fbfe91eb539a1de` |
 | `istio-control-plane.json` | `pilot-dashboard.gen.json` | `5a03f45efa32b975ac1dba1b12877c586fb63bbb1da06516dfa56256caa1acc0` |
 | `istio-ztunnel.json` | `ztunnel-dashboard.gen.json` | `66b6b15099eb9b497cba8655835f4e8cc485fd0ef61ee8e4ed545ee26553cfe8` |
+| `gateway-api.json` | Outbound section of `istio-workload-dashboard.json` | `0a9b4c2cec355b85fe941db9215467b0ca0bfd85c44598c99fbfe91eb539a1de` |
 
 The upstream panels, visualization types and layout are retained. Local bindings:
 
@@ -33,9 +34,21 @@ The upstream panels, visualization types and layout are retained. Local bindings
   than requiring an additional scrape-time `app` label. Clear saved upstream
   selections and bind explicit query reference IDs.
 
-`gateway-api` and `ingress-requests` retain their dedicated gateway selection
-and cross-system correlation functions. They are distinct from the upstream mesh
-overview. No collection, routing, tracing or access policies are added here.
+`gateway-api.json` derives the seven outbound charts from the same pinned
+workload source, retaining their types, layout and millisecond-to-second latency
+conversion. Its producer scope is the exact selected Gateway API namespace/name;
+source/waypoint reporters are selected without destination copies. The four
+existing gateway summary charts remain, with the same scope and native units.
+Destination options include both HTTP and TCP metrics. The view covers ingress
+gateways and ambient waypoints.
+
+`ingress-requests` is a project-specific correlation page for NGINX, Istio,
+Cloudflare and Tempo. Its HTTP metric cards select the source reporter on gateway
+Pods, excluding waypoint copies from that ingress summary. IDs narrow logs and
+sampled ingress spans; metrics remain cluster-level trends. Matching logs/traces
+are side by side, while slow/error spans and connector trends are collapsed.
+Complete traces open through native Tempo links and the installed Traces Drilldown.
+No collection, routing, tracing or access policy changes are introduced here.
 
 Ambient workloads without a waypoint expose L4 telemetry. Their HTTP charts can
 be empty, and destination-side HTTP charts require a destination L7 reporter.

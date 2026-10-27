@@ -15,6 +15,7 @@ configMapGenerator:
     files:
       - kubernetes-cluster.json
       - kubernetes-namespace.json
+      - kubernetes-deployment.json
       - kubernetes-node.json
       - kubernetes-pod.json
       - kubernetes-control-plane.json

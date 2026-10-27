@@ -1,5 +1,8 @@
 # Observability naming contract
 
+See the [dashboard catalogue and investigation guide](dashboards.md) for active
+views, upstream sources and log/trace/Blackbox navigation.
+
 This contract applies to every active collector, component monitor, rule,
 dashboard and correlation link. Metrics remain in VictoriaMetrics single-node;
 logs and traces remain in Loki and Tempo. Naming separates meanings within these

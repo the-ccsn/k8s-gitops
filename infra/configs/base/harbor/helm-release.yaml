@@ -70,6 +70,20 @@ spec:
       serviceMonitor:
         enabled: false
 
+    trace:
+      enabled: true
+      provider: otel
+      # Harbor's sampler is not parent-based; retain all ingress-selected traces.
+      sample_rate: 1
+      namespace: harbor
+      attributes:
+        k8s.namespace.name: harbor
+      otel:
+        endpoint: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318
+        url_path: /v1/traces
+        # HTTP inside ambient; ztunnel provides transport mTLS.
+        insecure: true
+
     exporter:
       podLabels:
         istio.io/dataplane-mode: ambient
@@ -116,6 +130,9 @@ spec:
     registry:
       podLabels:
         istio.io/dataplane-mode: ambient
+      # Also rolls registryctl: the chart does not checksum its trace ConfigMap.
+      podAnnotations:
+        resource.opentelemetry.io/service.namespace: harbor
       # Require two successful readiness probes before accepting traffic.
       registry:
         readinessProbe:

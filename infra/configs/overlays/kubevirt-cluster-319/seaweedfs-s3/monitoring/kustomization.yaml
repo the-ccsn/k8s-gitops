@@ -5,3 +5,14 @@ resources:
   - ./rules.yaml
   - ./dashboard.yaml
   - ./availability-probe.yaml
+
+configMapGenerator:
+  - name: seaweedfs-dashboard
+    namespace: grafana
+    files:
+      - dashboard.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

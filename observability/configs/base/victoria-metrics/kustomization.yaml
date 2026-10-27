@@ -8,3 +8,15 @@ resources:
   - ./node-metrics.yaml
   - ./kubernetes-dashboards.yaml
   - ./kubelet-metrics.yaml
+
+configMapGenerator:
+  - name: kubernetes-upstream-dashboards
+    namespace: grafana
+    files:
+      - kubernetes-cluster.json
+      - kubernetes-namespace.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

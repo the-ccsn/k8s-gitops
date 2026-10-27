@@ -33,3 +33,42 @@ Saved upstream demo selections are cleared. The dedicated deployment, Pod, node,
 control-plane, PVC and application dashboards remain distinct existing views.
 To update, verify source hashes, preserve UIDs, reapply scopes, and check joins,
 variable options and every panel query against the current collected metrics.
+
+## Node, Pod and control-plane views
+
+`kubernetes-node.json`, `kubernetes-pod.json` and
+`kubernetes-control-plane.json` use
+[dotdc's Kubernetes dashboards](https://github.com/dotdc/grafana-dashboards-kubernetes/tree/e4faf59e017a18e1b06fa64f11623bef15ce7507/dashboards),
+pinned to commit `e4faf59e017a18e1b06fa64f11623bef15ce7507`.
+`LICENSE.dotdc` preserves their Apache 2.0 license.
+
+| Local file / existing UID | Upstream file | Upstream SHA-256 |
+| --- | --- | --- |
+| `kubernetes-node.json` / `kubernetes-node` | `k8s-views-nodes.json` | `4a11656116232acc2b1fdf77261e7c814af88c52a5559039db56e84b88772be7` |
+| `kubernetes-pod.json` / `kubernetes-pod` | `k8s-views-pods.json` | `e1282688933864c649c78a91352b434843b4e863c744128adc11d4d2b10b6bfd` |
+| `kubernetes-control-plane.json` / `kubernetes-control-plane` | `k8s-system-api-server.json` | `f2a7970729eb906fae2e79f38454103f6ac6ee3e62eb00910781c90dee507d72` |
+
+Layouts and visualizations are retained. Each query uses `victoriametrics` and
+`k8s_cluster_name`; the upstream `cluster` selector is replaced throughout,
+including variable queries and Node/Pod links. Saved demo values and unused
+Terraform/OnCall annotations are removed. No recording rules or metric aliases
+are introduced.
+
+The node view uses the native `node_uname_info.node` identity to find its exporter.
+Pod and PVC series retain namespace in their grouping and legends, so equal names
+in different namespaces do not merge. Disk I/O in progress reads the native gauge
+rather than applying `rate`. The existing readiness, allocatable capacity and Pod
+capacity panels remain as a final row.
+
+The Pod view selects one workload namespace and Pod. Information, error and
+unscheduled-Pod panels follow that same selection; it cannot accidentally show
+another namespace's failures. Existing Pod readiness remains visible.
+The Not Ready value is `1 - readiness`, so an unhealthy Pod displays one rather
+than the producer's zero-valued readiness gauge.
+The control-plane view scopes all panels to its selected API-server job, including
+p99 latency, scheduler attempts and per-queue depth retained from the old view.
+K3s exposes those scheduler/queue metrics through the API-server target.
+
+Hardware-specific node metrics, missing container termination history and zero
+active faults may leave panels empty. Namespace and cluster selectors organize
+queries; they do not implement Grafana user authorization.

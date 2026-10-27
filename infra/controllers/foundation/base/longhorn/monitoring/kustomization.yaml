@@ -11,6 +11,7 @@ configMapGenerator:
     namespace: grafana
     files:
       - dashboard.json
+      - persistent-volumes.json
     options:
       # Grafana Operator watches this ConfigMap for dashboard updates.
       disableNameSuffixHash: true

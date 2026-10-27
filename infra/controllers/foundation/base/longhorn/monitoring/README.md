@@ -34,3 +34,22 @@ or assigned a policy by this dashboard.
 For updates, verify the pinned source, reapply these bindings, and validate state
 counts, PVC joins, units and the active Kustomize output. Preserve the UID and
 namespace meanings; do not restore old metric aliases.
+
+## Persistent-volume dashboard
+
+`persistent-volumes.json` uses the Kubernetes mixin dashboard distributed by
+[kube-prometheus](https://github.com/prometheus-operator/kube-prometheus/blob/174e45d20337d6cdfd5d8bfd042acdf479a38424/manifests/grafana-dashboardDefinitions.yaml),
+pinned to commit `174e45d20337d6cdfd5d8bfd042acdf479a38424`.
+Source key: `grafana-dashboard-persistentvolumesusage` /
+`persistentvolumesusage.json`. The extracted unmodified JSON has SHA-256
+`4b44b315ea2696595136ac2d3e5fa08a1f93f4cbba25085f61ef112cbfa07815`.
+`LICENSE.kube-prometheus` preserves its Apache 2.0 license.
+
+UID `persistent-volumes`, native space/inode visualizations and datasource
+`victoriametrics` are retained. Every selector is scoped by `k8s_cluster_name`,
+PVC namespace and claim, preserving the native kubelet labels. Namespace/claim
+options use `kube_persistentvolumeclaim_info` so Pending PVCs can also be selected.
+The existing Pending PVCs panel is retained and shows only active Pending state.
+Space/inode panels require the selected claim to be mounted and reported by CSI;
+they can be empty for a Pending or unmounted claim. No kubelet, CSI, storage or
+retention settings change with this import.

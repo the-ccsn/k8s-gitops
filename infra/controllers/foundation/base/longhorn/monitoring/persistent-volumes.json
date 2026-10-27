@@ -1,0 +1,352 @@
+{
+  "editable": false,
+  "links": [
+    {
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "kubernetes-mixin"
+      ],
+      "targetBlank": false,
+      "title": "Kubernetes",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 18,
+        "y": 0
+      },
+      "id": 1,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(topk(1, kubelet_volume_stats_capacity_bytes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) without(instance,node) - sum(topk(1, kubelet_volume_stats_available_bytes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) without(instance,node)",
+          "legendFormat": "Used Space",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(topk(1, kubelet_volume_stats_available_bytes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) without(instance,node)",
+          "legendFormat": "Free Space",
+          "refId": "B"
+        }
+      ],
+      "title": "Volume Space Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 2,
+      "interval": "1m",
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "max(((topk(1, kubelet_volume_stats_capacity_bytes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"}) - topk(1, kubelet_volume_stats_available_bytes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) / topk(1, kubelet_volume_stats_capacity_bytes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) * 100) without(instance,node)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Volume Space Usage",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 18,
+        "y": 7
+      },
+      "id": 3,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "asTable": true,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(topk(1, kubelet_volume_stats_inodes_used{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) without(instance,node)",
+          "legendFormat": "Used inodes",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(topk(1, kubelet_volume_stats_inodes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) without(instance,node) - sum(topk(1, kubelet_volume_stats_inodes_used{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) without(instance,node)",
+          "legendFormat": "Free inodes",
+          "refId": "B"
+        }
+      ],
+      "title": "Volume inodes Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "id": 4,
+      "interval": "1m",
+      "pluginVersion": "v13.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "max((topk(1, kubelet_volume_stats_inodes_used{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"}) / topk(1, kubelet_volume_stats_inodes{k8s_cluster_name=\"$k8s_cluster_name\",job=\"kubelet\",metrics_path=\"/metrics\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"})) * 100) without(instance,node)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Volume inodes Usage",
+      "type": "gauge"
+    },
+    {
+      "id": 104,
+      "title": "PVC State",
+      "type": "row",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      }
+    },
+    {
+      "id": 105,
+      "title": "Pending PVCs",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "kube_persistentvolumeclaim_status_phase{phase=\"Pending\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",persistentvolumeclaim=\"$volume\"} == 1",
+          "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": [
+    "kubernetes-mixin"
+  ],
+  "templating": {
+    "list": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "hide": 0,
+        "label": "Kubernetes cluster",
+        "name": "k8s_cluster_name",
+        "query": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\", metrics_path=\"/metrics\"}, k8s_cluster_name)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query",
+        "definition": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\", metrics_path=\"/metrics\"}, k8s_cluster_name)",
+        "current": {},
+        "options": []
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "hide": 0,
+        "label": "PVC namespace",
+        "name": "namespace",
+        "query": "label_values(kube_persistentvolumeclaim_info{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query",
+        "definition": "label_values(kube_persistentvolumeclaim_info{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "current": {},
+        "options": []
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "hide": 0,
+        "label": "PersistentVolumeClaim",
+        "name": "volume",
+        "query": "label_values(kube_persistentvolumeclaim_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, persistentvolumeclaim)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query",
+        "definition": "label_values(kube_persistentvolumeclaim_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, persistentvolumeclaim)",
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "UTC",
+  "title": "Kubernetes / Persistent Volumes",
+  "uid": "persistent-volumes",
+  "id": null,
+  "version": 1,
+  "annotations": {
+    "list": []
+  }
+}

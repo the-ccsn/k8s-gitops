@@ -32,6 +32,45 @@ The dashboard imports Harbor's official v2.15.4 example from a fixed release com
 its source SHA-256 is recorded on the resource. The native datasource mapping uses
 the `victoriametrics` UID because the upstream placeholder occupies UID fields.
 
+## Native application tracing
+
+Harbor core, jobservice and registryctl export OTLP HTTP/protobuf to the existing
+Collector on port 4318 at `/v1/traces`, then to Tempo. The endpoint is a host:port,
+without a scheme or path. HTTP is carried inside Istio ambient mTLS; no public
+ingestion endpoint or additional credentials are introduced. The existing
+`.cluster.local` proxy exclusion keeps this traffic inside the cluster.
+
+Native service names remain `harbor-core`, `harbor-jobservice` and
+`harbor-registryctl`, with `service.namespace=harbor` and
+`k8s.namespace.name=harbor`. The registry Pod's resource annotation also changes
+its template: chart 1.19.4 does not checksum the registryctl trace ConfigMap,
+so changing that ConfigMap alone would leave existing registryctl processes
+unchanged. Core and jobservice already checksum their trace configuration.
+
+`sample_rate: 1` records all Harbor spans. Harbor 2.15.4 uses a bare
+`TraceIDRatioBased` sampler rather than `ParentBased`; 100% retains application
+spans for ingress-selected traces. Istio still samples new traces at 1%, so
+Harbor can also store traces with no recorded ingress span. Current core traffic
+is approximately 0.37 requests/second; verify actual exported span rate, Collector
+queues and Tempo resource use after rollout before changing this policy.
+
+Harbor supports W3C Trace Context. Its core request-context text logs contain
+`traceID`, which the Collector promotes to the LogRecord context for the existing
+Loki-to-Tempo link. These records have no native span ID. Global logger calls and
+separate job loggers are not universally correlated. Harbor's `X-Request-ID`
+attribute retains its native meaning; it is not the campus correlation header.
+The Collector removes query strings from confirmed Harbor HTTP-client `url.full`
+attributes, leaving server paths and unrelated SDK spans unchanged.
+
+In Grafana, select namespace `harbor` in the application logs and trace views,
+then use the existing trace-to-logs and trace-to-metrics links. Core contextual
+logs and sampled spans can be correlated by trace ID across ingress and Harbor.
+The separate distribution-registry container is not an OTLP producer. Queued
+jobs start independent traces, and some outgoing requests do not propagate the
+caller context; this does not promise complete DB, Redis, storage or job tracing.
+See the [pinned Harbor implementation](https://github.com/goharbor/harbor/blob/0a6bf30d54e779962ad5b862fc67e3e9f6b010d8/src/lib/trace/trace.go)
+and [official tracing guide](https://goharbor.io/docs/main/administration/distributed-tracing/).
+
 ## Proxy-cache and robot management
 
 Crossplane is the only writer for the seven proxy-cache registries/projects and

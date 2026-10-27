@@ -129,7 +129,13 @@ spec:
             - type: remove
               field: attributes.output
               if: 'attributes.controllerGroup == "kustomize.toolkit.fluxcd.io" && attributes.output != nil'
-            # Promote structured ingress IDs into the OTLP LogRecord context.
+            # Harbor's contextual logger emits plaintext traceID, without span ID.
+            - type: regex_parser
+              if: 'resource["k8s.namespace.name"] == "harbor" && body matches "^\\S+ \\["'
+              on_error: send_quiet
+              regex: '^\S+ \[[A-Z]+\] \[[^\]]+\]\[(?:[^\]]* )?traceID="(?P<trace_id>[0-9a-f]{32})"(?: [^\]]*)?\]: '
+              parse_to: attributes
+            # Promote native IDs into the OTLP LogRecord context.
             - type: remove
               field: attributes.span_id
               if: 'attributes.span_id != nil && (attributes.span_id not matches "^[0-9a-f]{16}$" || attributes.span_id == "0000000000000000")'
@@ -331,6 +337,15 @@ spec:
                 # Envoy's native HTTP URL includes the query string by default.
                 - 'replace_pattern(attributes["http.url"], "\\?.*$", "") where attributes["http.url"] != nil'
                 - 'replace_pattern(attributes["http.target"], "\\?.*$", "") where attributes["http.target"] != nil'
+            - context: span
+              conditions:
+                # Harbor's native HTTP client includes query strings in url.full.
+                - resource.attributes["service.namespace"] == "harbor" and resource.attributes["k8s.namespace.name"] == "harbor"
+                  and IsMatch(resource.attributes["service.name"], "^harbor-(core|jobservice|registryctl)$")
+                  and kind == SPAN_KIND_CLIENT
+                  and instrumentation_scope.name == "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+              statements:
+                - 'replace_pattern(attributes["url.full"], "\\?.*$", "") where attributes["url.full"] != nil'
 
       service:
         extensions: [health_check, file_storage, file_storage/queues]

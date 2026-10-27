@@ -1396,7 +1396,14 @@
           "value": "$__all"
         },
         "options": [],
-        "allValue": ".*"
+        "allValue": ".*",
+        "staticOptions": [
+          {
+            "text": "Not set",
+            "value": ""
+          }
+        ],
+        "description": "Not set selects probes without this label. All includes both labelled and unlabelled probes."
       },
       {
         "name": "ip_family",
@@ -1417,7 +1424,14 @@
           "value": "$__all"
         },
         "options": [],
-        "allValue": ".*"
+        "allValue": ".*",
+        "staticOptions": [
+          {
+            "text": "Not set",
+            "value": ""
+          }
+        ],
+        "description": "Not set selects probes without this label. All includes both labelled and unlabelled probes."
       },
       {
         "name": "job",

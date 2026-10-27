@@ -35,6 +35,10 @@ range. Links back to All probes retain job and target; the TLS-to-HTTP link also
 retains those compatible selections. Switching to an unrelated protocol view
 resets job and target so incompatible options cannot hide its targets.
 
+Path and family selectors include a native **Not set** option with an empty
+value. It selects probes without that label and remains selected when variable
+options refresh. **All** continues to include labelled and unlabelled probes.
+
 A failed probe (`probe_success=0`) is distinct from a scrape failure (`up=0`).
 The failure list gives scrape failure precedence when both exist for the same
 identity. Result tiles show the last recorded probe result; missing samples are

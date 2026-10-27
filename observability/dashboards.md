@@ -75,6 +75,10 @@ contextual logs can link by trace ID; this does not make every application log
 or request part of a stored trace. See each component's sampling and coverage
 limits before interpreting missing spans.
 
+For GitOps investigations, [Flux event tracing](../infra/configs/base/flux/monitoring/README.md#native-event-tracing)
+adds revision/object searches in Tempo. Its event-age spans are separate from
+application requests; use Flux's metrics dashboards for reconciliation duration.
+
 ## Investigate a probe
 
 Start with **Network Availability**, then open the HTTP, DNS, TLS or ICMP view.

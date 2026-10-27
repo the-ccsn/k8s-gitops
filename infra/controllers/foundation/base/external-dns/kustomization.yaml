@@ -7,3 +7,6 @@ resources:
   - ./crd-manifest.yaml
 
 namespace: external-dns-system
+
+components:
+  - ../../../../../observability/components/flux-event-tracing/

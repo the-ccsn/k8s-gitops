@@ -323,6 +323,19 @@ spec:
                 - set(severity_text, "WARN") where severity_number == SEVERITY_NUMBER_WARN
                 - set(severity_text, "INFO") where severity_number == SEVERITY_NUMBER_INFO
           trace_statements:
+            - context: span
+              conditions:
+                - instrumentation_scope.name == "flux:notification-controller"
+              statements:
+                # Managed objects can be in a different namespace from the emitting controller.
+                - set(attributes["flux.resource.uid"], attributes["object.uid"]) where attributes["object.uid"] != nil
+                - set(attributes["flux.resource.kind"], attributes["object.kind"]) where attributes["object.kind"] != nil
+                - set(attributes["flux.resource.name"], attributes["object.name"]) where attributes["object.name"] != nil
+                - set(attributes["flux.resource.namespace"], attributes["object.namespace"]) where attributes["object.namespace"] != nil
+                - delete_key(attributes, "object.uid")
+                - delete_key(attributes, "object.kind")
+                - delete_key(attributes, "object.name")
+                - delete_key(attributes, "object.namespace")
             - context: resource
               statements:
                 - set(resource.attributes["k8s.cluster.name"], "kubevirt-cluster-319")

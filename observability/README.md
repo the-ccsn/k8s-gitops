@@ -49,7 +49,7 @@ These rules follow [OTel naming conventions](https://opentelemetry.io/docs/specs
 | CNPG Cluster | `cnpg.cluster.name` (custom) | `cnpg_cluster_name` |
 | Certificate's namespace | No trace attribute synthesized | `cert_manager_certificate_namespace_name` |
 | KubeVirt object's namespace | No trace attribute synthesized | `kubevirt_resource_namespace_name` |
-| Flux object's namespace | No trace attribute synthesized | `flux_resource_namespace_name` |
+| Flux object's namespace | `flux.resource.namespace` (custom span attribute on Flux event traces) | `flux_resource_namespace_name` |
 
 `cnpg.cluster.name` is our custom attribute, not a published OTel convention.
 The Collector extracts it from a producer Pod's `cnpg.io/cluster` label. It is
@@ -78,6 +78,19 @@ arrive at metric relabeling as `exported_namespace`. The monitors immediately
 rename this to the appropriate key above; dashboards and alerts do not depend on
 the fallback name. The common `namespace` still identifies the scrape target.
 Do not enable `honor_labels` as a substitute for this mapping.
+
+Flux's native event exporter uses `object.uid`, `object.kind`, `object.name` and
+`object.namespace` span attributes. Only for its `flux:notification-controller`
+instrumentation scope, the Collector renames these to `flux.resource.uid`,
+`flux.resource.kind`, `flux.resource.name` and `flux.resource.namespace` without
+keeping aliases. Resource `k8s.namespace.name` identifies the emitting controller;
+the qualified span attribute identifies the reconciled object. Other producers'
+`object.*` attributes are unchanged.
+
+Flux event subscriptions use the shared `flux-event-tracing` Component once per
+enrolled namespace. The native `service.namespace` identifies the subscribing
+Alert's namespace; the emitting controller's `k8s.namespace.name` remains
+independent. See the [enrollment and query guide](../infra/configs/base/flux/monitoring/README.md#native-event-tracing).
 
 VMAgent adds `k8s_cluster_name`, `deployment_environment_name`, `ccsn_site_name`
 and custom `ccsn_platform_name` to its scraped metrics. For external scrape

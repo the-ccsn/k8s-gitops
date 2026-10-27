@@ -61,6 +61,13 @@ namespace boundary. The optional Trace ID field filters logs and enables direct
 trace lookup. Tempo search returns the first matches in range, not necessarily
 the newest; reduce the time range when searching a busy system.
 
+Open a span in the native trace view to follow its metrics links: sampled span
+rate by kind/status and p50/p95 latency. Links use the span's available cluster,
+namespace and service attributes and open a five-minute margin around the span.
+These are sampled-span trends, not total request traffic; client/server kinds
+remain separate. New namespace-qualified metric samples are required after
+rollout. See [Tempo's bindings](controllers/base/tempo/README.md#trace-to-metric-navigation).
+
 ## Investigate a probe
 
 Start with **Network Availability**, then open the HTTP, DNS, TLS or ICMP view.

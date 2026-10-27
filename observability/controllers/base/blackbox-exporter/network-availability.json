@@ -30,7 +30,7 @@
               "targetBlank": true,
               "title": "Go To Probe",
               "type": "link",
-              "url": "/d/network-availability?var-k8s_cluster_name=${__field.labels.k8s_cluster_name:percentencode}&var-job=${__field.labels.job:percentencode}&var-instance=${__field.labels.instance:percentencode}&${probe_path:queryparam}&${ip_family:queryparam}"
+              "url": "/d/network-availability?var-k8s_cluster_name=${__field.labels.k8s_cluster_name:percentencode}&var-job=${__field.labels.job:percentencode}&var-instance=${__field.labels.instance:percentencode}&var-probe_path=${__field.labels.probe_path:percentencode}&var-ip_family=${__field.labels.ip_family:percentencode}&from=${__from}&to=${__to}"
             }
           ],
           "mappings": [
@@ -269,7 +269,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "count(probe_http_ssl{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"} == 1) / count(probe_http_version{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"})",
+          "expr": "(count(probe_http_ssl{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"} == 1) or vector(0)) / count(probe_http_version{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"})",
           "instant": true,
           "refId": "A",
           "range": false
@@ -1484,7 +1484,7 @@
     {
       "title": "All probes",
       "type": "link",
-      "url": "/d/network-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}",
+      "url": "/d/network-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}&${job:queryparam}&${instance:queryparam}",
       "targetBlank": false,
       "keepTime": true
     },

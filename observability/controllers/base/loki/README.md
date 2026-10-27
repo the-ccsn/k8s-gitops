@@ -55,6 +55,12 @@ optional, with empty fields retaining all records. Record counts and error share
 are based on the selected collected records, not assertions about service health.
 No-traffic error share stays undefined rather than being forced healthy.
 
+Severity selection ignores case while retaining the source text. Native
+`WARNING`, `ERR` and `CRITICAL` values remain selectable; error views include
+`error`, `err`, `critical` and `fatal`, consistent with the existing log rules.
+The service count uses workload namespace and service name together, so equal
+names in different namespaces remain distinct.
+
 The default one-hour view presents a small overview, severity/service trends and
 up to 200 matching records. Error records and cross-service trace lookup are
 collapsed. Log details retain metadata and the existing native TraceID link.

@@ -90,7 +90,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: haproxy
-          image: haproxy:3.2-alpine@sha256:5d97434a423c2533cfeb42874d45cf6d69a840b60334582dfbfd5008e94c80be
+          image: haproxy:3.2-alpine@sha256:5893840576071e6217cd52ebdcc14f454c6f7a631056fa6f4e0f40d3cac4215b
           args:
             - haproxy
             - -W

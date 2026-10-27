@@ -292,7 +292,8 @@ spec:
                 - delete_matching_keys(resource.attributes, "^k8s\\.pod\\.label\\..*")
             - context: log
               conditions:
-                - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
+                # Match access records, leaving Istio diagnostic logs alone.
+                - (resource.attributes["k8s.container.name"] == "istio-proxy" and attributes["ccsn.request.id"] != nil and attributes["status"] != nil) or attributes["ccsn.ingress.entrypoint"] == "campus"
               statements:
                 - set(resource.attributes["service.name"], attributes["service_name"])
                   where attributes["service_name"] != nil
@@ -301,14 +302,11 @@ spec:
                 - delete_key(attributes, "service_name") where attributes["service_name"] != nil
                 - delete_key(attributes, "service_namespace") where attributes["service_namespace"] != nil
                 - set(severity_number, SEVERITY_NUMBER_ERROR)
-                  where (attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio")
-                  and Int(attributes["status"]) >= 500
+                  where Int(attributes["status"]) >= 500
                 - set(severity_number, SEVERITY_NUMBER_WARN)
-                  where (attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio")
-                  and Int(attributes["status"]) >= 400 and Int(attributes["status"]) < 500
+                  where Int(attributes["status"]) >= 400 and Int(attributes["status"]) < 500
                 - set(severity_number, SEVERITY_NUMBER_INFO)
-                  where (attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio")
-                  and Int(attributes["status"]) < 400
+                  where Int(attributes["status"]) < 400
                 # Loki's rules consume OTLP severity text as well as its number.
                 - set(severity_text, "ERROR") where severity_number == SEVERITY_NUMBER_ERROR
                 - set(severity_text, "WARN") where severity_number == SEVERITY_NUMBER_WARN
@@ -324,7 +322,7 @@ spec:
                   where resource.attributes["ccsn.site.name"] == nil
             - context: span
               conditions:
-                - attributes["ccsn.ingress.entrypoint"] == "campus" or attributes["ccsn.ingress.entrypoint"] == "istio"
+                - attributes["istio.proxy.request_id"] != nil or attributes["ccsn.ingress.entrypoint"] == "campus"
               statements:
                 - set(attributes["ccsn.request.id"], attributes["istio.proxy.request_id"])
                   where (attributes["ccsn.request.id"] == nil or attributes["ccsn.request.id"] == "")

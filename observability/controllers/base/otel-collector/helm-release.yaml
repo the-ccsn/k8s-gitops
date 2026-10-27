@@ -135,6 +135,11 @@ spec:
               on_error: send_quiet
               regex: '^\S+ \[[A-Z]+\] \[[^\]]+\]\[(?:[^\]]* )?traceID="(?P<trace_id>[0-9a-f]{32})"(?: [^\]]*)?\]: '
               parse_to: attributes
+            # Grafana's native JSON contextual logger uses traceID, without span ID.
+            - type: move
+              if: 'resource["k8s.container.name"] == "grafana" && attributes.traceID != nil'
+              from: attributes.traceID
+              to: attributes.trace_id
             # Promote native IDs into the OTLP LogRecord context.
             - type: remove
               field: attributes.span_id
@@ -346,6 +351,12 @@ spec:
                   and instrumentation_scope.name == "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
               statements:
                 - 'replace_pattern(attributes["url.full"], "\\?.*$", "") where attributes["url.full"] != nil'
+            - context: span
+              conditions:
+                - resource.attributes["service.name"] == "grafana"
+              statements:
+                # Grafana server and datasource-client spans include URL queries.
+                - 'replace_pattern(attributes["http.url"], "\\?.*$", "") where attributes["http.url"] != nil'
 
       service:
         extensions: [health_check, file_storage, file_storage/queues]

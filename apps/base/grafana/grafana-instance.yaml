@@ -25,6 +25,18 @@ spec:
       mode: "console"
       # Grafana's opaque OAuth token warning includes the token in its error text.
       filters: "oauth.generic_oauth:error"
+    log.console:
+      format: "json"
+    tracing.opentelemetry:
+      # OTLP uses ParentBased sampling: preserve upstream decisions, sample new roots at 1%.
+      sampler_type: "probabilistic"
+      sampler_param: "0.01"
+      custom_attributes: "service.namespace:$__env{POD_NAMESPACE},k8s.namespace.name:$__env{POD_NAMESPACE}"
+    tracing.opentelemetry.otlp:
+      address: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
+      propagation: "w3c"
+      # Plain gRPC inside the ambient mTLS connection.
+      insecure: "true"
     auth:
       disable_login_form: "true"
     auth.generic_oauth:
@@ -88,6 +100,10 @@ spec:
           containers:
             - name: grafana
               env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
                 - name: AUTH_CLIENT_ID
                   valueFrom:
                     secretKeyRef:

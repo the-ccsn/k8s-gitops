@@ -1,0 +1,888 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "panels": [],
+      "title": "Overall Health KPIs",
+      "type": "row"
+    },
+    {
+      "description": "Total number of requests processed by the tunnel over the selected time period.",
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(cloudflared_tunnel_total_requests{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__range]))",
+          "legendFormat": "Total Requests",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Requests",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "description": "Percentage of requests that resulted in an error.",
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 5,
+        "y": 1
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "(sum(rate(cloudflared_tunnel_request_errors{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval])) / sum(rate(cloudflared_tunnel_total_requests{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval]))) * 100",
+          "legendFormat": "__auto",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "description": "99th percentile time to establish and acknowledge origin TCP/stream connections, in milliseconds. This is not end-to-end HTTP request latency. No data is expected until this histogram receives observations.",
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 10,
+        "y": 1
+      },
+      "id": 101,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(cloudflared_proxy_connect_latency_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval])) by (le))",
+          "legendFormat": "P99 Latency",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Origin Stream Connect Latency p99",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "description": "Requests currently in flight, summed across the selected tunnel Pods.",
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 14,
+        "y": 1
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(cloudflared_tunnel_concurrent_requests_per_tunnel{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"})",
+          "legendFormat": "Active Connections",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Concurrent Requests",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "description": "Total active edge connections across selected Pods. Check HA Connections per Pod below to identify a failed replica.",
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"})",
+          "legendFormat": "__auto",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Total HA Connections",
+      "type": "gauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 102,
+      "panels": [],
+      "title": "Request & Error Analysis",
+      "type": "row"
+    },
+    {
+      "description": "Rate of total requests vs error requests per second.",
+      "gridPos": {
+        "h": 9,
+        "w": 14,
+        "x": 0,
+        "y": 9
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(cloudflared_tunnel_total_requests{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval]))",
+          "legendFormat": "Total Requests",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(cloudflared_tunnel_request_errors{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval]))",
+          "legendFormat": "Errors",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Requests vs. Errors Rate",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "description": "Breakdown of HTTP response codes over the selected time period. Helps distinguish between client-side (4xx) and server-side (5xx) errors.",
+      "gridPos": {
+        "h": 9,
+        "w": 10,
+        "x": 14,
+        "y": 9
+      },
+      "id": 103,
+      "options": {
+        "displayMode": "lcd",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showLabel": true
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(cloudflared_tunnel_response_by_code{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__range])) by (http_status)",
+          "legendFormat": "{{http_status}}",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Status Codes",
+      "type": "piechart",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 104,
+      "panels": [],
+      "title": "Performance & Latency",
+      "type": "row"
+    },
+    {
+      "description": "Native cloudflared TCP/stream origin connection establishment histogram, in milliseconds; not end-to-end HTTP latency. No data is expected until this histogram receives observations.",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate(cloudflared_proxy_connect_latency_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval])) by (le))",
+          "legendFormat": "P99 Latency",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(cloudflared_proxy_connect_latency_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval])) by (le))",
+          "legendFormat": "P95 Latency",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum(rate(cloudflared_proxy_connect_latency_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval])) by (le))",
+          "legendFormat": "P50 Latency (Median)",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Origin Stream Connect Latency Percentiles",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 105,
+      "panels": [],
+      "title": "Edge Connection Details",
+      "type": "row"
+    },
+    {
+      "description": "Currently active connections by Cloudflare edge location. Zero-valued historical location entries are excluded.",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "id": 107,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum by(edge_location) (cloudflared_tunnel_server_locations{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"} == 1)",
+          "legendFormat": "{{edge_location}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Active Edge Connections",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 108,
+      "panels": [],
+      "title": "Internal Process Health (Advanced)",
+      "type": "row"
+    },
+    {
+      "description": "CPU usage by the cloudflared process.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 39
+      },
+      "id": 109,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(process_cpu_seconds_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}[$__rate_interval]))",
+          "legendFormat": "CPU Usage",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      }
+    },
+    {
+      "description": "Allocated Go runtime memory per cloudflared Pod; excludes the operator process.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 39
+      },
+      "id": 110,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "go_memstats_alloc_bytes{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}",
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Go Heap Allocation",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "description": "Number of open file descriptors used by the process.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 39
+      },
+      "id": 111,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "expr": "process_open_fds{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}",
+          "legendFormat": "{{pod}}",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Open File Descriptors",
+      "type": "gauge",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "Per-Pod Availability",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      }
+    },
+    {
+      "id": 201,
+      "title": "HA Connections per Pod",
+      "type": "stat",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}",
+          "legendFormat": "{{pod}}",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 202,
+      "title": "Tunnel Metrics Target",
+      "type": "stat",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "up{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",pod=~\"$pod\"}",
+          "legendFormat": "{{pod}}",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "dockflare",
+    "cloudflare",
+    "tunnel",
+    "community"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "query": "label_values(cloudflared_tunnel_ha_connections, k8s_cluster_name)",
+        "definition": "label_values(cloudflared_tunnel_ha_connections, k8s_cluster_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "namespace",
+        "label": "Tunnel namespace",
+        "type": "query",
+        "query": "label_values(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "definition": "label_values(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "job",
+        "label": "Tunnel job",
+        "type": "query",
+        "query": "label_values(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, job)",
+        "definition": "label_values(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, job)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "pod",
+        "label": "Tunnel Pod",
+        "type": "query",
+        "query": "label_values(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}, pod)",
+        "definition": "label_values(cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}, pod)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "options": [],
+        "current": {}
+      }
+    ]
+  },
+  "timezone": "browser",
+  "title": "Cloudflared Tunnel",
+  "uid": "cloudflared-tunnel",
+  "version": 1,
+  "weekStart": "",
+  "description": "Adapted on 2026-10-27 from ChrispyBacon-dev/DockFlare examples/dashboard.json, commit 9c7bed826f76b2005a544b260ac457c81b3515d9 (GPL-3.0). Modified for native cloudflared metrics, Kubernetes scope, correct units and per-replica health. Source and license are shipped beside this dashboard."
+}

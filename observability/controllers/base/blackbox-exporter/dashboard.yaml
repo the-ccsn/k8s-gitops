@@ -13,47 +13,6 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: networking
-  json: |-
-    {
-      "title": "Network and Service Availability",
-      "uid": "network-availability",
-      "tags": ["network", "blackbox", "availability"],
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "Probe Success",
-          "type": "stat",
-          "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
-          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
-          "targets": [{"expr": "probe_success", "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}", "refId": "A"}]
-        },
-        {
-          "id": 2,
-          "title": "Probe Duration",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 16, "x": 8, "y": 0},
-          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
-          "targets": [{"expr": "probe_duration_seconds", "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}", "refId": "A"}]
-        },
-        {
-          "id": 3,
-          "title": "HTTP Status",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
-          "targets": [{"expr": "probe_http_status_code", "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}", "refId": "A"}]
-        },
-        {
-          "id": 4,
-          "title": "TLS Days Remaining",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-          "datasource": {"type": "prometheus", "uid": "victoriametrics"},
-          "targets": [{"expr": "(probe_ssl_earliest_cert_expiry - time()) / 86400", "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}", "refId": "A"}]
-        }
-      ]
-    }
+  configMapRef:
+    name: blackbox-dashboards
+    key: network-availability.json

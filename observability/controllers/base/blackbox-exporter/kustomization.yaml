@@ -11,3 +11,16 @@ resources:
   - ./rules.yaml
   - ./dashboard.yaml
   - ./availability-dashboards.yaml
+
+configMapGenerator:
+  - name: blackbox-dashboards
+    namespace: grafana
+    files:
+      - network-availability.json
+      - http-availability.json
+      - icmp-availability.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

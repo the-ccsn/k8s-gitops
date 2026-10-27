@@ -68,6 +68,13 @@ These are sampled-span trends, not total request traffic; client/server kinds
 remain separate. New namespace-qualified metric samples are required after
 rollout. See [Tempo's bindings](controllers/base/tempo/README.md#trace-to-metric-navigation).
 
+[Harbor](../infra/configs/base/harbor/README.md#native-application-tracing) and
+[Grafana](../apps/base/grafana/README.md) also export native application spans.
+Keep their workload namespace selected when following span metrics. Their
+contextual logs can link by trace ID; this does not make every application log
+or request part of a stored trace. See each component's sampling and coverage
+limits before interpreting missing spans.
+
 ## Investigate a probe
 
 Start with **Network Availability**, then open the HTTP, DNS, TLS or ICMP view.

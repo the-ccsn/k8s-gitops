@@ -30,6 +30,11 @@ family's failure. Path/family All is deliberately `.*` so unlabelled probes rema
 visible. Job/target All expands actual options instead of matching arbitrary
 jobs. Links retain the cluster, time and relevant selectors.
 
+Probe tiles open the clicked job, target, path and family with the current time
+range. Links back to All probes retain job and target; the TLS-to-HTTP link also
+retains those compatible selections. Switching to an unrelated protocol view
+resets job and target so incompatible options cannot hide its targets.
+
 A failed probe (`probe_success=0`) is distinct from a scrape failure (`up=0`).
 The failure list gives scrape failure precedence when both exist for the same
 identity. Result tiles show the last recorded probe result; missing samples are
@@ -38,6 +43,7 @@ limited by retention, rather than a fixed 30-day claim. Current-status queries
 are instant; histories remain range queries. ICMP/SNMP views can remain empty
 until their targets are configured. This import does not install device agents,
 change credentials or create targets.
+Plain HTTP targets report a zero SSL share; absent HTTP samples remain no data.
 
 ## Host and SNMP bandwidth
 
@@ -57,6 +63,8 @@ transmit series retain the upstream negative plotting convention. SNMP octet
 counters are converted to bits/second and retain `device_id` / `ifName`.
 The collecting Kubernetes cluster is not a claim that an external device is a
 cluster member.
+Query intervals use the datasource default instead of an undefined resolution
+variable.
 
 For updates, verify source hashes and preserve UIDs, scopes and probe identities.
 Test same-URL paths/families, scrape versus probe failure, unlabelled probes,

@@ -30,7 +30,7 @@
               "targetBlank": true,
               "title": "Go To Probe",
               "type": "link",
-              "url": "/d/icmp-availability?var-k8s_cluster_name=${__field.labels.k8s_cluster_name:percentencode}&var-job=${__field.labels.job:percentencode}&var-instance=${__field.labels.instance:percentencode}&${probe_path:queryparam}&${ip_family:queryparam}"
+              "url": "/d/icmp-availability?var-k8s_cluster_name=${__field.labels.k8s_cluster_name:percentencode}&var-job=${__field.labels.job:percentencode}&var-instance=${__field.labels.instance:percentencode}&var-probe_path=${__field.labels.probe_path:percentencode}&var-ip_family=${__field.labels.ip_family:percentencode}&from=${__from}&to=${__to}"
             }
           ],
           "mappings": [
@@ -1007,7 +1007,7 @@
     {
       "title": "All probes",
       "type": "link",
-      "url": "/d/network-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}",
+      "url": "/d/network-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}&${job:queryparam}&${instance:queryparam}",
       "targetBlank": false,
       "keepTime": true
     },

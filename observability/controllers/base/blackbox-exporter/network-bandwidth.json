@@ -191,7 +191,6 @@
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(rate(node_network_receive_bytes_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
-          "interval": "$resolution",
           "legendFormat": "In",
           "range": true,
           "refId": "A"
@@ -204,7 +203,6 @@
           "editorMode": "code",
           "exemplar": true,
           "expr": "0 - sum(rate(node_network_transmit_bytes_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
-          "interval": "$resolution",
           "legendFormat": "Out",
           "range": true,
           "refId": "B"
@@ -302,7 +300,6 @@
           },
           "exemplar": true,
           "expr": "sum(rate(node_network_receive_errs_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
-          "interval": "$resolution",
           "legendFormat": "In",
           "refId": "A"
         },
@@ -314,7 +311,6 @@
           "editorMode": "code",
           "exemplar": true,
           "expr": "0 - sum(rate(node_network_transmit_errs_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
-          "interval": "$resolution",
           "legendFormat": "Out",
           "range": true,
           "refId": "B"
@@ -413,7 +409,6 @@
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(rate(node_network_receive_packets_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
-          "interval": "$resolution",
           "legendFormat": "In",
           "range": true,
           "refId": "A"
@@ -426,7 +421,6 @@
           "editorMode": "code",
           "exemplar": true,
           "expr": "0 - sum(rate(node_network_transmit_packets_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
-          "interval": "$resolution",
           "legendFormat": "Out",
           "range": true,
           "refId": "B"
@@ -525,7 +519,6 @@
           "exemplar": true,
           "expr": "sum(rate(node_network_receive_drop_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
           "hide": false,
-          "interval": "$resolution",
           "legendFormat": "In",
           "refId": "A"
         },
@@ -537,7 +530,6 @@
           "exemplar": true,
           "expr": "0 - sum(rate(node_network_transmit_drop_total{instance=\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",device=~\"$device\"}[$__rate_interval]))",
           "hide": false,
-          "interval": "$resolution",
           "legendFormat": "Out",
           "refId": "B"
         }

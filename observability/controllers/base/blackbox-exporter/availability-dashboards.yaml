@@ -13,65 +13,9 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: networking
-  json: |-
-    {
-      "title": "ICMP Availability",
-      "uid": "icmp-availability",
-      "tags": [
-        "blackbox",
-        "icmp"
-      ],
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "Reachable",
-          "type": "stat",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "probe_success{job=~\"blackbox-network-.+|.*icmp.*\"}",
-              "legendFormat": "{{device_id}} {{instance}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "title": "Probe Duration",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "probe_duration_seconds{job=~\"blackbox-network-.+|.*icmp.*\"}",
-              "legendFormat": "{{device_id}} {{instance}}",
-              "refId": "A"
-            }
-          ]
-        }
-      ]
-    }
+  configMapRef:
+    name: blackbox-dashboards
+    key: icmp-availability.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -88,87 +32,9 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: networking
-  json: |-
-    {
-      "title": "HTTP Availability",
-      "uid": "http-availability",
-      "tags": [
-        "blackbox",
-        "http"
-      ],
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "Available",
-          "type": "stat",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "probe_success and on(job, instance) probe_http_status_code",
-              "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "title": "HTTP Status",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "probe_http_status_code",
-              "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "title": "Request Duration",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "probe_duration_seconds and on(job, instance) probe_http_status_code",
-              "legendFormat": "{{probe_path}} {{ip_family}} {{instance}}",
-              "refId": "A"
-            }
-          ]
-        }
-      ]
-    }
+  configMapRef:
+    name: blackbox-dashboards
+    key: http-availability.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard

@@ -5,3 +5,14 @@ resources:
   - ./cloudflared-pod-monitor.yaml
   - ./cloudflared-rules.yaml
   - ./cloudflared-dashboard.yaml
+
+configMapGenerator:
+  - name: cloudflared-dashboard
+    namespace: grafana
+    files:
+      - cloudflared-dashboard.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

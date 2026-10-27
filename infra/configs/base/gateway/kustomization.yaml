@@ -7,3 +7,4 @@ resources:
   - ./gateway-staging.yaml
   - ./request-authentication.yaml
   - ./server-timing.yaml
+  - ./telemetry.yaml

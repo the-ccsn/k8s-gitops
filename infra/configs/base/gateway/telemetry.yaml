@@ -1,0 +1,110 @@
+# Keep complete access logs at the external Gateways, including local replies.
+# Sampling/provider settings remain inherited from mesh-default-metrics.
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: ingress-observability
+  namespace: kube-system
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: infra-gateway
+  accessLogging:
+    - providers:
+        - name: ingress-json
+      filter:
+        expression: "true"
+  tracing:
+    # Child customTags replace the parent map; retain every correlation tag.
+    - customTags:
+        istio.proxy.role:
+          literal:
+            value: ingress
+        ccsn.ingress.entrypoint:
+          literal:
+            value: istio
+        cloudflare.ray.id:
+          header:
+            name: cf-ray
+            defaultValue: ''
+        ccsn.request.id:
+          header:
+            name: x-ccsn-request-id
+            defaultValue: ''
+        istio.proxy.request_id:
+          header:
+            name: x-request-id
+            defaultValue: ''
+---
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: ingress-observability
+  namespace: prod
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default-gateway
+  accessLogging:
+    - providers:
+        - name: ingress-json
+      filter:
+        expression: "true"
+  tracing:
+    - customTags:
+        istio.proxy.role:
+          literal:
+            value: ingress
+        ccsn.ingress.entrypoint:
+          literal:
+            value: istio
+        cloudflare.ray.id:
+          header:
+            name: cf-ray
+            defaultValue: ''
+        ccsn.request.id:
+          header:
+            name: x-ccsn-request-id
+            defaultValue: ''
+        istio.proxy.request_id:
+          header:
+            name: x-request-id
+            defaultValue: ''
+---
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: ingress-observability
+  namespace: staging
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default-gateway
+  accessLogging:
+    - providers:
+        - name: ingress-json
+      filter:
+        expression: "true"
+  tracing:
+    - customTags:
+        istio.proxy.role:
+          literal:
+            value: ingress
+        ccsn.ingress.entrypoint:
+          literal:
+            value: istio
+        cloudflare.ray.id:
+          header:
+            name: cf-ray
+            defaultValue: ''
+        ccsn.request.id:
+          header:
+            name: x-ccsn-request-id
+            defaultValue: ''
+        istio.proxy.request_id:
+          header:
+            name: x-request-id
+            defaultValue: ''

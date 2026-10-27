@@ -50,6 +50,14 @@ are side by side, while slow/error spans and connector trends are collapsed.
 Complete traces open through native Tempo links and the installed Traces Drilldown.
 No collection, routing, tracing or access policy changes are introduced here.
 
+Ingress classification is authored by the Gateway-targeted Telemetry beside
+`infra/configs/base/gateway`. Mesh-only waypoints keep `istio.proxy.role=mesh`
+without the ingress marker. Gateway HTTP access logs include local replies and
+unsampled requests; trace sampling remains one percent. Inspect a complete
+trace through its native link rather than expecting a stored span for every log.
+The classification applies to newly collected records; older metadata remains
+until its normal retention expires.
+
 Ambient workloads without a waypoint expose L4 telemetry. Their HTTP charts can
 be empty, and destination-side HTTP charts require a destination L7 reporter.
 Do not synthesize metrics or enable sidecars merely to populate a chart.

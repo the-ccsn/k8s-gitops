@@ -58,9 +58,9 @@ spec:
           envoyFileAccessLog:
             path: /dev/stdout
             logFormat:
-              labels:
+              labels: &istio-access-log-fields
                 timestamp: '%START_TIME%'
-                ccsn.ingress.entrypoint: istio
+                istio.proxy.role: mesh
                 method: '%REQ(:METHOD)%'
                 host: '%REQ(:AUTHORITY)%'
                 path: '%REQ_WITHOUT_QUERY(:PATH)%'
@@ -72,6 +72,14 @@ spec:
                 ccsn.request.id: '%REQ(X-CCSN-REQUEST-ID?X-REQUEST-ID)%'
                 cloudflare.ray.id: '%REQ(CF-RAY)%'
                 upstream_cluster: '%UPSTREAM_CLUSTER_RAW%'
+        - name: ingress-json
+          envoyFileAccessLog:
+            path: /dev/stdout
+            logFormat:
+              labels:
+                <<: *istio-access-log-fields
+                istio.proxy.role: ingress
+                ccsn.ingress.entrypoint: istio
         - name: otel-tracing
           opentelemetry:
             service: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local

@@ -712,6 +712,13 @@ spec:
       "graphTooltip": 1,
       "links": [
         {
+          "title": "Egress connections",
+          "type": "link",
+          "url": "/d/gateway-api?${k8s_cluster_name:queryparam}&var-namespace=egress-system&var-gateway=waypoint",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
           "title": "Ingress correlation",
           "type": "link",
           "url": "/d/ingress-requests?${k8s_cluster_name:queryparam}&${request_id:queryparam}&${cf_ray:queryparam}&${trace_id:queryparam}",

@@ -111,6 +111,20 @@ spec:
             - id: container-parser
               type: container
               max_log_size: 102400
+            # Native sing-box IDs group connection logs; they are not trace IDs.
+            - type: regex_parser
+              if: 'resource["k8s.namespace.name"] == "egress-system" && resource["k8s.container.name"] == "sing-box" && body matches "\\[[0-9]+ "'
+              on_error: send_quiet
+              regex: '^(?:\S+ ){0,3}(?:TRACE|DEBUG|INFO|WARN|ERROR|FATAL|PANIC)(?:\[[0-9]+\])? \[(?P<singbox_connection_id>[0-9]+) (?P<singbox_connection_age_text>[0-9]+(?:ms|\.[0-9]+s|m[0-9]+s))\] '
+              parse_to: attributes
+            - type: move
+              if: 'attributes.singbox_connection_id != nil'
+              from: attributes.singbox_connection_id
+              to: attributes["singbox.connection.id"]
+            - type: move
+              if: 'attributes.singbox_connection_age_text != nil'
+              from: attributes.singbox_connection_age_text
+              to: attributes["singbox.connection.age_text"]
             # Drop legacy OAuth warnings that contain opaque access tokens.
             - type: filter
               expr: 'body matches "token is not in JWT format:"'
@@ -322,6 +336,25 @@ spec:
                 - set(severity_text, "ERROR") where severity_number == SEVERITY_NUMBER_ERROR
                 - set(severity_text, "WARN") where severity_number == SEVERITY_NUMBER_WARN
                 - set(severity_text, "INFO") where severity_number == SEVERITY_NUMBER_INFO
+            - context: log
+              conditions:
+                - resource.attributes["k8s.container.name"] == "istio-proxy" and attributes["istio.proxy.role"] == "egress"
+                  and (attributes["protocol"] == nil or attributes["protocol"] == "-")
+              statements:
+                # Opaque TCP has no HTTP status; retain transport failures as warnings.
+                - set(severity_number, SEVERITY_NUMBER_INFO)
+                - set(severity_number, SEVERITY_NUMBER_WARN)
+                  where attributes["response_flags"] != nil and attributes["response_flags"] != "-" and attributes["response_flags"] != ""
+                - set(severity_text, "WARN") where severity_number == SEVERITY_NUMBER_WARN
+                - set(severity_text, "INFO") where severity_number == SEVERITY_NUMBER_INFO
+            - context: log
+              conditions:
+                - resource.attributes["k8s.namespace.name"] == "egress-system" and resource.attributes["k8s.container.name"] == "sing-box"
+              statements:
+                # Native HTTP authentication errors include supplied credentials.
+                - 'replace_pattern(body, "(?i)(http: authentication failed).*", "$1 [details redacted]")'
+                # HTTP transport errors can include full URLs with credentials or queries.
+                - 'replace_pattern(body, "(?i)(https?|wss?|socks[45]h?)://\\S+", "[redacted-url]")'
           trace_statements:
             - context: span
               conditions:

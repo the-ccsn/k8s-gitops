@@ -80,6 +80,24 @@ spec:
                 <<: *istio-access-log-fields
                 istio.proxy.role: ingress
                 ccsn.ingress.entrypoint: istio
+        - name: egress-json
+          envoyFileAccessLog:
+            path: /dev/stdout
+            logFormat:
+              labels:
+                <<: *istio-access-log-fields
+                istio.proxy.role: egress
+                envoy.connection.id: '%CONNECTION_ID%'
+                protocol: '%PROTOCOL%'
+                downstream_remote_address: '%DOWNSTREAM_REMOTE_ADDRESS%'
+                upstream_local_address: '%UPSTREAM_LOCAL_ADDRESS%'
+                upstream_host: '%UPSTREAM_HOST%'
+                requested_server_name: '%REQUESTED_SERVER_NAME%'
+                bytes_received: '%BYTES_RECEIVED%'
+                bytes_sent: '%BYTES_SENT%'
+                response_code_details: '%RESPONSE_CODE_DETAILS%'
+                connection_termination_details: '%CONNECTION_TERMINATION_DETAILS%'
+                upstream_transport_failure_reason: '%UPSTREAM_TRANSPORT_FAILURE_REASON%'
         - name: otel-tracing
           opentelemetry:
             service: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local

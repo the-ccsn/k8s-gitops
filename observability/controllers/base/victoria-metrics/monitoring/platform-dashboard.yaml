@@ -26,6 +26,22 @@ spec:
       "schemaVersion": 39,
       "version": 1,
       "refresh": "30s",
+      "links": [
+        {
+          "title": "Egress connections",
+          "type": "link",
+          "url": "/d/gateway-api?${k8s_cluster_name:queryparam}&var-namespace=egress-system&var-gateway=waypoint",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Egress logs",
+          "type": "link",
+          "url": "/d/application-logs?${k8s_cluster_name:queryparam}&var-namespace=egress-system&var-service=%24__all&var-pod=%24__all&var-severity=%24__all&var-search=&var-request_id=&var-cf_ray=&var-trace_id=",
+          "targetBlank": false,
+          "keepTime": true
+        }
+      ],
       "panels": [
         {
           "id": 1,

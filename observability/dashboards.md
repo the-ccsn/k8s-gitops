@@ -79,6 +79,12 @@ For GitOps investigations, [Flux event tracing](../infra/configs/base/flux/monit
 adds revision/object searches in Tempo. Its event-age spans are separate from
 application requests; use Flux's metrics dashboards for reconciliation duration.
 
+For [egress and proxy-engine investigations](../infra/configs/base/egress/README.md),
+use the existing Gateway API metrics and Application Logs views. Native sing-box
+connection IDs group its logs within a Pod/time window; they do not identify
+Tempo traces. Opaque HTTPS/CONNECT has connection telemetry, while genuine HTTP
+spans require an HTTP-visible proxy or an instrumented application client.
+
 ## Investigate a probe
 
 Start with **Network Availability**, then open the HTTP, DNS, TLS or ICMP view.

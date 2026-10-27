@@ -107,6 +107,12 @@ shared by NGINX and Istio where they describe the same request. Istio's temporar
 before export. W3C trace/span IDs keep their protocol-defined identity, and
 `X-Request-ID`, `X-CCSN-Request-ID` and `CF-Ray` headers retain their wire names.
 
+Proxy request-ID fallback, HTTP URL redaction and access-log severity use proxy
+identity independently of ingress classification. Istio container logs and its
+native request-ID span tag identify the proxy; campus records retain their
+explicit source marker. Application SDK spans and unrelated application status
+fields are outside that proxy normalization.
+
 Producers and consumers use only these canonical names. Do not introduce old-key
 aliases or transitional conversions. The Collector leaves unrelated application
 attributes alone. Query-string redaction and nil/empty request-ID fallback apply

@@ -15,9 +15,9 @@ spec:
       # Preserve upstream W3C sampling instead of deriving it from Envoy UUIDs.
       useRequestIdForTraceSampling: false
       customTags:
-        ccsn.ingress.entrypoint:
+        istio.proxy.role:
           literal:
-            value: istio
+            value: mesh
         cloudflare.ray.id:
           header:
             name: cf-ray

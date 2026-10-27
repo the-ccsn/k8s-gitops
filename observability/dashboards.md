@@ -41,6 +41,10 @@ traces. Ingress HTTP metrics select gateway source reports, excluding waypoint
 copies. Cloudflare connector metrics describe the tunnel, not Cloudflare's edge
 request logs. An ID cannot recover a request that was not collected or sampled.
 Application propagation determines whether one trace spans multiple services.
+Only the three targeted ingress Gateways supply the Istio ingress marker;
+internal waypoint-only traffic remains in application/mesh views. Gateway access
+logs include successful unsampled requests and local authorization redirects.
+A valid trace ID in a log does not imply that sampling retained the trace.
 
 ## Find application logs
 

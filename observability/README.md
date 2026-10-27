@@ -98,6 +98,7 @@ automatically promoted to an index label. Grafana explicitly maps
 | Meaning | Log/span attribute | Loki structured-metadata key |
 | --- | --- | --- |
 | Ingress layer (`campus` or `istio`) | `ccsn.ingress.entrypoint` | `ccsn_ingress_entrypoint` |
+| Istio proxy role (`mesh` or `ingress`) | `istio.proxy.role` | `istio_proxy_role` |
 | Stable request correlation | `ccsn.request.id` | `ccsn_request_id` |
 | Cloudflare Ray ID | `cloudflare.ray.id` | `cloudflare_ray_id` |
 
@@ -112,6 +113,12 @@ identity independently of ingress classification. Istio container logs and its
 native request-ID span tag identify the proxy; campus records retain their
 explicit source marker. Application SDK spans and unrelated application status
 fields are outside that proxy normalization.
+
+Only targeted ingress Gateways emit the Istio ingress marker. Mesh-only proxies
+retain their role and correlation fields without appearing in ingress searches.
+The ingress Gateways retain every HTTP access record, including local replies
+and unsampled requests; a log's trace ID does not guarantee a stored trace.
+Mesh logging stays selective and new traces remain sampled at one percent.
 
 Producers and consumers use only these canonical names. Do not introduce old-key
 aliases or transitional conversions. The Collector leaves unrelated application

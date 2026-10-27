@@ -1,0 +1,1768 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Adapted from kubevirt/monitoring 06ffe455bb0de1eb4366ddfc2c6d401038afcf37 (Apache-2.0). Native Grafana timeseries panels, KubeVirt 1.8 metrics, component and VMI namespace scopes. Kubernetes-wide and etcd sections remain in their own dashboards.",
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": true,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 65,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 20,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 1
+          },
+          "id": 20,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": []
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_from_creation_seconds_bucket{instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(phase,le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "refId": "E"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "VMI Creation Time",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 50,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1
+          },
+          "id": 36,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": []
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "sum(rate(kubevirt_vmi_phase_transition_time_from_creation_seconds_count{phase=\"Running\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(instance)",
+              "interval": "",
+              "legendFormat": "{{instance}} Running",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "VMI Start Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "decimals": null,
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 50,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 9
+          },
+          "id": 22,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": []
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_seconds_bucket{phase=\"Pending\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,phase))",
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "queryType": "randomWalk",
+              "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_seconds_bucket{phase=\"Scheduling\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,phase))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "refId": "B"
+            },
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_seconds_bucket{phase=\"Scheduled\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,phase))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "refId": "C"
+            },
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_seconds_bucket{phase=\"Running\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,phase))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "refId": "D"
+            },
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_seconds_bucket{phase=\"Succeeded\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,phase))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "refId": "E"
+            },
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(kubevirt_vmi_phase_transition_time_seconds_bucket{phase=\"Failed\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,phase))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{phase}}",
+              "refId": "F"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "VMI Phase Transition Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 50,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 9
+          },
+          "id": 41,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": []
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(max(kubevirt_vmi_info{kubevirt_resource_namespace_name=\"$vm_namespace\",name=~\"$vm\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\"}) by(k8s_cluster_name,kubevirt_resource_namespace_name,name,phase)) by(phase)",
+              "refId": "A",
+              "legendFormat": "{{phase}}"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Current VMI Count by Phase",
+          "type": "timeseries",
+          "description": "Current VMI inventory, deduplicated by cluster, VMI namespace, name and phase; not a rate of recent phase transitions."
+        }
+      ],
+      "title": "Virtual Machines",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 52,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 100,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 19
+          },
+          "id": 47,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(irate(kubevirt_rest_client_requests_total{instance=~\"$instance\",container!=\"\",method=~\"GET|LIST\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(code,container,job,verb,method) > 0",
+              "interval": "",
+              "legendFormat": "{{container}} - {{method}} - {{code}}",
+              "refId": "B"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "API Client - Read Requests Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 40,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 19
+          },
+          "id": 62,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.99, sum(rate(kubevirt_rest_client_request_latency_seconds_bucket{instance=~\"$instance\",verb=~\"GET|LIST\",container!=\"\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,verb,container)) > 0",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{container}} - {{verb}}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "API Client - Read Requests Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "How many write requests (POST|PUT|PATCH|DELETE) per second do the apiservers get by code?",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 100,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 27
+          },
+          "id": 48,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(irate(kubevirt_rest_client_requests_total{instance=~\"$instance\",container!=\"\",method=~\"POST|PUT|PATCH|DELETE\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(code,container,job,verb,method) > 0",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{container}} - {{method}} - {{code}}",
+              "refId": "B"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "API Client - Write Requests Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 40,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 27
+          },
+          "id": 63,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(kubevirt_rest_client_request_latency_seconds_bucket{instance=~\"$instance\",verb=~\"POST|PUT|PATCH|DELETE\",container!=\"\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,verb,container)) > 0",
+              "interval": "",
+              "legendFormat": "{{container}} - {{verb}}",
+              "refId": "B"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "API Client - Write Requests Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 30,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 35
+          },
+          "id": 37,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.99, sum(irate(kubevirt_rest_client_rate_limiter_duration_seconds_bucket{instance=~\"$instance\",container!=\"\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(container,le))",
+              "interval": "",
+              "legendFormat": "{{container}}",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "API Client - Rate Limiter Duration",
+          "type": "timeseries"
+        }
+      ],
+      "title": "KubeVirt API Access",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 54,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 70,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "min": 0.0
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 19
+          },
+          "id": 13,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "repeat": null,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "sum(rate(kubevirt_workqueue_adds_total{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) by(instance,name)",
+              "format": "time_series",
+              "interval": "",
+              "legendFormat": "{{name}} {{instance}}",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Add Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 50,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "min": 0.0
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 19
+          },
+          "id": 14,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "repeat": null,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "kubevirt_workqueue_depth{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}",
+              "format": "time_series",
+              "interval": "",
+              "legendFormat": "{{name}} {{instance}} ",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Depth",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 70,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 27
+          },
+          "id": 15,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "repeat": null,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.99, sum(rate(kubevirt_workqueue_queue_duration_seconds_bucket{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) by(instance,name,le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{name}} {{instance}}",
+              "refId": "B"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Queue Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 70,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 27
+          },
+          "id": 46,
+          "links": [],
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "histogram_quantile(0.99, sum(rate(kubevirt_workqueue_work_duration_seconds_bucket{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) by(instance,name,le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{name}} {{instance}}",
+              "refId": "B"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Work Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 70,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 35
+          },
+          "id": 24,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "kubevirt_workqueue_unfinished_work_seconds{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}",
+              "interval": "",
+              "legendFormat": "{{name}} {{instance}}",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Unfinished Work",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 100,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 35
+          },
+          "id": 35,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "rate(kubevirt_workqueue_retries_total{instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Retry Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "How many seconds has the longest running processor for workqueue been running.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "lines",
+                "lineInterpolation": "linear",
+                "fillOpacity": 80,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 16,
+            "y": 35
+          },
+          "id": 26,
+          "options": {
+            "legend": {
+              "showLegend": true,
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "kubevirt_workqueue_longest_running_processor_seconds{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}",
+              "interval": "",
+              "legendFormat": "{{name}} {{instance}}",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Work Queue - Longest Running Processor",
+          "type": "timeseries"
+        }
+      ],
+      "title": "KubeVirt Work Queue",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 58,
+      "panels": [],
+      "title": "Resource Usage",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "linear",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 6,
+        "x": 0,
+        "y": 29
+      },
+      "id": 16,
+      "links": [],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "repeat": null,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(process_resident_memory_bytes{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}) by(instance,container)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{container}} {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Memory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "linear",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "min": 0.0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 6,
+        "x": 6,
+        "y": 29
+      },
+      "id": 17,
+      "links": [],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "repeat": null,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(rate(process_cpu_seconds_total{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}[$__rate_interval])) by(instance,container)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{container}} {{instance}} ",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "CPU usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "decimals": 0,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "linear",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 6,
+        "x": 12,
+        "y": 29
+      },
+      "id": 18,
+      "links": [],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "repeat": null,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(process_open_fds{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\"}) by(instance,container)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{container}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Open Files",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "linear",
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 0,
+        "y": 41
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(rate(go_gc_duration_seconds_sum{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\"}[$__rate_interval])) by(container) / sum(rate(go_gc_duration_seconds_count{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\"}[$__rate_interval])) by(container)",
+          "interval": "",
+          "legendFormat": "{{container}}",
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "GC Duration Mean",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "decimals": 0,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "linear",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 8,
+        "y": 41
+      },
+      "id": 44,
+      "links": [],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "go_goroutines{job=\"$job\",instance=~\"$instance\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{container}} {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Goroutines",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "decimals": 0,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "linear",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 41
+      },
+      "id": 45,
+      "links": [],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(go_threads{container!=\"\",k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\"}) by(container)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{container}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Threads",
+      "type": "timeseries"
+    },
+    {
+      "id": 165,
+      "type": "row",
+      "title": "Virtual Machine Resources",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      }
+    },
+    {
+      "id": 166,
+      "title": "VMI CPU Usage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 54
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(kubevirt_vmi_cpu_usage_seconds_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\",kubevirt_resource_namespace_name=\"$vm_namespace\",name=~\"$vm\"}[$__rate_interval])) by(k8s_cluster_name,kubevirt_resource_namespace_name,name)",
+          "legendFormat": "{{kubevirt_resource_namespace_name}}/{{name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        }
+      },
+      "description": "Total vCPU and hypervisor CPU usage from the native VMI CPU counter, in cores."
+    },
+    {
+      "id": 167,
+      "title": "VM Memory",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 54
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "sum(kubevirt_vmi_memory_resident_bytes{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\",kubevirt_resource_namespace_name=\"$vm_namespace\",name=~\"$vm\"}) by(k8s_cluster_name,kubevirt_resource_namespace_name,name)",
+          "legendFormat": "{{kubevirt_resource_namespace_name}}/{{name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 168,
+      "title": "Network Traffic",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 62
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(kubevirt_vmi_network_receive_bytes_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\",kubevirt_resource_namespace_name=\"$vm_namespace\",name=~\"$vm\"}[$__rate_interval]) + rate(kubevirt_vmi_network_transmit_bytes_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",instance=~\"$instance\",kubevirt_resource_namespace_name=\"$vm_namespace\",name=~\"$vm\"}[$__rate_interval])) by(k8s_cluster_name,kubevirt_resource_namespace_name,name)",
+          "legendFormat": "{{kubevirt_resource_namespace_name}}/{{name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "kubevirt",
+    "kubevirt-control-plane",
+    "sig-scale"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "query": "label_values(kubevirt_info, k8s_cluster_name)",
+        "definition": "label_values(kubevirt_info, k8s_cluster_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "namespace",
+        "label": "KubeVirt component namespace",
+        "type": "query",
+        "query": "label_values(kubevirt_info{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "definition": "label_values(kubevirt_info{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "job",
+        "label": "KubeVirt job",
+        "type": "query",
+        "query": "label_values(kubevirt_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, job)",
+        "definition": "label_values(kubevirt_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, job)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "instance",
+        "label": "KubeVirt endpoint",
+        "type": "query",
+        "query": "label_values(up{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}, instance)",
+        "definition": "label_values(up{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}, instance)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "vm_namespace",
+        "label": "VMI namespace",
+        "type": "query",
+        "query": "label_values(kubevirt_vmi_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}, kubevirt_resource_namespace_name)",
+        "definition": "label_values(kubevirt_vmi_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}, kubevirt_resource_namespace_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "vm",
+        "label": "VMI",
+        "type": "query",
+        "query": "label_values(kubevirt_vmi_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",kubevirt_resource_namespace_name=\"$vm_namespace\"}, name)",
+        "definition": "label_values(kubevirt_vmi_info{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\",kubevirt_resource_namespace_name=\"$vm_namespace\"}, name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "KubeVirt",
+  "uid": "kubevirt",
+  "version": 1
+}

@@ -53,87 +53,10 @@ spec:
     matchLabels:
       dashboards: grafana
   folderUID: kubernetes
-  json: |-
-    {
-      "title": "Kubernetes Deployment",
-      "uid": "kubernetes-deployment",
-      "tags": [
-        "kubernetes",
-        "deployment"
-      ],
-      "timezone": "browser",
-      "schemaVersion": 39,
-      "version": 1,
-      "refresh": "30s",
-      "panels": [
-        {
-          "id": 1,
-          "title": "Unavailable Replicas",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "kube_deployment_status_replicas_unavailable",
-              "legendFormat": "{{namespace}}/{{deployment}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "title": "Available Replicas",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 0
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "kube_deployment_status_replicas_available",
-              "legendFormat": "{{namespace}}/{{deployment}}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "title": "Observed Generation Lag",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "kube_deployment_metadata_generation - kube_deployment_status_observed_generation",
-              "legendFormat": "{{namespace}}/{{deployment}}",
-              "refId": "A"
-            }
-          ]
-        }
-      ]
-    }
+  configMapRef:
+    name: kubernetes-upstream-dashboards
+    key: kubernetes-deployment.json
+
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard

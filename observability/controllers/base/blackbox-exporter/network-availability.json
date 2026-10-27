@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Adapted from adinhodovic/blackbox-exporter-mixin (MIT), commit 7d2b9263d7adae3ec937c8ae0cb6003492616710. Per-probe views retain job, instance, probe path and IP family. Uptime uses the selected time range.",
+  "description": "Adapted from adinhodovic/blackbox-exporter-mixin (MIT), commit 7d2b9263d7adae3ec937c8ae0cb6003492616710. Per-probe views retain job, instance, probe path and IP family. Uptime uses the selected time range. Overview, failure list and timelines stay visible; protocol details are collapsed. Optional path/family All includes probes with those labels absent.",
   "editable": false,
   "panels": [
     {
@@ -14,7 +14,7 @@
         "y": 0
       },
       "id": 1,
-      "title": "Summary",
+      "title": "Probe overview",
       "type": "row"
     },
     {
@@ -22,7 +22,7 @@
         "type": "prometheus",
         "uid": "victoriametrics"
       },
-      "description": "Current up/down status for all probes. Each probe is shown as Up (green) or Down (red). Click a probe to navigate to its detail view.",
+      "description": "Current recorded status, separated by job, target, path and address family. Click a tile to select its target. Missing samples are not proof of health.",
       "fieldConfig": {
         "defaults": {
           "links": [
@@ -30,7 +30,7 @@
               "targetBlank": true,
               "title": "Go To Probe",
               "type": "link",
-              "url": "/d/network-availability?var-k8s_cluster_name=${__field.labels.k8s_cluster_name:percentencode}&var-job=${__field.labels.job:percentencode}&var-instance=${__field.labels.instance:percentencode}"
+              "url": "/d/network-availability?var-k8s_cluster_name=${__field.labels.k8s_cluster_name:percentencode}&var-job=${__field.labels.job:percentencode}&var-instance=${__field.labels.instance:percentencode}&${probe_path:queryparam}&${ip_family:queryparam}"
             }
           ],
           "mappings": [
@@ -38,11 +38,11 @@
               "options": {
                 "0": {
                   "color": "red",
-                  "text": "Down"
+                  "text": "Failed"
                 },
                 "1": {
                   "color": "green",
-                  "text": "Up"
+                  "text": "Succeeded"
                 }
               },
               "type": "value"
@@ -91,13 +91,13 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_success{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n  }\n)",
+          "expr": "max(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
           "refId": "A",
           "instant": true,
           "range": false
         }
       ],
-      "title": "Status Map",
+      "title": "Last recorded probe results",
       "type": "stat"
     },
     {
@@ -149,7 +149,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "count(\n  probe_success{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n  }\n)",
+          "expr": "count(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"})",
           "instant": true,
           "refId": "A",
           "range": false
@@ -211,7 +211,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "(\n  count(\n    probe_success{\n      k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n    } == 1\n  )\n  OR vector(0)\n) /\ncount(\n  probe_success{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n  }\n)",
+          "expr": "(count(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"} == 1) or vector(0)) / count(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"})",
           "instant": true,
           "refId": "A",
           "range": false
@@ -269,7 +269,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "count(\n  probe_http_ssl{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n  } == 1\n) /\ncount(\n  probe_http_version{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n  }\n)",
+          "expr": "count(probe_http_ssl{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"} == 1) / count(probe_http_version{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"})",
           "instant": true,
           "refId": "A",
           "range": false
@@ -323,7 +323,7 @@
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "expr": "avg(\n  probe_duration_seconds{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n\n  }\n)",
+          "expr": "avg(probe_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",instance=~\"$instance\"})",
           "instant": true,
           "refId": "A",
           "range": false
@@ -333,848 +333,1030 @@
       "type": "stat"
     },
     {
-      "collapsed": false,
+      "id": 2000,
+      "title": "Failed probes and scrape failures",
+      "description": "Only recorded failures appear here. An empty table does not establish the health of a target that has no samples. A protocol job must have been discovered before it can appear in the selector.",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
       "gridPos": {
-        "h": 1,
+        "x": 0,
+        "y": 10,
         "w": 24,
-        "x": 0,
-        "y": 10
+        "h": 6
       },
-      "id": 7,
-      "repeat": "instance",
-      "title": "$instance",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Current probe success rate for the selected instance.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 0.99
-              },
-              {
-                "color": "green",
-                "value": 0.999
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 11
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ]
-        },
-        "showPercentChange": false
-      },
-      "pluginVersion": "v11.4.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_success{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Uptime (displayed samples)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Fraction of successful recorded probe samples over the selected range, limited by metrics retention. Missing samples are not counted as successes.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 0.99
-              },
-              {
-                "color": "green",
-                "value": 0.999
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 11
-      },
-      "id": 9,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        },
-        "showPercentChange": false
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "avg_over_time(\n  probe_success{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }[$__range]\n)",
-          "instant": true,
           "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "Uptime (selected range)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Whether the most recent probe succeeded.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "text": "No"
-                },
-                "1": {
-                  "color": "green",
-                  "text": "Yes"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 14
-      },
-      "id": 10,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_success{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
+          "expr": "label_replace((max(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(k8s_cluster_name,job,instance,probe_path,ip_family) == 0) unless on(k8s_cluster_name,job,instance,probe_path,ip_family) (max(up{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(k8s_cluster_name,job,instance,probe_path,ip_family) == 0), \"failure\", \"Probe failed\", \"\", \"\") or label_replace(max(up{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(k8s_cluster_name,job,instance,probe_path,ip_family) == 0, \"failure\", \"Scrape failed\", \"\", \"\")",
           "instant": true,
-          "refId": "A",
-          "range": false
+          "range": false,
+          "format": "table"
         }
       ],
-      "title": "Probe Success",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Most recent HTTP status code returned by the probe.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "blue",
-                "value": 300
-              },
-              {
-                "color": "yellow",
-                "value": 400
-              },
-              {
-                "color": "red",
-                "value": 500
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 14
-      },
-      "id": 11,
-      "options": {
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
+      "transformations": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_http_status_code{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": true,
-          "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "Latest Response Code",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Whether the probe endpoint is using SSL/TLS.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "text": "No"
-                },
-                "1": {
-                  "color": "green",
-                  "text": "Yes"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 17
-      },
-      "id": 12,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_http_ssl{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": true,
-          "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "SSL",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "TLS version negotiated for the probe connection.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 17
-      },
-      "id": 13,
-      "options": {
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "textMode": "name",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,version,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_tls_version_info{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": true,
-          "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "SSL Version",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Time remaining until the SSL certificate expires. Red when below the configured threshold.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "green",
-                "value": 1814400
-              }
-            ]
-          },
-          "unit": "dtdurations"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 20
-      },
-      "id": 14,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "min by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_ssl_earliest_cert_expiry{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  } - time()\n)",
-          "instant": true,
-          "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "SSL Certificate Expiry",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Whether the probe followed any HTTP redirects.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "green",
-                  "text": "No"
-                },
-                "1": {
-                  "color": "blue",
-                  "text": "Yes"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 20
-      },
-      "id": 15,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_http_redirects{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": true,
-          "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "Redirects",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "HTTP protocol version used by the probe.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 23
-      },
-      "id": 16,
-      "options": {
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "showPercentChange": false,
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ]
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "max by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_http_version{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": true,
-          "refId": "A",
-          "range": false
-        }
-      ],
-      "title": "HTTP Version",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Mean probe duration for the selected instance.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 23
-      },
-      "id": 17,
-      "options": {
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ]
-        },
-        "showPercentChange": false
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "avg by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_duration_seconds{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Average Latency",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "Mean DNS lookup time for the selected instance.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 0,
-        "y": 26
-      },
-      "id": 18,
-      "options": {
-        "graphMode": "area",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ]
-        },
-        "showPercentChange": false
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "expr": "avg by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_dns_lookup_time_seconds{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "instant": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Average DNS Lookup",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "victoriametrics"
-      },
-      "description": "HTTP phase duration and total probe duration over time for the selected instance.",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 10
-          },
-          "unit": "s"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "A"
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "k8s_cluster_name": true
             },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "HTTP ${__field.labels}"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "B"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Total ${__field.labels}"
-              }
-            ]
+            "renameByName": {
+              "job": "Probe job",
+              "instance": "Target",
+              "probe_path": "Path",
+              "ip_family": "Address family",
+              "failure": "Failure",
+              "Value": "Status"
+            }
           }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 18,
-        "x": 6,
-        "y": 11
-      },
-      "id": 19,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Mean",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "exemplar": false,
-          "expr": "sum by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  avg by (phase,instance,k8s_cluster_name,job,probe_path,ip_family) (\n    probe_http_duration_seconds{\n      k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n    }\n  )\n)",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "exemplar": false,
-          "expr": "avg by (instance,k8s_cluster_name,job,probe_path,ip_family) (\n  probe_duration_seconds{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n)",
-          "refId": "B"
         }
       ],
-      "title": "Probe Duration",
-      "type": "timeseries"
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
     },
     {
+      "id": 2010,
+      "title": "Success history",
+      "type": "timeseries",
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
       },
-      "description": "Time spent in each probe phase (DNS, connect, TLS, processing, transfer) for the selected instance.",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(k8s_cluster_name,job,instance,probe_path,ip_family)"
+        }
+      ],
       "fieldConfig": {
         "defaults": {
+          "unit": "short",
           "custom": {
-            "fillOpacity": 100,
-            "lineWidth": 1,
-            "stacking": {
-              "mode": "percent"
-            }
-          },
-          "unit": "s"
+            "lineInterpolation": "stepAfter",
+            "fillOpacity": 10
+          }
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 9,
-        "w": 18,
-        "x": 6,
-        "y": 20
-      },
-      "id": 20,
       "options": {
         "legend": {
-          "calcs": [
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right",
           "showLegend": true,
-          "sortBy": "Mean",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
+          "displayMode": "list",
+          "placement": "bottom"
         }
+      }
+    },
+    {
+      "id": 2011,
+      "title": "Probe duration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
       },
-      "pluginVersion": "v11.4.0",
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 7
+      },
       "targets": [
         {
+          "refId": "A",
+          "expr": "avg(probe_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(k8s_cluster_name,job,instance,probe_path,ip_family)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineInterpolation": "linear",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 2020,
+      "title": "Protocol details \u00b7 Network and Service Availability",
+      "type": "row",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
           "datasource": {
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "exemplar": false,
-          "expr": "avg(\n  probe_http_duration_seconds{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n) by (phase,k8s_cluster_name,job,instance,probe_path,ip_family)",
-          "refId": "A"
+          "description": "Current probe success rate for the selected instance.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": 0
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.99
+                  },
+                  {
+                    "color": "green",
+                    "value": 0.999
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 0,
+            "y": 26
+          },
+          "id": 8,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ]
+            },
+            "showPercentChange": false
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "title": "Uptime (displayed samples)",
+          "type": "stat"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "victoriametrics"
           },
-          "exemplar": false,
-          "expr": "avg(\n  probe_icmp_duration_seconds{\n    k8s_cluster_name=\"$k8s_cluster_name\",\njob=~\"$job\"\n\n,\ninstance=~\"$instance\"\n\n  }\n) by (phase,k8s_cluster_name,job,instance,probe_path,ip_family)",
-          "refId": "B"
+          "description": "Fraction of successful recorded probe samples over the selected range, limited by metrics retention. Missing samples are not counted as successes.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": 0
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.99
+                  },
+                  {
+                    "color": "green",
+                    "value": 0.999
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 3,
+            "y": 26
+          },
+          "id": 9,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            },
+            "showPercentChange": false
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "avg_over_time(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}[$__range])",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "Uptime (selected range)",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Whether the most recent probe succeeded.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "color": "red",
+                      "text": "No"
+                    },
+                    "1": {
+                      "color": "green",
+                      "text": "Yes"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 0,
+            "y": 29
+          },
+          "id": 10,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "Probe Success",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Most recent HTTP status code returned by the probe.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "blue",
+                    "value": 300
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 400
+                  },
+                  {
+                    "color": "red",
+                    "value": 500
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 3,
+            "y": 29
+          },
+          "id": 11,
+          "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_http_status_code{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "Latest Response Code",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Whether the probe endpoint is using SSL/TLS.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "color": "red",
+                      "text": "No"
+                    },
+                    "1": {
+                      "color": "green",
+                      "text": "Yes"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 0,
+            "y": 32
+          },
+          "id": 12,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_http_ssl{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "SSL",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "TLS version negotiated for the probe connection.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": 0
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 3,
+            "y": 32
+          },
+          "id": 13,
+          "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "textMode": "name",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_tls_version_info{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,version,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "SSL Version",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Time remaining until the SSL certificate expires. Red when below the configured threshold.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": 0
+                  },
+                  {
+                    "color": "green",
+                    "value": 1814400
+                  }
+                ]
+              },
+              "unit": "dtdurations"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 0,
+            "y": 35
+          },
+          "id": 14,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "min(probe_ssl_earliest_cert_expiry{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"} - time()) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "SSL Certificate Expiry",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Whether the probe followed any HTTP redirects.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "color": "green",
+                      "text": "No"
+                    },
+                    "1": {
+                      "color": "blue",
+                      "text": "Yes"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 3,
+            "y": 35
+          },
+          "id": 15,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_http_redirects{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "Redirects",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "HTTP protocol version used by the probe.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 0,
+            "y": 38
+          },
+          "id": 16,
+          "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ]
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "max(probe_http_version{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": true,
+              "refId": "A",
+              "range": false
+            }
+          ],
+          "title": "HTTP Version",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Mean probe duration for the selected instance.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 3,
+            "x": 3,
+            "y": 38
+          },
+          "id": 17,
+          "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ]
+            },
+            "showPercentChange": false
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "avg(probe_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "title": "Average Latency",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Mean DNS lookup time for the selected instance.",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 6,
+            "x": 0,
+            "y": 41
+          },
+          "id": 18,
+          "options": {
+            "graphMode": "area",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ]
+            },
+            "showPercentChange": false
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "expr": "avg(probe_dns_lookup_time_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "instant": false,
+              "refId": "A"
+            }
+          ],
+          "title": "Average DNS Lookup",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "HTTP phase duration and total probe duration over time for the selected instance.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "fillOpacity": 10
+              },
+              "unit": "s"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "HTTP ${__field.labels}"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Total ${__field.labels}"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 18,
+            "x": 6,
+            "y": 26
+          },
+          "id": 19,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "exemplar": false,
+              "expr": "sum(avg(probe_http_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(phase,instance,k8s_cluster_name,job,probe_path,ip_family)) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "exemplar": false,
+              "expr": "avg(probe_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(instance,k8s_cluster_name,job,probe_path,ip_family)",
+              "refId": "B"
+            }
+          ],
+          "title": "Probe Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "description": "Time spent in each probe phase (DNS, connect, TLS, processing, transfer) for the selected instance.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "fillOpacity": 100,
+                "lineWidth": 1,
+                "stacking": {
+                  "mode": "percent"
+                }
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 18,
+            "x": 6,
+            "y": 35
+          },
+          "id": 20,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "v11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "exemplar": false,
+              "expr": "avg(probe_http_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(phase,k8s_cluster_name,job,instance,probe_path,ip_family)",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "exemplar": false,
+              "expr": "avg(probe_icmp_duration_seconds{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(phase,k8s_cluster_name,job,instance,probe_path,ip_family)",
+              "refId": "B"
+            }
+          ],
+          "title": "Probe Phases",
+          "type": "timeseries"
+        },
+        {
+          "id": 2030,
+          "title": "Observed IP protocol",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 44,
+            "w": 6,
+            "h": 3
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max(probe_ip_protocol{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\",instance=~\"$instance\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}) by(k8s_cluster_name,job,instance,probe_path,ip_family)",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "4": {
+                      "text": "IPv4"
+                    },
+                    "6": {
+                      "text": "IPv6"
+                    }
+                  }
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
         }
-      ],
-      "title": "Probe Phases",
-      "type": "timeseries"
+      ]
     }
   ],
   "schemaVersion": 39,
@@ -1201,15 +1383,15 @@
         "sort": 1,
         "multi": false,
         "includeAll": false,
-        "options": [],
-        "current": {}
+        "current": {},
+        "options": []
       },
       {
-        "name": "job",
-        "label": "Probe job",
+        "name": "probe_path",
+        "label": "Probe path",
         "type": "query",
-        "query": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\"}, job)",
-        "definition": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\"}, job)",
+        "query": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\"}, probe_path)",
+        "definition": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\"}, probe_path)",
         "datasource": {
           "type": "prometheus",
           "uid": "victoriametrics"
@@ -1218,25 +1400,73 @@
         "sort": 1,
         "multi": true,
         "includeAll": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
         "options": [],
-        "current": {}
+        "allValue": ".*"
       },
       {
-        "name": "instance",
-        "label": "Probe target",
+        "name": "ip_family",
+        "label": "IP family policy",
         "type": "query",
-        "query": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\"}, instance)",
-        "definition": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",job=~\"$job\"}, instance)",
+        "query": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",probe_path=~\"$probe_path\"}, ip_family)",
+        "definition": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",probe_path=~\"$probe_path\"}, ip_family)",
         "datasource": {
           "type": "prometheus",
           "uid": "victoriametrics"
         },
         "refresh": 2,
         "sort": 1,
-        "multi": false,
-        "includeAll": false,
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
         "options": [],
-        "current": {}
+        "allValue": ".*"
+      },
+      {
+        "name": "job",
+        "label": "Probe job",
+        "type": "query",
+        "query": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}, job)",
+        "definition": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\"}, job)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": []
+      },
+      {
+        "name": "instance",
+        "label": "Probe target",
+        "type": "query",
+        "query": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",job=~\"$job\"}, instance)",
+        "definition": "label_values(probe_success{k8s_cluster_name=\"$k8s_cluster_name\",probe_path=~\"$probe_path\",ip_family=~\"$ip_family\",job=~\"$job\"}, instance)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": []
       }
     ]
   },
@@ -1249,5 +1479,42 @@
   "uid": "network-availability",
   "id": null,
   "version": 1,
-  "refresh": "30s"
+  "refresh": "30s",
+  "links": [
+    {
+      "title": "All probes",
+      "type": "link",
+      "url": "/d/network-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}",
+      "targetBlank": false,
+      "keepTime": true
+    },
+    {
+      "title": "HTTP",
+      "type": "link",
+      "url": "/d/http-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}",
+      "targetBlank": false,
+      "keepTime": true
+    },
+    {
+      "title": "DNS",
+      "type": "link",
+      "url": "/d/dns-availability?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}",
+      "targetBlank": false,
+      "keepTime": true
+    },
+    {
+      "title": "TLS",
+      "type": "link",
+      "url": "/d/tls-certificates?${k8s_cluster_name:queryparam}&${probe_path:queryparam}&${ip_family:queryparam}",
+      "targetBlank": false,
+      "keepTime": true
+    },
+    {
+      "title": "Ingress correlation",
+      "type": "link",
+      "url": "/d/ingress-requests?${k8s_cluster_name:queryparam}",
+      "targetBlank": false,
+      "keepTime": true
+    }
+  ]
 }

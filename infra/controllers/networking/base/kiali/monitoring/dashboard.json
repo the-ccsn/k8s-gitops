@@ -1,0 +1,424 @@
+{
+  "title": "Kiali",
+  "uid": "kiali",
+  "tags": [
+    "kiali",
+    "istio"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Kiali Up",
+      "type": "stat",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "targets": [
+        {
+          "expr": "up{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}",
+          "legendFormat": "{{pod}}",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "API hit rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(kiali_api_processing_duration_seconds_count{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(route)",
+          "refId": "A",
+          "legendFormat": "{{route}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "API processing duration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 5
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum(rate(kiali_api_processing_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,route))",
+          "refId": "A",
+          "legendFormat": "p50 {{route}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(kiali_api_processing_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,route))",
+          "refId": "B",
+          "legendFormat": "p95 {{route}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(kiali_api_processing_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,route))",
+          "refId": "C",
+          "legendFormat": "p99 {{route}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "API Failures",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "targets": [
+        {
+          "expr": "sum(kiali_api_failures_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}) by(route)",
+          "refId": "A",
+          "legendFormat": "{{route}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Graph generation duration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum(rate(kiali_graph_generation_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,graph_kind,graph_type))",
+          "refId": "A",
+          "legendFormat": "p50 {{graph_kind}} {{graph_type}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(kiali_graph_generation_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,graph_kind,graph_type))",
+          "refId": "B",
+          "legendFormat": "p95 {{graph_kind}} {{graph_type}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(kiali_graph_generation_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,graph_kind,graph_type))",
+          "refId": "C",
+          "legendFormat": "p99 {{graph_kind}} {{graph_type}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Graph cache hits",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 13
+      },
+      "targets": [
+        {
+          "expr": "sum(kiali_graph_cache_hits_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"})",
+          "refId": "A",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Graph cache misses",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 13
+      },
+      "targets": [
+        {
+          "expr": "sum(kiali_graph_cache_misses_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"})",
+          "refId": "A",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Tracing processing duration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 21
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum(rate(kiali_tracing_processing_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,query_group))",
+          "refId": "A",
+          "legendFormat": "p50 {{query_group}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(kiali_tracing_processing_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,query_group))",
+          "refId": "B",
+          "legendFormat": "p95 {{query_group}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(kiali_tracing_processing_duration_seconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\",job=\"$job\"}[$__rate_interval])) by(le,query_group))",
+          "refId": "C",
+          "legendFormat": "p99 {{query_group}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    }
+  ],
+  "description": "Native Grafana rendering of Kiali 2.24.0 built-in Kiali Internal Metrics, commit 52141136c5ebf53bd9f9fee4a356e80e662f42d9 (Apache-2.0). Preserves upstream chart order, relative widths, units, metric types and grouping. Includes the existing scrape-health chart.",
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "query": "label_values(kiali_graph_cache_hits_total, k8s_cluster_name)",
+        "definition": "label_values(kiali_graph_cache_hits_total, k8s_cluster_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "namespace",
+        "label": "Kiali namespace",
+        "type": "query",
+        "query": "label_values(kiali_graph_cache_hits_total{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "definition": "label_values(kiali_graph_cache_hits_total{k8s_cluster_name=\"$k8s_cluster_name\"}, namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "job",
+        "label": "Kiali job",
+        "type": "query",
+        "query": "label_values(kiali_graph_cache_hits_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, job)",
+        "definition": "label_values(kiali_graph_cache_hits_total{k8s_cluster_name=\"$k8s_cluster_name\",namespace=\"$namespace\"}, job)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "id": null
+}

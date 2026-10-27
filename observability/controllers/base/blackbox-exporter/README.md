@@ -1,37 +1,64 @@
-# Blackbox dashboards
+# Blackbox investigation dashboards
 
-The network, HTTP and ICMP dashboard JSON files adapt the community
+Network, HTTP, ICMP, DNS and TLS views adapt the community
 [`adinhodovic/blackbox-exporter-mixin`](https://github.com/adinhodovic/blackbox-exporter-mixin/blob/7d2b9263d7adae3ec937c8ae0cb6003492616710/dashboards_out/blackbox-exporter.json),
 commit `7d2b9263d7adae3ec937c8ae0cb6003492616710`.
 Unmodified source SHA-256:
 `51794de3f7ca5b619a5e071bcdb61b5f442558f061f1be55123bdd65aa502227`.
-`LICENSE.dashboard` preserves the upstream MIT notice.
+`LICENSE.dashboard` preserves the MIT notice. Existing dashboard UIDs and
+`victoriametrics` are retained.
 
-The existing UIDs `network-availability`, `http-availability` and
-`icmp-availability` are updated in place, using `victoriametrics`. Applicable
-upstream panel types, positions, value mappings and drilldown links are retained.
-The network and HTTP views each contain 18 charts; ICMP contains 11 and omits
-HTTP/TLS-only charts and HTTP phase queries. DNS, TLS and bandwidth dashboards
-in `availability-dashboards.yaml` are unchanged.
+| View | Existing UID | Native job-option family |
+| --- | --- | --- |
+| All probes | `network-availability` | `probe_success` |
+| HTTP | `http-availability` | `probe_http_status_code` |
+| ICMP | `icmp-availability` | `probe_icmp_duration_seconds` |
+| DNS | `dns-availability` | `probe_dns_query_succeeded` |
+| TLS | `tls-certificates` | `probe_ssl_earliest_cert_expiry` |
 
-Queries use `k8s_cluster_name`. Per-probe aggregations preserve job, instance,
-`probe_path` and `ip_family`, with phase or TLS version where relevant. Two
-paths or IP families for the same URL therefore remain separate series, even
-when one fails. Automatic series names retain the available identity labels;
-drilldown links select the cluster, job and target and show its path/family
-variants together. Current-status panels use instant queries. The selected-range
-uptime is the fraction of successful recorded samples, bounded by retention;
-missing samples do not represent proven availability. The source's fixed 30-day
-claim is removed because the backend retains seven days.
+The overview keeps recorded results, failed probes/scrapes, success history and
+probe duration visible. Protocol details are collapsed, preserving applicable
+upstream charts and relative layout. DNS replaces HTTP/ICMP phases with native
+DNS phases and retains answer counts. ICMP omits HTTP/TLS-only charts. TLS retains
+its certificate, version and HTTP detail views. A separate observed IP protocol
+stat distinguishes the actual IPv4/IPv6 result from the configured family policy.
 
-Each view derives job options from its native metric family: `probe_success`,
-`probe_http_status_code` or `probe_icmp_duration_seconds`. All expands those
-actual job options; it deliberately has no `.*` override. Jobs are the probe
-collection boundary, so HTTP and ICMP views do not include arbitrary other
-probe jobs. Failed HTTP probes with status zero remain selectable. ICMP charts
-remain empty until ICMP probes are configured and collected; this dashboard
-does not create targets or change network-device access.
+Selectors use `k8s_cluster_name`, path, IP-family policy, job and target. Per-probe
+aggregations preserve job, target, `probe_path` and `ip_family`; phase or TLS
+version is added where relevant. A successful family/path cannot conceal another
+family's failure. Path/family All is deliberately `.*` so unlabelled probes remain
+visible. Job/target All expands actual options instead of matching arbitrary
+jobs. Links retain the cluster, time and relevant selectors.
 
-When updating, verify the pinned source hash, preserve UIDs, reapply scope and
-identity grouping, and validate every query and relevant failure cases. No
-recording-rule aliases, collector changes or extra runtime components are needed.
+A failed probe (`probe_success=0`) is distinct from a scrape failure (`up=0`).
+The failure list gives scrape failure precedence when both exist for the same
+identity. Result tiles show the last recorded probe result; missing samples are
+not proof of health. Selected-range uptime describes successful recorded samples,
+limited by retention, rather than a fixed 30-day claim. Current-status queries
+are instant; histories remain range queries. ICMP/SNMP views can remain empty
+until their targets are configured. This import does not install device agents,
+change credentials or create targets.
+
+## Host and SNMP bandwidth
+
+`network-bandwidth.json` uses the network section of
+[dotdc's pinned node dashboard](https://github.com/dotdc/grafana-dashboards-kubernetes/blob/e4faf59e017a18e1b06fa64f11623bef15ce7507/dashboards/k8s-views-nodes.json),
+commit `e4faf59e017a18e1b06fa64f11623bef15ce7507`.
+Unmodified source SHA-256:
+`4a11656116232acc2b1fdf77261e7c814af88c52a5559039db56e84b88772be7`.
+`LICENSE.network-dashboard` preserves Apache 2.0.
+
+The existing UID is retained. Four native upstream traffic/error/drop charts
+preserve their relative layout, with two optional existing SNMP directions.
+Host selection uses native `nodename`, so external node exporters do not need
+a Kubernetes `node` label. An endpoint and interface selector retain native
+identities. Host traffic is bytes/second, packets are packets/second; mirrored
+transmit series retain the upstream negative plotting convention. SNMP octet
+counters are converted to bits/second and retain `device_id` / `ifName`.
+The collecting Kubernetes cluster is not a claim that an external device is a
+cluster member.
+
+For updates, verify source hashes and preserve UIDs, scopes and probe identities.
+Test same-URL paths/families, scrape versus probe failure, unlabelled probes,
+expired certificates, actual IP protocol and native units. No recording-rule
+aliases or additional runtime components are needed.

@@ -15,6 +15,7 @@ configMapGenerator:
       - istio-workload.json
       - istio-control-plane.json
       - istio-ztunnel.json
+      - gateway-api.json
     options:
       # Grafana Operator watches this ConfigMap for dashboard content updates.
       disableNameSuffixHash: true

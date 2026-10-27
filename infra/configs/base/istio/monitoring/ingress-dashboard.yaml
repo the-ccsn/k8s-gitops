@@ -34,14 +34,189 @@ spec:
       },
       "panels": [
         {
+          "id": 1000,
+          "title": "Follow a request across ingress",
+          "type": "text",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 4
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "Paste a full **Request ID** or **CF-Ray** to match logs and sampled ingress spans. A log row's **TraceID** link opens the complete trace. Trace ID / text filters narrow logs; use **Open trace ID** for direct lookup.\n\nTraffic cards describe the selected cluster. Trace searches return first matches in range; unsampled requests can have logs without a stored trace."
+          }
+        },
+        {
+          "id": 1010,
+          "title": "Gateway requests /s",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(istio_requests_total{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\"}[$__rate_interval]))",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1011,
+          "title": "Gateway 5xx share",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "gridPos": {
+            "x": 6,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "(sum(rate(istio_requests_total{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\",response_code=~\"5..\"}[$__rate_interval])) or vector(0)) / sum(rate(istio_requests_total{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\"}[$__rate_interval]))",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1012,
+          "title": "Gateway latency p95",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.95,sum by(le) (rate(istio_request_duration_milliseconds_bucket{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\"}[$__rate_interval])))",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1013,
+          "title": "Tunnel targets up",
+          "type": "stat",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "gridPos": {
+            "x": 18,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(up{k8s_cluster_name=\"$k8s_cluster_name\",container=\"cloudflared\"}) / count(up{k8s_cluster_name=\"$k8s_cluster_name\",container=\"cloudflared\"})",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
           "id": 1,
           "title": "Gateway Request Rate",
           "type": "timeseries",
           "gridPos": {
-            "h": 7,
-            "w": 12,
             "x": 0,
-            "y": 0
+            "y": 8,
+            "w": 12,
+            "h": 7
           },
           "datasource": {
             "type": "prometheus",
@@ -49,7 +224,7 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (namespace) (rate(istio_requests_total{k8s_cluster_name=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
+              "expr": "sum(rate(istio_requests_total{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\"}[$__rate_interval])) by(namespace)",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -66,10 +241,10 @@ spec:
           "title": "Gateway 5xx Ratio",
           "type": "timeseries",
           "gridPos": {
-            "h": 7,
-            "w": 12,
             "x": 12,
-            "y": 0
+            "y": 8,
+            "w": 12,
+            "h": 7
           },
           "datasource": {
             "type": "prometheus",
@@ -77,7 +252,7 @@ spec:
           },
           "targets": [
             {
-              "expr": "sum by (namespace) (rate(istio_requests_total{k8s_cluster_name=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\",response_code=~\"5..\"}[5m])) / sum by (namespace) (rate(istio_requests_total{k8s_cluster_name=\"kubevirt-cluster-319\",gateway_name!=\"\",reporter=~\"source|waypoint\"}[5m]))",
+              "expr": "sum(rate(istio_requests_total{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\",response_code=~\"5..\"}[$__rate_interval])) by(namespace) / sum(rate(istio_requests_total{k8s_cluster_name=\"$k8s_cluster_name\",gateway_name!=\"\",reporter=\"source\"}[$__rate_interval])) by(namespace)",
               "legendFormat": "{{namespace}}",
               "refId": "A"
             }
@@ -90,112 +265,536 @@ spec:
           }
         },
         {
-          "id": 3,
-          "title": "Cloudflared HA Connections",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 7,
-            "w": 12,
-            "x": 0,
-            "y": 7
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "cloudflared:tunnel_ha_connections",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short"
-            },
-            "overrides": []
-          }
-        },
-        {
-          "id": 4,
-          "title": "Cloudflared Origin Errors",
-          "type": "timeseries",
-          "gridPos": {
-            "h": 7,
-            "w": 12,
-            "x": 12,
-            "y": 7
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "victoriametrics"
-          },
-          "targets": [
-            {
-              "expr": "cloudflared:tunnel_request_errors:rate5m",
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "ops"
-            },
-            "overrides": []
-          }
-        },
-        {
           "id": 5,
-          "title": "Ingress Request Logs",
-          "description": "Sampled requests and HTTP errors. Expand a record to filter cloudflare_ray_id/ccsn_request_id or open its TraceID link. Unsampled errors may have no stored trace. Query strings and credentials are excluded.",
+          "title": "Matching ingress logs",
           "type": "logs",
-          "gridPos": {
-            "h": 12,
-            "w": 24,
-            "x": 0,
-            "y": 14
-          },
           "datasource": {
             "type": "loki",
             "uid": "loki"
           },
+          "gridPos": {
+            "x": 0,
+            "y": 15,
+            "w": 14,
+            "h": 17
+          },
           "targets": [
             {
-              "expr": "{k8s_cluster_name=\"kubevirt-cluster-319\"} | ccsn_ingress_entrypoint=~\"campus|istio\"",
-              "refId": "A"
+              "refId": "A",
+              "expr": "{k8s_cluster_name=\"$k8s_cluster_name\"} | ccsn_ingress_entrypoint =~ \"$entrypoint\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*`",
+              "queryType": "range",
+              "maxLines": 200
             }
           ],
           "options": {
             "showTime": true,
             "showLabels": false,
+            "showCommonLabels": false,
             "wrapLogMessage": true,
-            "sortOrder": "Descending"
+            "prettifyLogMessage": true,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
           }
         },
         {
           "id": 6,
-          "title": "Ingress Trace Search",
-          "description": "Sampled campus NGINX and Istio spans. Cloudflare Ray IDs are span attributes; no Cloudflare edge span is synthesized.",
+          "title": "Matching ingress traces",
+          "description": "Exact Request ID / CF-Ray filters; blank IDs include direct traffic without CF-Ray. Click Trace ID for the complete trace and its native trace-to-logs link. Text and Trace ID fields narrow logs only.",
           "type": "table",
-          "gridPos": {
-            "h": 10,
-            "w": 24,
-            "x": 0,
-            "y": 26
-          },
           "datasource": {
             "type": "tempo",
             "uid": "tempo"
           },
+          "gridPos": {
+            "x": 14,
+            "y": 15,
+            "w": 10,
+            "h": 17
+          },
           "targets": [
             {
-              "queryType": "traceql",
-              "query": "{ resource.k8s.cluster.name = \"kubevirt-cluster-319\" && span.ccsn.ingress.entrypoint =~ \"campus|istio\" }",
-              "limit": 20,
-              "refId": "A"
+              "refId": "A",
+              "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+              },
+              "queryType": "traceqlSearch",
+              "filters": [
+                {
+                  "id": "cluster",
+                  "tag": "k8s.cluster.name",
+                  "scope": "resource",
+                  "value": "$k8s_cluster_name",
+                  "operator": "=",
+                  "valueType": "string"
+                },
+                {
+                  "id": "entrypoint",
+                  "tag": "ccsn.ingress.entrypoint",
+                  "scope": "span",
+                  "value": "$entrypoint",
+                  "operator": "=~",
+                  "valueType": "string"
+                },
+                {
+                  "id": "request-id",
+                  "tag": "ccsn.request.id",
+                  "scope": "span",
+                  "value": "$request_id",
+                  "operator": "=",
+                  "valueType": "string"
+                },
+                {
+                  "id": "cf-ray",
+                  "tag": "cloudflare.ray.id",
+                  "scope": "span",
+                  "value": "$cf_ray",
+                  "operator": "=",
+                  "valueType": "string"
+                }
+              ],
+              "tableType": "traces",
+              "limit": 30,
+              "spss": 3
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm",
+            "sortBy": [
+              {
+                "displayName": "Start time",
+                "desc": true
+              }
+            ],
+            "footer": {
+              "show": false
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                }
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 1050,
+          "title": "Slow and failed ingress spans",
+          "type": "row",
+          "collapsed": true,
+          "gridPos": {
+            "x": 0,
+            "y": 32,
+            "w": 24,
+            "h": 1
+          },
+          "panels": [
+            {
+              "id": 1051,
+              "title": "Ingress spans with error status",
+              "description": "Error status on the matching ingress span, not every downstream error in the complete trace.",
+              "type": "table",
+              "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+              },
+              "gridPos": {
+                "x": 0,
+                "y": 33,
+                "w": 12,
+                "h": 10
+              },
+              "targets": [
+                {
+                  "refId": "A",
+                  "datasource": {
+                    "type": "tempo",
+                    "uid": "tempo"
+                  },
+                  "queryType": "traceqlSearch",
+                  "filters": [
+                    {
+                      "id": "cluster",
+                      "tag": "k8s.cluster.name",
+                      "scope": "resource",
+                      "value": "$k8s_cluster_name",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "entrypoint",
+                      "tag": "ccsn.ingress.entrypoint",
+                      "scope": "span",
+                      "value": "$entrypoint",
+                      "operator": "=~",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "request-id",
+                      "tag": "ccsn.request.id",
+                      "scope": "span",
+                      "value": "$request_id",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "cf-ray",
+                      "tag": "cloudflare.ray.id",
+                      "scope": "span",
+                      "value": "$cf_ray",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "status",
+                      "tag": "status",
+                      "scope": "intrinsic",
+                      "value": "error",
+                      "operator": "=",
+                      "valueType": "status"
+                    }
+                  ],
+                  "tableType": "traces",
+                  "limit": 30,
+                  "spss": 3
+                }
+              ],
+              "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "sortBy": [
+                  {
+                    "displayName": "Start time",
+                    "desc": true
+                  }
+                ],
+                "footer": {
+                  "show": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            },
+            {
+              "id": 1052,
+              "title": "Slow ingress spans",
+              "description": "Threshold applies to the matching ingress span duration. Both tables return sampled matches, not traffic totals.",
+              "type": "table",
+              "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+              },
+              "gridPos": {
+                "x": 12,
+                "y": 33,
+                "w": 12,
+                "h": 10
+              },
+              "targets": [
+                {
+                  "refId": "A",
+                  "datasource": {
+                    "type": "tempo",
+                    "uid": "tempo"
+                  },
+                  "queryType": "traceqlSearch",
+                  "filters": [
+                    {
+                      "id": "cluster",
+                      "tag": "k8s.cluster.name",
+                      "scope": "resource",
+                      "value": "$k8s_cluster_name",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "entrypoint",
+                      "tag": "ccsn.ingress.entrypoint",
+                      "scope": "span",
+                      "value": "$entrypoint",
+                      "operator": "=~",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "request-id",
+                      "tag": "ccsn.request.id",
+                      "scope": "span",
+                      "value": "$request_id",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "cf-ray",
+                      "tag": "cloudflare.ray.id",
+                      "scope": "span",
+                      "value": "$cf_ray",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "duration",
+                      "tag": "duration",
+                      "scope": "intrinsic",
+                      "value": "$min_duration",
+                      "operator": ">=",
+                      "valueType": "duration"
+                    }
+                  ],
+                  "tableType": "traces",
+                  "limit": 30,
+                  "spss": 3
+                }
+              ],
+              "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "sortBy": [
+                  {
+                    "displayName": "Start time",
+                    "desc": true
+                  }
+                ],
+                "footer": {
+                  "show": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    }
+                  }
+                },
+                "overrides": []
+              }
             }
           ]
+        },
+        {
+          "id": 1060,
+          "title": "Connector connection and error trends",
+          "type": "row",
+          "collapsed": true,
+          "gridPos": {
+            "x": 0,
+            "y": 33,
+            "w": 24,
+            "h": 1
+          },
+          "panels": [
+            {
+              "id": 3,
+              "title": "Cloudflared HA Connections",
+              "type": "timeseries",
+              "gridPos": {
+                "x": 0,
+                "y": 35,
+                "w": 12,
+                "h": 8
+              },
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "targets": [
+                {
+                  "expr": "cloudflared_tunnel_ha_connections{k8s_cluster_name=\"$k8s_cluster_name\"}",
+                  "legendFormat": "{{pod}}",
+                  "refId": "A"
+                }
+              ],
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short"
+                },
+                "overrides": []
+              }
+            },
+            {
+              "id": 4,
+              "title": "Cloudflared Origin Errors",
+              "type": "timeseries",
+              "gridPos": {
+                "x": 12,
+                "y": 35,
+                "w": 12,
+                "h": 8
+              },
+              "datasource": {
+                "type": "prometheus",
+                "uid": "victoriametrics"
+              },
+              "targets": [
+                {
+                  "expr": "rate(cloudflared_tunnel_request_errors{k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])",
+                  "legendFormat": "{{pod}}",
+                  "refId": "A"
+                }
+              ],
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "ops"
+                },
+                "overrides": []
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Cross-layer request investigation using stable CCSN request IDs, Cloudflare Ray IDs and native Tempo trace links. Empty correlation fields are optional; gateway metrics exclude waypoint reporter copies.",
+      "templating": {
+        "list": [
+          {
+            "name": "k8s_cluster_name",
+            "label": "Kubernetes cluster",
+            "type": "query",
+            "query": "label_values(up{gateway_name!=\"\"}, k8s_cluster_name)",
+            "definition": "label_values(up{gateway_name!=\"\"}, k8s_cluster_name)",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics"
+            },
+            "refresh": 2,
+            "sort": 1,
+            "multi": false,
+            "includeAll": false,
+            "current": {},
+            "options": []
+          },
+          {
+            "name": "entrypoint",
+            "label": "Entry point",
+            "type": "custom",
+            "query": "campus,istio",
+            "multi": true,
+            "includeAll": true,
+            "allValue": "campus|istio",
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "options": []
+          },
+          {
+            "name": "request_id",
+            "label": "Request ID",
+            "description": "Paste a full request ID; leave blank to show all.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "cf_ray",
+            "label": "CF-Ray",
+            "description": "Paste a full Cloudflare Ray ID; leave blank to include direct traffic.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "trace_id",
+            "label": "Trace ID (logs / direct lookup)",
+            "description": "Paste a full Trace ID to filter logs, then use Open trace ID for the complete trace.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "search",
+            "label": "Log contains text",
+            "description": "Literal log-message search. This does not filter trace span attributes.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "min_duration",
+            "label": "Slow ingress span threshold",
+            "type": "custom",
+            "query": "100ms,500ms,1s,5s",
+            "current": {
+              "text": "1s",
+              "value": "1s"
+            },
+            "options": []
+          }
+        ]
+      },
+      "id": null,
+      "graphTooltip": 1,
+      "links": [
+        {
+          "title": "Application logs",
+          "type": "link",
+          "url": "/d/application-logs?${k8s_cluster_name:queryparam}&${request_id:queryparam}&${cf_ray:queryparam}&${trace_id:queryparam}",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Gateway details",
+          "type": "link",
+          "url": "/d/gateway-api?${k8s_cluster_name:queryparam}",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Tunnel details",
+          "type": "link",
+          "url": "/d/cloudflared-tunnel?${k8s_cluster_name:queryparam}",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Traces Drilldown",
+          "type": "link",
+          "url": "/a/grafana-exploretraces-app",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Open trace ID",
+          "type": "link",
+          "url": "/explore?schemaVersion=1&panes=%7B%22A%22%3A%7B%22datasource%22%3A%22tempo%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22${trace_id:percentencode}%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22${__from}%22%2C%22to%22%3A%22${__to}%22%7D%7D%7D",
+          "targetBlank": false,
+          "keepTime": true
         }
       ]
     }

@@ -16,29 +16,720 @@ spec:
     {
       "title": "Application Logs",
       "uid": "application-logs",
-      "tags": ["loki", "logs", "applications"],
+      "tags": [
+        "loki",
+        "logs",
+        "applications"
+      ],
       "timezone": "browser",
       "schemaVersion": 39,
       "version": 1,
       "refresh": "30s",
       "templating": {
         "list": [
-          {"name": "namespace", "label": "Namespace", "type": "query", "datasource": {"type": "loki", "uid": "loki"}, "query": "label_values(k8s_namespace_name)", "includeAll": true, "allValue": ".+"},
-          {"name": "service", "label": "Service", "type": "query", "datasource": {"type": "loki", "uid": "loki"}, "query": "label_values({k8s_namespace_name=~\"$namespace\"}, service_name)", "includeAll": true, "allValue": ".+"}
+          {
+            "name": "k8s_cluster_name",
+            "label": "Kubernetes cluster",
+            "type": "query",
+            "query": "label_values(k8s_cluster_name)",
+            "definition": "label_values(k8s_cluster_name)",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            },
+            "refresh": 2,
+            "sort": 1,
+            "multi": false,
+            "includeAll": false,
+            "current": {},
+            "options": []
+          },
+          {
+            "name": "namespace",
+            "label": "Workload namespace",
+            "type": "query",
+            "query": "label_values({k8s_cluster_name=\"$k8s_cluster_name\"}, k8s_namespace_name)",
+            "definition": "label_values({k8s_cluster_name=\"$k8s_cluster_name\"}, k8s_namespace_name)",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            },
+            "refresh": 2,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "options": [],
+            "allValue": ".*"
+          },
+          {
+            "name": "service",
+            "label": "Service",
+            "type": "query",
+            "query": "label_values({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\"}, service_name)",
+            "definition": "label_values({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\"}, service_name)",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            },
+            "refresh": 2,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "options": [],
+            "allValue": ".*"
+          },
+          {
+            "name": "pod",
+            "label": "Pod",
+            "type": "query",
+            "query": "label_values({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"}, k8s_pod_name)",
+            "definition": "label_values({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"}, k8s_pod_name)",
+            "datasource": {
+              "type": "loki",
+              "uid": "loki"
+            },
+            "refresh": 2,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "options": [],
+            "allValue": ".*"
+          },
+          {
+            "name": "severity",
+            "label": "Severity",
+            "type": "custom",
+            "query": "TRACE,DEBUG,INFO,WARN,ERROR,FATAL",
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "options": []
+          },
+          {
+            "name": "search",
+            "label": "Contains text",
+            "description": "Literal, case-sensitive log-message search. Blank shows all.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "request_id",
+            "label": "Request ID",
+            "description": "Paste a full request ID; leave blank to show all.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "cf_ray",
+            "label": "CF-Ray",
+            "description": "Paste a full Cloudflare Ray ID; leave blank to include direct traffic.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          },
+          {
+            "name": "trace_id",
+            "label": "Trace ID (logs / direct lookup)",
+            "description": "Paste a full Trace ID to filter logs, then use Open trace ID for the complete trace.",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "options": [],
+            "skipUrlSync": false
+          }
         ]
       },
       "panels": [
         {
-          "id": 1, "title": "Log Volume", "type": "timeseries",
-          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
-          "datasource": {"type": "loki", "uid": "loki"},
-          "targets": [{"expr": "sum by (severity_text) (count_over_time({k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"}[5m]))", "legendFormat": "{{severity_text}}", "refId": "A"}]
+          "id": 1000,
+          "title": "Find the record, then follow the trace",
+          "type": "text",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 4
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "Choose a workload and time range, then search text or paste an ID. Blank ID fields keep all records. Expand a log row for structured fields and its **TraceID** link.\n\n**Open trace ID** uses the optional Trace ID field. Trace lookup below follows Request ID / CF-Ray across services; workload and text filters apply to logs. Counts describe collected records, not service health."
+          }
         },
         {
-          "id": 2, "title": "Logs", "type": "logs",
-          "gridPos": {"h": 14, "w": 24, "x": 0, "y": 8},
-          "datasource": {"type": "loki", "uid": "loki"},
-          "targets": [{"expr": "{k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"}", "refId": "A"}]
+          "id": 1010,
+          "title": "Records in range",
+          "type": "stat",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*`[$__range])) or vector(0)",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1011,
+          "title": "Error records",
+          "type": "stat",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 6,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*` | severity_text =~ \"ERROR|FATAL\" [$__range])) or vector(0)",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1012,
+          "title": "Error share (recorded)",
+          "type": "stat",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "(sum(count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*` | severity_text =~ \"ERROR|FATAL\" [$__range])) or vector(0)) / sum(count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*`[$__range]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1013,
+          "title": "Services with records",
+          "type": "stat",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 18,
+            "y": 4,
+            "w": 6,
+            "h": 4
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "count(sum by(service_name) (count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*`[$__range]))) or vector(0)",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "none",
+            "graphMode": "none"
+          }
+        },
+        {
+          "id": 1020,
+          "title": "Record volume by severity",
+          "type": "timeseries",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 7
+          },
+          "maxDataPoints": 180,
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by(severity_text) (count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*`[$__interval]))",
+              "queryType": "range",
+              "legendFormat": "{{severity_text}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "bars",
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                },
+                "fillOpacity": 75
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "ERROR"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "red"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "FATAL"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "dark-red"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "WARN"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "orange"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "INFO"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "blue"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "DEBUG"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "gray"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "TRACE"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "gray"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 1021,
+          "title": "Error records by service",
+          "type": "timeseries",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 7
+          },
+          "maxDataPoints": 180,
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by(k8s_namespace_name,service_name) (count_over_time({k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*` | severity_text =~ \"ERROR|FATAL\" [$__interval]))",
+              "queryType": "range",
+              "legendFormat": "{{k8s_namespace_name}} / {{service_name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "bars",
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                },
+                "fillOpacity": 75
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 2,
+          "title": "Matching logs",
+          "type": "logs",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 15,
+            "w": 24,
+            "h": 16
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*`",
+              "queryType": "range",
+              "maxLines": 200
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": true,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
+          }
+        },
+        {
+          "id": 1030,
+          "title": "Recent error records",
+          "type": "row",
+          "collapsed": true,
+          "gridPos": {
+            "x": 0,
+            "y": 31,
+            "w": 24,
+            "h": 1
+          },
+          "panels": [
+            {
+              "id": 1031,
+              "title": "Matching errors",
+              "type": "logs",
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "gridPos": {
+                "x": 0,
+                "y": 32,
+                "w": 24,
+                "h": 12
+              },
+              "targets": [
+                {
+                  "refId": "A",
+                  "expr": "{k8s_cluster_name=\"$k8s_cluster_name\",k8s_namespace_name=~\"$namespace\",service_name=~\"$service\"} | k8s_pod_name =~ \"$pod\" | severity_text =~ \"$severity\" |= ${search:json} | ccsn_request_id =~ `.*${request_id:regex}.*` | cloudflare_ray_id =~ `.*${cf_ray:regex}.*` | trace_id =~ `.*${trace_id:regex}.*` | severity_text =~ \"ERROR|FATAL\"",
+                  "queryType": "range",
+                  "maxLines": 100
+                }
+              ],
+              "options": {
+                "showTime": true,
+                "showLabels": false,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": true,
+                "enableLogDetails": true,
+                "sortOrder": "Descending",
+                "dedupStrategy": "none"
+              }
+            }
+          ]
+        },
+        {
+          "id": 1040,
+          "title": "Trace lookup across services",
+          "type": "row",
+          "collapsed": true,
+          "gridPos": {
+            "x": 0,
+            "y": 32,
+            "w": 24,
+            "h": 1
+          },
+          "panels": [
+            {
+              "id": 1041,
+              "title": "Traces matching Request ID / CF-Ray",
+              "description": "IDs are exact matches. Leave IDs blank to browse the selected cluster. Namespace, service, log text and severity filters do not constrain a complete trace. Search returns first matches, not necessarily the latest traces.",
+              "type": "table",
+              "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+              },
+              "gridPos": {
+                "x": 0,
+                "y": 33,
+                "w": 24,
+                "h": 10
+              },
+              "targets": [
+                {
+                  "refId": "A",
+                  "datasource": {
+                    "type": "tempo",
+                    "uid": "tempo"
+                  },
+                  "queryType": "traceqlSearch",
+                  "filters": [
+                    {
+                      "id": "cluster",
+                      "tag": "k8s.cluster.name",
+                      "scope": "resource",
+                      "value": "$k8s_cluster_name",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "request-id",
+                      "tag": "ccsn.request.id",
+                      "scope": "span",
+                      "value": "$request_id",
+                      "operator": "=",
+                      "valueType": "string"
+                    },
+                    {
+                      "id": "cf-ray",
+                      "tag": "cloudflare.ray.id",
+                      "scope": "span",
+                      "value": "$cf_ray",
+                      "operator": "=",
+                      "valueType": "string"
+                    }
+                  ],
+                  "tableType": "traces",
+                  "limit": 30,
+                  "spss": 3
+                }
+              ],
+              "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "sortBy": [
+                  {
+                    "displayName": "Start time",
+                    "desc": true
+                  }
+                ],
+                "footer": {
+                  "show": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Project-specific OTel/Loki log investigation: workload and severity filters, literal search, request/Ray/Trace IDs, native trace links and an optional cross-service trace lookup.",
+      "id": null,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "graphTooltip": 1,
+      "links": [
+        {
+          "title": "Ingress correlation",
+          "type": "link",
+          "url": "/d/ingress-requests?${k8s_cluster_name:queryparam}&${request_id:queryparam}&${cf_ray:queryparam}&${trace_id:queryparam}",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Traces Drilldown",
+          "type": "link",
+          "url": "/a/grafana-exploretraces-app",
+          "targetBlank": false,
+          "keepTime": true
+        },
+        {
+          "title": "Open trace ID",
+          "type": "link",
+          "url": "/explore?schemaVersion=1&panes=%7B%22A%22%3A%7B%22datasource%22%3A%22tempo%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22${trace_id:percentencode}%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22${__from}%22%2C%22to%22%3A%22${__to}%22%7D%7D%7D",
+          "targetBlank": false,
+          "keepTime": true
         }
       ]
     }

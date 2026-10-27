@@ -19,6 +19,9 @@ configMapGenerator:
       - network-availability.json
       - http-availability.json
       - icmp-availability.json
+      - dns-availability.json
+      - tls-certificates.json
+      - network-bandwidth.json
     options:
       # Grafana Operator watches this ConfigMap for dashboard updates.
       disableNameSuffixHash: true

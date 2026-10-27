@@ -72,3 +72,28 @@ K3s exposes those scheduler/queue metrics through the API-server target.
 Hardware-specific node metrics, missing container termination history and zero
 active faults may leave panels empty. Namespace and cluster selectors organize
 queries; they do not implement Grafana user authorization.
+
+## Deployment view
+
+`kubernetes-deployment.json` uses the standard Kubernetes mixin workload dashboard
+distributed by [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus/blob/174e45d20337d6cdfd5d8bfd042acdf479a38424/manifests/grafana-dashboardDefinitions.yaml),
+commit `174e45d20337d6cdfd5d8bfd042acdf479a38424`.
+Source key `grafana-dashboard-k8s-resources-workload` / `k8s-resources-workload.json`;
+extracted unmodified SHA-256: `10e867a3ef4343922af1f0f20216be4f36d2f7967395b1864f147f587ee48d65`.
+The existing Apache 2.0 text in `LICENSE.dashboard` also applies to this source.
+
+UID `kubernetes-deployment`, the 13 native upstream charts/tables and their layout
+are retained. Three existing replica/generation views bring the total to 16.
+Selectors name the Kubernetes cluster, deployment namespace and exact Deployment.
+The upstream CPU and workload-owner recordings are expanded into native cAdvisor
+and kube-state-metrics queries. Membership follows controller Pod → ReplicaSet →
+Deployment ownership, including both ReplicaSets during rollout; it does not
+infer ownership from a Pod-name prefix. Both joins preserve cluster/namespace.
+Owner metadata copies are deduplicated before joining. CPU excludes Pod/pause
+aggregate containers; each collector retains its own native job.
+
+No compatibility aliases or additional recording rules are installed. Tables
+retain native request/limit comparisons and network units. Missing limits remain
+missing rather than becoming artificial capacity. For updates, preserve the UID,
+verify the extracted source hash and owner joins, and test similarly named
+Deployments, rolling ReplicaSets, cluster/namespace scope and missing limits.

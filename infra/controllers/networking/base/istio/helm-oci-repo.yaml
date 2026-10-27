@@ -12,7 +12,7 @@ spec:
     operation: copy
   url: oci://ghcr.io/istio/release/charts/base
   ref:
-    tag: "1.31.1"
+    tag: "1.31.3"
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -26,7 +26,7 @@ spec:
     operation: copy
   url: oci://ghcr.io/istio/release/charts/cni
   ref:
-    tag: "1.31.1"
+    tag: "1.31.3"
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -40,7 +40,7 @@ spec:
     operation: copy
   url: oci://ghcr.io/istio/release/charts/ztunnel
   ref:
-    tag: "1.31.1"
+    tag: "1.31.3"
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -54,4 +54,4 @@ spec:
     operation: copy
   url: oci://ghcr.io/istio/release/charts/istiod
   ref:
-    tag: "1.31.1"
+    tag: "1.31.3"

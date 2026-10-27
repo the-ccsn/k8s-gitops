@@ -9,3 +9,14 @@ resources:
   - ./kubernetes-dashboard.yaml
   - ./dashboard.yaml
   - ./pod-monitor.yaml
+
+configMapGenerator:
+  - name: grafana-dashboard
+    namespace: grafana
+    files:
+      - dashboard.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard content updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

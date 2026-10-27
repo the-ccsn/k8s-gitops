@@ -1,0 +1,346 @@
+{
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Alerts",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "current set of alerts stored in the Alertmanager",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "v11.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(alertmanager_alerts{job=~\"$job\",k8s_cluster_name=\"$k8s_cluster_name\"}) by(job,instance)",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Alerts",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "rate of successful and invalid alerts received by the Alertmanager",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "v11.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(alertmanager_alerts_received_total{job=~\"$job\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(job,instance)",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} Received",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(alertmanager_alerts_invalid_total{job=~\"$job\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(job,instance)",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} Invalid",
+          "refId": "B"
+        }
+      ],
+      "title": "Alerts receive rate",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 4,
+      "panels": [],
+      "title": "Notifications",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "rate of successful and invalid notifications sent by the Alertmanager",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "v11.1.0",
+      "repeat": "integration",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(alertmanager_notifications_total{job=~\"$job\",integration=\"$integration\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(integration,job,instance)",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} Total",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(alertmanager_notifications_failed_total{job=~\"$job\",integration=\"$integration\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(integration,job,instance)",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} Failed",
+          "refId": "B"
+        }
+      ],
+      "title": "$integration: Notifications Send Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "latency of notifications sent by the Alertmanager",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "v11.1.0",
+      "repeat": "integration",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(alertmanager_notification_latency_seconds_bucket{job=~\"$job\",integration=\"$integration\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(le,job,instance))",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} 99th Percentile",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "histogram_quantile(0.50, sum(rate(alertmanager_notification_latency_seconds_bucket{job=~\"$job\",integration=\"$integration\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(le,job,instance))",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} Median",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "expr": "sum(rate(alertmanager_notification_latency_seconds_sum{job=~\"$job\",integration=\"$integration\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(job,instance) / sum(rate(alertmanager_notification_latency_seconds_count{job=~\"$job\",integration=\"$integration\",k8s_cluster_name=\"$k8s_cluster_name\"}[$__rate_interval])) by(job,instance)",
+          "intervalFactor": 2,
+          "legendFormat": "{{instance}} Average",
+          "refId": "C"
+        }
+      ],
+      "title": "$integration: Notification Duration",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "alertmanager-mixin"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "k8s_cluster_name",
+        "label": "Kubernetes cluster",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "query": "label_values(alertmanager_build_info, k8s_cluster_name)",
+        "definition": "label_values(alertmanager_build_info, k8s_cluster_name)",
+        "refresh": 1,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "includeAll": false,
+        "label": "job",
+        "name": "job",
+        "query": "label_values(alertmanager_alerts{k8s_cluster_name=\"$k8s_cluster_name\"}, job)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query",
+        "options": [],
+        "definition": "label_values(alertmanager_alerts{k8s_cluster_name=\"$k8s_cluster_name\"}, job)"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "victoriametrics"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "name": "integration",
+        "query": "label_values(alertmanager_notifications_total{job=~\"$job\",k8s_cluster_name=\"$k8s_cluster_name\"}, integration)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query",
+        "options": [],
+        "allValue": ".*",
+        "definition": "label_values(alertmanager_notifications_total{job=~\"$job\",k8s_cluster_name=\"$k8s_cluster_name\"}, integration)"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "30s"
+    ]
+  },
+  "timezone": "utc",
+  "title": "Alertmanager / Overview",
+  "uid": "alertmanager",
+  "id": null,
+  "version": 1,
+  "refresh": "30s"
+}

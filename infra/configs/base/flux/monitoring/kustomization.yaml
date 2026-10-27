@@ -7,3 +7,15 @@ resources:
   - ./metrics-authorization.yaml
   - ./rules.yaml
   - ./dashboard.yaml
+
+configMapGenerator:
+  - name: flux-dashboards
+    namespace: grafana
+    files:
+      - dashboard.json
+      - control-plane-dashboard.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard content updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

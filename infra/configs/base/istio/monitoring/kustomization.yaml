@@ -5,3 +5,18 @@ resources:
   - ./rules.yaml
   - ./dashboards.yaml
   - ./ingress-dashboard.yaml
+
+configMapGenerator:
+  - name: istio-dashboards
+    namespace: grafana
+    files:
+      - istio-mesh.json
+      - istio-service.json
+      - istio-workload.json
+      - istio-control-plane.json
+      - istio-ztunnel.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard content updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

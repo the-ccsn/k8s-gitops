@@ -10,3 +10,14 @@ resources:
   - ./pod-monitor.yaml
   - ./rules.yaml
   - ./dashboard.yaml
+
+configMapGenerator:
+  - name: otel-collector-dashboard
+    namespace: grafana
+    files:
+      - dashboard.json
+    options:
+      # Grafana Operator watches this ConfigMap for dashboard updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled

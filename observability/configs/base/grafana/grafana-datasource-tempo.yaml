@@ -29,6 +29,24 @@ spec:
         query: '{${__tags}} | trace_id = "${__span.traceId}"'
         filterByTraceID: false
         filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: victoriametrics
+        spanStartTimeShift: -5m
+        spanEndTimeShift: 5m
+        tags:
+          - key: k8s.cluster.name
+            value: k8s_cluster_name
+          - key: k8s.namespace.name
+            value: k8s_namespace_name
+          - key: service.name
+            value: service
+        queries:
+          - name: Sampled span rate by kind and status
+            query: 'sum by (k8s_namespace_name, job, span_kind, status_code) (rate(traces_spanmetrics_calls_total{${__tags}}[5m]))'
+          - name: Sampled span p50 latency (seconds)
+            query: 'histogram_quantile(0.5, sum by (le, k8s_namespace_name, job, span_kind) (rate(traces_spanmetrics_latency_bucket{${__tags}}[5m])))'
+          - name: Sampled span p95 latency (seconds)
+            query: 'histogram_quantile(0.95, sum by (le, k8s_namespace_name, job, span_kind) (rate(traces_spanmetrics_latency_bucket{${__tags}}[5m])))'
       serviceMap:
         datasourceUid: victoriametrics
       nodeGraph:

@@ -89,6 +89,8 @@ spec:
           service_graphs: {}
           span_metrics:
             enable_target_info: true
+            # Keep equal service names in different workload namespaces distinct.
+            dimensions: [k8s.namespace.name]
           # Traces Drilldown needs TraceQL metrics blocks, including proxy/client spans.
           local_blocks:
             filter_server_spans: false

@@ -37,3 +37,31 @@ requests may leave charts empty. This import changes no sampling, Collector,
 metrics generator, storage, authentication or trace-query policy.
 When updating, verify the source hash, preserve the UID, reapply topology/scopes,
 and check exact metric names, histogram format and every query.
+
+## Trace-to-metric navigation
+
+The Tempo datasource supplies native span links to VictoriaMetrics: sampled span
+rate by kind/status and p50/p95 latency in seconds. Each link uses the span's
+available Kubernetes cluster, workload namespace and service attributes, with a
+five-minute margin before and after the span. Workload namespaces, native jobs
+and client/server kinds remain separate in query results rather than adding
+both observations of a request together. Grafana omits mappings missing from a
+span, so unenriched external SDK spans can open a broader selection; the
+namespace grouping still keeps their metric series distinct. These links do
+not implement user-access isolation.
+
+The generator explicitly adds `k8s.namespace.name` as the metric label
+`k8s_namespace_name`; the native `service`, `span_kind` and `status_code` labels
+remain unchanged. The namespace is the traced workload's namespace, not Tempo's
+namespace. Only new samples carry this dimension; no historical fallback or
+metric alias is installed. Rates need fresh samples after rollout.
+
+These metrics describe collected, sampled spans. They do not estimate total
+traffic, and span status is not an HTTP error-rate calculation. Use Istio's
+traffic metrics for request totals. Application SDK instrumentation and header
+propagation still determine application-level trace coverage.
+
+The link configuration follows Grafana's pinned
+[native trace-to-metrics settings](https://github.com/grafana/grafana/blob/v13.0.1/docs/sources/datasources/tempo/configure-tempo-data-source/configure-trace-to-metrics.md)
+and Tempo's pinned
+[span-metrics processor](https://github.com/grafana/tempo/blob/v2.9.0/modules/generator/processor/spanmetrics/config.go).

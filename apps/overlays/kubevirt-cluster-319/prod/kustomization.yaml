@@ -35,3 +35,6 @@ patchesJson6902:
     patch: |-
       - op: remove
         path: /spec/selector/matchLabels/app.kubernetes.io~1env
+
+components:
+  - ../../../../observability/components/flux-event-tracing/

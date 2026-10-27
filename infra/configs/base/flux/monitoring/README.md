@@ -33,3 +33,76 @@ When updating, verify the pinned sources, reapply the datasource/label bindings,
 and check the variables, readiness tables and controller queries against current
 metrics. Sources with no Bucket resources and healthy-only failure selections may
 have no series; they must not include unrelated controllers or another cluster.
+
+## Native event tracing
+
+The shared [flux-event-tracing Component](../../../../../observability/components/flux-event-tracing/)
+connects notification-controller's native `otel` Provider to the existing
+Collector's OTLP HTTP `/v1/traces` endpoint. Each enrolled namespace has one
+`tempo` Provider and one `gitops-events` Alert, owned by its existing Flux path.
+The Alert omits source namespaces, so it selects only local resources.
+Wildcard names cover new objects without updating a central inventory.
+
+The template includes every event-source kind supported by notification-controller
+1.8.4 except HelmRepository, which its native exporter skips. It does not install
+additional controllers. Success and error events are both forwarded; no
+user-notification receiver is involved.
+
+To enroll a namespace, include the Component once in the existing Kustomization
+that sets that namespace. If the parent also manages resources in other
+namespaces, use a small child Kustomization so namespace transformation applies
+only to the Provider and Alert:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: my-app
+components:
+  - <relative-path>/observability/components/flux-event-tracing/
+```
+
+Reference that child from its parent's `resources`. Do not add the Component to
+every application in a shared namespace: one existing owner is sufficient for
+all local Flux resources. New namespaces require this one-time inclusion; Flux
+does not discover and enroll arbitrary namespaces automatically.
+
+In Grafana Explore, choose Tempo and search:
+
+```traceql
+{ resource.service.name = "flux-system/gitops-events" && span.flux.resource.kind = "Kustomization" }
+```
+
+For a release investigation, keep its namespace and name together:
+
+```traceql
+{ resource.service.name = "harbor/gitops-events" && span.flux.resource.kind = "HelmRelease" && span.flux.resource.namespace = "harbor" && span.flux.resource.name = "harbor" }
+```
+
+The native service name is `<alert-namespace>/gitops-events`, and resource
+`service.namespace` is the Alert's namespace. Resource `k8s.namespace.name`
+still identifies the emitting controller Pod in `flux-system`, not the managed
+application. The Collector maps native `object.*` span fields to
+`flux.resource.*` to distinguish the managed object. Native event metadata,
+including `revision`, remains on spans and is not promoted to resource
+attributes or metric dimensions.
+
+These are event-derived spans, not controller-internal SDK traces. The native
+exporter correlates the Alert UID and revision. Separate namespace Alerts have
+separate UIDs and trace groups; different Git/chart revisions also produce
+separate groups. These spans do not form a complete deployment dependency graph.
+Within one Alert, missing revisions share an `unknown` revision. Span start is
+the event timestamp and span end is export time: latency represents event age,
+not reconciliation duration or application latency. Use the existing Flux
+metrics dashboards for reconciliation duration.
+
+Events are exported without probabilistic filtering, subject to the controller's
+event filtering/deduplication; this does not change HTTP/mesh sampling. No
+historical events are replayed. Delivery is best effort: 1.8.4 does not return
+span-export errors through `Post`, so the presence of Provider/Alert resources or
+a successful dispatch log is insufficient acceptance. After merge, verify new
+revision/object spans in Tempo, namespace separation and Collector queues/export
+failures. Event traces do not automatically share trace IDs with controller logs
+or application traces.
+
+Contract: [pinned exporter implementation](https://github.com/fluxcd/notification-controller/blob/v1.8.4/internal/notifier/otel.go),
+[Provider documentation](https://fluxcd.io/flux/components/notification/providers/#otel).

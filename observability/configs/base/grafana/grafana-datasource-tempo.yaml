@@ -53,3 +53,22 @@ spec:
         enabled: true
       search:
         hide: false
+        filters:
+          - id: workload-namespace
+            tag: k8s.namespace.name
+            operator: '='
+            scope: resource
+            valueType: string
+          - id: workload-cluster
+            tag: k8s.cluster.name
+            operator: '='
+            scope: resource
+            valueType: string
+          - id: service-name
+            tag: service.name
+            operator: '='
+            scope: resource
+          - id: span-name
+            tag: name
+            operator: '='
+            scope: span

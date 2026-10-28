@@ -358,6 +358,31 @@ spec:
           trace_statements:
             - context: span
               conditions:
+                - resource.attributes["service.name"] == "kiali.kiali-operator" and resource.attributes["service.namespace"] == "kiali-operator"
+                  and instrumentation_scope.name == "kiali.kiali-operator"
+              statements:
+                # Native manual spans include raw queries and workload patches.
+                - delete_key(attributes, "query")
+                - delete_key(attributes, "labels")
+                - delete_key(attributes, "labelQueryString")
+                - delete_key(attributes, "jsonPatch")
+            - context: span
+              conditions:
+                - resource.attributes["service.name"] == "kiali.kiali-operator" and resource.attributes["service.namespace"] == "kiali-operator"
+                  and instrumentation_scope.name == "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+              statements:
+                - delete_key(attributes, "http.read_error")
+                - delete_key(attributes, "http.write_error")
+            - context: spanevent
+              conditions:
+                - resource.attributes["service.name"] == "kiali.kiali-operator" and resource.attributes["service.namespace"] == "kiali-operator"
+                  and instrumentation_scope.name == "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+              statements:
+                # The SDK records the raw panic value when an HTTP handler panics.
+                - delete_key(attributes, "exception.message")
+                - delete_key(attributes, "exception.stacktrace")
+            - context: span
+              conditions:
                 - instrumentation_scope.name == "flux:notification-controller"
               statements:
                 # Managed objects can be in a different namespace from the emitting controller.

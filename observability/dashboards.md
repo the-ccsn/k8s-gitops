@@ -80,6 +80,13 @@ sampled server operations as `kiali.kiali-operator`, with logical namespace
 `kiali-operator`. These describe Kiali's work rather than the applications it
 observes; native trace-ID fields in every Kiali log are not assumed.
 
+The [shared OAuth2 Gateway](../apps/base/oauth2-proxy/README.md#native-metrics)
+exposes status counts, method-based latency and requests in flight through the
+VictoriaMetrics datasource. Its scoped Explore queries and `prod` log view are
+the entry points; no dedicated dashboard is provisioned. These metrics do not
+count successful logins or sessions, and the pinned binary has no native OTLP
+exporter.
+
 For GitOps investigations, [Flux event tracing](../infra/configs/base/flux/monitoring/README.md#native-event-tracing)
 adds revision/object searches in Tempo. Its event-age spans are separate from
 application requests; use Flux's metrics dashboards for reconciliation duration.

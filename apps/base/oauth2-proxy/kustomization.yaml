@@ -7,3 +7,4 @@ resources:
   - ./oauth2-proxy-secrets.yaml
   - ./envoyfilter-redirect.yaml
   - ./identity/
+  - ./monitoring/

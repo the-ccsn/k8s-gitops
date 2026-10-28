@@ -81,6 +81,12 @@ spec:
       cookie-samesite: "lax"
       cookie-domain: ".ccsn.dev"
       whitelist-domain: ".ccsn.dev"
+    metrics:
+      enabled: true
+      port: 44180
+      serviceMonitor:
+        # Collection is owned by the local monitoring resources.
+        enabled: false
     gatewayApi:
       enabled: true
       gatewayRef:

@@ -34,3 +34,19 @@ spec:
             summary: Loki log-alert evaluations are failing
             description: Inspect the affected rule group and query errors; missing log alerts are not evidence of healthy applications.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/loki/README.md
+        - alert: LokiMetricsMissing
+          expr: absent(up{namespace="monitoring",job="monitoring/loki-single-binary"})
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: Loki backend scrape targets have disappeared
+            description: Check Loki workload and monitor discovery. Generic target-down alerts only cover targets still present in service discovery.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/loki/README.md
+        - alert: LokiChunkFlushFailures
+          expr: sum by (k8s_cluster_name, namespace, pod) (rate(loki_ingester_chunks_flush_failures_total[5m])) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: Loki cannot flush chunks reliably
+            description: Check S3 credentials, permissions, connectivity and capacity. WAL buffering can temporarily hide backend failure from ingestion health.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/loki/README.md

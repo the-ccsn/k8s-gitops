@@ -72,3 +72,11 @@ spec:
             summary: vmalert is failing to evaluate rules
             description: Rule evaluations have repeatedly failed for ten minutes. Check the rule status, expressions, and datasource connectivity.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/victoria-metrics/README.md
+        - alert: VMAgentRemoteWriteBacklog
+          expr: sum by (k8s_cluster_name, namespace, pod) (vmagent_remotewrite_pending_data_bytes) > 268435456
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: vmagent remote-write backlog exceeds 256 MiB
+            description: The configured persistent queue is capped at 1 GiB. Check ingestion throughput and destination availability before the queue drops old data.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/victoria-metrics/README.md

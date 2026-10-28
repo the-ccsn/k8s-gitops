@@ -51,3 +51,19 @@ spec:
             summary: "Collector {{ $labels.pod }} exporter {{ $labels.exporter }} queue exceeds 95%"
             description: The persistent queue has almost exhausted its byte capacity. Restore the destination and inspect queue growth immediately.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/otel-collector/README.md
+        - alert: OtelCollectorMetricsMissing
+          expr: absent(up{namespace="monitoring",job="monitoring/otel-collector-agents"}) or absent(up{namespace="monitoring",job="otel-events"})
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: A Collector scrape family has disappeared
+            description: No targets remain for this configured Collector job. Check monitor discovery and the owning workload; a healthy exporter queue cannot prove collection is running.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/otel-collector/README.md
+        - alert: OtelCollectorReceiverRefusedData
+          expr: sum by (k8s_cluster_name, namespace, pod, receiver) (rate(otelcol_receiver_refused_log_records[5m])) > 0 or sum by (k8s_cluster_name, namespace, pod, receiver) (rate(otelcol_receiver_refused_spans[5m])) > 0
+          for: 5m
+          labels: {severity: warning}
+          annotations:
+            summary: Collector receivers are refusing telemetry
+            description: Inspect memory pressure and downstream backpressure. Retry behavior depends on the producer; refused records may be lost.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/otel-collector/README.md

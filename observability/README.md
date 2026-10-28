@@ -189,3 +189,30 @@ When adding a component, review its native metric prefixes and label meanings,
 normalize real collisions in its own monitor, and check dashboard variables,
 rules and cross-signal mappings. Resource attributes and payload fields must not
 be promoted wholesale into metric dimensions or log index labels.
+
+### Pipeline alert coverage
+
+Critical configured scrape families have explicit absence alerts: Collector
+agents/Events, Loki, Tempo, and SeaweedFS master/filer/S3 gateway. Existing
+`up == 0` rules cover discovered targets that fail; absence rules cover an
+entire configured family disappearing. DaemonSet availability covers missing
+Collector agents while other nodes still report. These absence expressions are
+local to this cluster's evaluator; they do not enumerate arbitrary future jobs.
+
+Collector receiver refusal and queue utilization cover backpressure. vmagent's
+persistent backlog warns above 256 MiB for 15 minutes against its configured
+1 GiB per-destination queue budget. Revisit this threshold when that budget or
+the number of remote-write destinations changes.
+
+Loki chunk flush and Tempo block flush failure counters detect persistence
+failures while ingestion may still be buffered. They cover active writes, not
+idle-bucket authorization or read/retention failures. The S3 blackbox probe only
+checks transport/TLS and accepts a private-root 403; it does not perform signed
+object writes. No synthetic S3 writer is introduced.
+
+Source contracts: [Tempo 2.9 flush metrics](https://github.com/grafana/tempo/blob/v2.9.0/modules/ingester/flush.go)
+and [Loki 3.6 flush implementation](https://github.com/grafana/loki/blob/v3.6.7/pkg/ingester/flush.go).
+The rules were checked with synthetic series, not a production outage.
+A cluster-wide loss of VictoriaMetrics, the evaluator, or Alertmanager cannot
+reliably notify through that same stack; an independent external dead-man
+receiver remains separate work.

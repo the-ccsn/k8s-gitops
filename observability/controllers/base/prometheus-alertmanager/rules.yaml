@@ -11,7 +11,7 @@ spec:
     - name: alertmanager-health
       rules:
         - alert: AlertmanagerDown
-          expr: min_over_time(up{namespace="monitoring",service="alertmanager-operated"}[5m]) == 0
+          expr: up{namespace="monitoring",service="alertmanager-operated"} == 0
           for: 5m
           labels: {severity: critical}
           annotations:
@@ -28,9 +28,9 @@ spec:
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/alertmanager.md
         - alert: AlertmanagerFailedToSendAlerts
           expr: |
-            sum by (integration) (rate(alertmanager_notifications_failed_total{namespace="monitoring"}[15m]))
+            sum by (k8s_cluster_name, namespace, integration) (rate(alertmanager_notifications_failed_total{namespace="monitoring"}[15m]))
             /
-            clamp_min(sum by (integration) (rate(alertmanager_notifications_total{namespace="monitoring"}[15m])), 0.001)
+            clamp_min(sum by (k8s_cluster_name, namespace, integration) (rate(alertmanager_notifications_total{namespace="monitoring"}[15m])), 0.001)
             > 0.01
           for: 15m
           labels: {severity: warning}

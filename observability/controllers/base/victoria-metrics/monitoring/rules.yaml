@@ -19,13 +19,27 @@ spec:
             description: Check the VictoriaMetrics ingestion endpoint, vmagent logs, and rejected block reason.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
         - alert: VMAgentScrapeErrors
-          expr: increase(vm_promscrape_scrapes_failed_total[5m]) > 0
+          expr: |
+            (
+              count by (k8s_cluster_name) (up == 0)
+              / count by (k8s_cluster_name) (up) > 0.1
+            )
+            and on (k8s_cluster_name)
+            (count by (k8s_cluster_name) (up == 0) >= 3)
           for: 15m
           labels: {severity: warning}
           annotations:
-            summary: "vmagent is failing to scrape {{ $labels.job }}"
-            description: Inspect vmagent targets and the owning ServiceMonitor, PodMonitor, Probe, or ScrapeConfig.
+            summary: More than 10% of scrape targets are unavailable
+            description: At least three targets and more than ten percent of all targets have been down for fifteen minutes. Inspect vmagent discovery, network reachability, and target health.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: ScrapeTargetDown
+          expr: up == 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "Scrape target {{ $labels.job }}/{{ $labels.instance }} is unavailable"
+            description: vmagent has failed to scrape this target for ten minutes. Check the owning monitor, application, and mesh identity policy.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/victoria-metrics/README.md
         - alert: VMAgentRemoteWriteErrors
           expr: rate(vmagent_remotewrite_retries_count_total[5m]) > 0
           for: 15m
@@ -50,3 +64,11 @@ spec:
             summary: vmalert cannot deliver alerts to Alertmanager
             description: Check the notifier URL, Alertmanager service, and vmalert logs.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/notification-delivery.md
+        - alert: VMAlertEvaluationErrors
+          expr: increase(vmalert_execution_errors_total[5m]) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: vmalert is failing to evaluate rules
+            description: Rule evaluations have repeatedly failed for ten minutes. Check the rule status, expressions, and datasource connectivity.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/victoria-metrics/README.md

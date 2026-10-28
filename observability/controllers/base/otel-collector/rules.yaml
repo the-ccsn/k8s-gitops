@@ -20,12 +20,34 @@ spec:
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
         - alert: OtelCollectorExportFailures
           expr: |
-            sum by (namespace, pod, exporter) (rate(otelcol_exporter_send_failed_log_records[5m])) > 0
+            sum by (k8s_cluster_name, namespace, pod, exporter) (rate(otelcol_exporter_send_failed_log_records[5m])) > 0
             or
-            sum by (namespace, pod, exporter) (rate(otelcol_exporter_send_failed_spans[5m])) > 0
+            sum by (k8s_cluster_name, namespace, pod, exporter) (rate(otelcol_exporter_send_failed_spans[5m])) > 0
           for: 10m
           labels: {severity: warning}
           annotations:
             summary: OpenTelemetry Collector cannot export telemetry
             description: Check the Loki and Tempo endpoints, collector queues, and exporter logs.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/telemetry-pipeline.md
+        - alert: OtelCollectorQueueNearlyFull
+          expr: |
+            max by (k8s_cluster_name, namespace, pod, exporter) (otelcol_exporter_queue_size)
+            / max by (k8s_cluster_name, namespace, pod, exporter) (otelcol_exporter_queue_capacity > 0)
+            > 0.8
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Collector {{ $labels.pod }} exporter {{ $labels.exporter }} queue exceeds 80%"
+            description: The persistent queue is approaching its configured byte capacity. Check downstream ingestion before backpressure or data loss occurs.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/otel-collector/README.md
+        - alert: OtelCollectorQueueNearlyFull
+          expr: |
+            max by (k8s_cluster_name, namespace, pod, exporter) (otelcol_exporter_queue_size)
+            / max by (k8s_cluster_name, namespace, pod, exporter) (otelcol_exporter_queue_capacity > 0)
+            > 0.95
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: "Collector {{ $labels.pod }} exporter {{ $labels.exporter }} queue exceeds 95%"
+            description: The persistent queue has almost exhausted its byte capacity. Restore the destination and inspect queue growth immediately.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/otel-collector/README.md

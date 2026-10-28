@@ -11,7 +11,7 @@ spec:
       rules:
         - alert: PodFrequentlyRestarting
           expr: |
-            sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[1h])) > 5
+            sum by (k8s_cluster_name, namespace, pod) (increase(kube_pod_container_status_restarts_total[1h])) > 5
           for: 5m
           labels:
             severity: warning
@@ -23,7 +23,7 @@ spec:
           expr: |
             (kube_pod_status_ready{condition="true"} == 0)
             unless on (k8s_cluster_name, namespace, pod)
-            (kube_pod_status_phase{phase="Succeeded"} == 1)
+            (kube_pod_status_phase{phase=~"Succeeded|Failed"} == 1)
           for: 5m
           labels:
             severity: warning
@@ -107,3 +107,104 @@ spec:
             summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} has no CPU limit"
             description: "An application or init container in an active Pod has no positive CPU limit"
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md
+    - name: kubernetes-availability
+      rules:
+        - alert: NodeNotReady
+          expr: max by (k8s_cluster_name, node) (kube_node_status_condition{condition="Ready", status="true"}) == 0
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: "Node {{ $labels.node }} is not Ready"
+            description: The node Ready condition has been false or unknown for ten minutes.
+        - alert: NodePressure
+          expr: max by (k8s_cluster_name, node, condition) (kube_node_status_condition{condition=~"MemoryPressure|DiskPressure|PIDPressure", status="true"}) == 1
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "Node {{ $labels.node }} reports {{ $labels.condition }}"
+            description: The node has reported resource pressure for ten minutes.
+        - alert: DeploymentReplicasUnavailable
+          expr: |
+            max by (k8s_cluster_name, namespace, deployment) (kube_deployment_spec_replicas)
+            > max by (k8s_cluster_name, namespace, deployment) (kube_deployment_status_replicas_available)
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} lacks available replicas"
+            description: Available replicas have remained below the desired count for fifteen minutes, including stalled rollouts.
+        - alert: StatefulSetReplicasUnavailable
+          expr: |
+            max by (k8s_cluster_name, namespace, statefulset) (kube_statefulset_replicas)
+            > max by (k8s_cluster_name, namespace, statefulset) (kube_statefulset_status_replicas_ready)
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} lacks ready replicas"
+            description: Ready replicas have remained below the desired count for fifteen minutes.
+        - alert: DaemonSetPodsUnavailable
+          expr: |
+            max by (k8s_cluster_name, namespace, daemonset) (kube_daemonset_status_desired_number_scheduled)
+            > max by (k8s_cluster_name, namespace, daemonset) (kube_daemonset_status_number_available)
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} lacks available Pods"
+            description: Available Pods have remained below the desired count for fifteen minutes.
+        - alert: ContainerOOMKilled
+          expr: |
+            (
+              max by (k8s_cluster_name, namespace, pod, container) (increase(kube_pod_container_status_restarts_total[10m])) > 0
+            )
+            and on (k8s_cluster_name, namespace, pod, container)
+            (
+              max by (k8s_cluster_name, namespace, pod, container) (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}) == 1
+            )
+          for: 1m
+          labels: {severity: warning}
+          annotations:
+            summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} was OOM-killed"
+            description: A recent restart has OOMKilled as its last termination reason; check the memory limit and workload usage.
+    - name: kubernetes-storage
+      rules:
+        - alert: PersistentVolumeSpaceLow
+          expr: |
+            (
+              min by (k8s_cluster_name, namespace, persistentvolumeclaim) (
+                kubelet_volume_stats_available_bytes / (kubelet_volume_stats_capacity_bytes > 0)
+              ) < 0.15
+            )
+            and on (k8s_cluster_name, namespace, persistentvolumeclaim)
+            (kube_persistentvolumeclaim_info{volumemode="Filesystem"} == 1)
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 15% free space"
+            description: Filesystem free space has remained below fifteen percent for fifteen minutes; raw block volumes are excluded.
+        - alert: PersistentVolumeSpaceLow
+          expr: |
+            (
+              min by (k8s_cluster_name, namespace, persistentvolumeclaim) (
+                kubelet_volume_stats_available_bytes / (kubelet_volume_stats_capacity_bytes > 0)
+              ) < 0.05
+            )
+            and on (k8s_cluster_name, namespace, persistentvolumeclaim)
+            (kube_persistentvolumeclaim_info{volumemode="Filesystem"} == 1)
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 5% free space"
+            description: Filesystem free space has remained below five percent for five minutes; raw block volumes are excluded.
+        - alert: PersistentVolumeInodesLow
+          expr: |
+            (
+              min by (k8s_cluster_name, namespace, persistentvolumeclaim) (
+                kubelet_volume_stats_inodes_free / (kubelet_volume_stats_inodes > 0)
+              ) < 0.1
+            )
+            and on (k8s_cluster_name, namespace, persistentvolumeclaim)
+            (kube_persistentvolumeclaim_info{volumemode="Filesystem"} == 1)
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 10% free inodes"
+            description: Filesystem inode availability has remained below ten percent for fifteen minutes.

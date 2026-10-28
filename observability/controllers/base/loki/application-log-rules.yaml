@@ -15,7 +15,7 @@ data:
           - alert: ApplicationCriticalLogs
             expr: |
               sum by (k8s_cluster_name, service_name, k8s_namespace_name, k8s_container_name) (
-                rate({k8s_namespace_name=~".+"} | severity_text=~"(?i:error|critical|fatal)" [5m])
+                rate({k8s_namespace_name=~".+"} | severity_text=~"(?i:critical|fatal|panic)" [5m])
               ) > 0
             for: 1m
             labels:
@@ -43,7 +43,7 @@ data:
           - alert: ApplicationPanicLogs
             expr: |
               sum by (k8s_cluster_name, service_name, k8s_namespace_name) (
-                rate({k8s_namespace_name=~".+"} |~ "(?i)panic" [5m])
+                rate({k8s_namespace_name=~".+"} |~ `(?i)^[[:space:]]*(panic:|fatal error:|thread ['"][^'"]+['"] panicked at)` [5m])
               ) > 0
             for: 30s
             labels:
@@ -51,7 +51,7 @@ data:
               component: logging
             annotations:
               summary: "Panic detected in {{ $labels.service_name }}"
-              description: "Application {{ $labels.service_name }}/{{ $labels.k8s_namespace_name }} is producing panic logs."
+              description: "Application {{ $labels.service_name }}/{{ $labels.k8s_namespace_name }} is producing runtime panic signatures."
               runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/application-logs.md
           - alert: ApplicationWarningLogs
             expr: |

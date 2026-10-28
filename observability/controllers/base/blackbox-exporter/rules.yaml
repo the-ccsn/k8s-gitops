@@ -31,7 +31,9 @@ spec:
             description: All blackbox availability metrics have been absent for more than ten minutes.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/blackbox-probe-failed.md
         - alert: BlackboxProbeFailed
-          expr: probe_success == 0
+          expr: |
+            (probe_success == 0)
+            and on (k8s_cluster_name, job, instance) (up == 1)
           for: 3m
           labels:
             severity: critical
@@ -40,7 +42,7 @@ spec:
             description: The {{ $labels.probe_path }} {{ $labels.ip_family }} probe has failed for more than three minutes.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/blackbox-probe-failed.md
         - alert: BlackboxProbeSlow
-          expr: probe_duration_seconds > 2
+          expr: (probe_duration_seconds > 2) and (probe_success == 1)
           for: 10m
           labels:
             severity: warning
@@ -49,7 +51,7 @@ spec:
             description: The {{ $labels.probe_path }} {{ $labels.ip_family }} probe duration has remained above two seconds for ten minutes.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/blackbox-probe-slow.md
         - alert: TLSCertificateExpiresSoon
-          expr: probe_ssl_earliest_cert_expiry - time() < 14 * 24 * 60 * 60
+          expr: (probe_ssl_earliest_cert_expiry - time() < 14 * 24 * 60 * 60) and (probe_ssl_earliest_cert_expiry > 0)
           for: 1h
           labels:
             severity: warning

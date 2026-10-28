@@ -11,10 +11,32 @@ spec:
   route:
     receiver: discard
     groupBy: [alertname, k8s_cluster_name, namespace, k8s_namespace_name, severity]
-    groupWait: 30s
-    groupInterval: 5m
-    repeatInterval: 4h
+    groupWait: 1m
+    groupInterval: 10m
+    repeatInterval: 12h
     routes:
+      - receiver: discard
+        matchers:
+          - name: severity
+            matchType: "="
+            value: info
+      - receiver: telegram
+        matchers:
+          - name: severity
+            matchType: "="
+            value: critical
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 4h
+        continue: true
+      - receiver: wecom
+        matchers:
+          - name: severity
+            matchType: "="
+            value: critical
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 4h
       - receiver: telegram
         matchers:
           - name: alertname
@@ -26,6 +48,27 @@ spec:
           - name: alertname
             matchType: =~
             value: .+
+  inhibitRules:
+    # Escalation only suppresses the same alert on the same resource.
+    - sourceMatch:
+        - name: severity
+          matchType: "="
+          value: critical
+      targetMatch:
+        - name: severity
+          matchType: "="
+          value: warning
+      equal: [alertname, k8s_cluster_name, namespace, node, pod, container, persistentvolumeclaim, exporter, instance, service_name, k8s_namespace_name]
+    # Prefer the component-specific diagnostic over a generic scrape failure.
+    - sourceMatch:
+        - name: alertname
+          matchType: =~
+          value: AlertmanagerDown|OtelCollectorTargetDown|BlackboxExporterDown|HarborMetricsTargetDown|SeaweedFsMetricsDown
+      targetMatch:
+        - name: alertname
+          matchType: "="
+          value: ScrapeTargetDown
+      equal: [k8s_cluster_name, job, instance]
   receivers:
     - name: discard
     - name: telegram
@@ -38,13 +81,15 @@ spec:
           httpConfig:
             proxyURL: http://proxy-svc.egress-system.svc.cluster.local:7890
           sendResolved: true
+          parseMode: HTML
           message: |-
-            {{ .Status | toUpper }}: {{ printf "%.100s" .CommonLabels.alertname }}
-            Namespace: {{ .CommonLabels.namespace }}; alerts: {{ len .Alerts }}
+            {{ .Status | toUpper }} [{{ .CommonLabels.severity | html }}]: {{ printf "%.100s" .CommonLabels.alertname | html }}
+            Cluster: {{ .CommonLabels.k8s_cluster_name | html }}
+            Namespace: {{ if .CommonLabels.namespace }}{{ .CommonLabels.namespace | html }}{{ else }}{{ .CommonLabels.k8s_namespace_name | html }}{{ end }}; alerts: {{ len .Alerts }}
             {{ range $i, $alert := .Alerts }}{{ if lt $i 5 }}
-            - [{{ $alert.Status }}] {{ printf "%.120s" $alert.Annotations.summary }}
+            - [{{ $alert.Status }}] {{ printf "%.120s" $alert.Annotations.summary | html }}
             {{ end }}{{ end }}
-            {{ if gt (len .Alerts) 5 }}Only the first 5 alerts are shown; see Grafana for the full list.{{ end }}
+            {{ if gt (len .Alerts) 5 }}Only the first 5 alerts are shown; query Alertmanager for the full group.{{ end }}
     - name: wecom
       webhookConfigs:
         - urlSecret:
@@ -57,11 +102,13 @@ spec:
           payload: |-
             {{ $state := "✅ 告警恢复" }}
             {{ if eq .Status "firing" }}{{ $state = "🔥 告警触发" }}{{ end }}
-            {{ $content := printf "%s\n**%.100s** (%d)\n" $state .CommonLabels.alertname (len .Alerts) }}
+            {{ $namespace := .CommonLabels.namespace }}
+            {{ if not $namespace }}{{ $namespace = .CommonLabels.k8s_namespace_name }}{{ end }}
+            {{ $content := printf "%s [%s]\n**%.100s** (%d)\nCluster: %s\nNamespace: %s\n" $state .CommonLabels.severity .CommonLabels.alertname (len .Alerts) .CommonLabels.k8s_cluster_name $namespace }}
             {{ range $i, $alert := .Alerts }}{{ if lt $i 5 }}
             {{ $content = printf "%s\n> [%s] %.120s" $content $alert.Status $alert.Annotations.summary }}
             {{ end }}{{ end }}
             {{ if gt (len .Alerts) 5 }}
-            {{ $content = printf "%s\n仅展示前 5 条，请在 Grafana 查看完整告警。" $content }}
+            {{ $content = printf "%s\n仅展示前 5 条，请在 Alertmanager 查询完整分组。" $content }}
             {{ end }}
             {"msgtype":"markdown","markdown":{"content":{{ $content | toJson }}}}

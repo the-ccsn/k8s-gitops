@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: oauth2-proxy
+  namespace: oauth2-proxy
+  labels:
+    application: oauth2-proxy
+spec:
+  jobLabel: app.kubernetes.io/name
+  sampleLimit: 5000
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy
+      app.kubernetes.io/instance: oauth2-proxy
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: false

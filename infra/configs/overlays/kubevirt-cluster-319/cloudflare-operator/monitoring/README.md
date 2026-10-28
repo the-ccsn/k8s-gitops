@@ -38,3 +38,30 @@ edge HTTP analytics, WAF events or request logs. Those require separate sources.
 No exporters, recording-rule aliases, collection settings or tunnel workloads
 are added. When updating, verify the source hash, preserve the UID, reapply the
 native metric corrections and scopes, and check units and failure cases.
+
+## Proxy-error alerts
+
+The native `cloudflared_tunnel_request_errors` counter also counts canceled
+incoming requests. Keep it in the dashboard and recording rule as a diagnostic;
+it cannot by itself distinguish an origin outage from a normal cancellation.
+
+`CloudflaredProxyErrorLogs` runs in the existing Loki ruler. It requires at least
+ten error records in each ten-minute window, sustained for ten minutes, scoped
+to the cloudflared container and namespace. It excludes only the native message
+`Incoming request ended abruptly: context canceled` in the native `error` field
+(including its pinned HTTP/2 `Failed to proxy HTTP: ` wrapper). Its producer
+explicitly checks the incoming request context. Dial, TLS, timeout, unknown errors and other
+cancellation forms remain eligible. This is a log count, not an HTTP error ratio.
+Log transport and Loki ruler health must also be monitored; no logs is not proof
+of successful requests. Missing metrics and lost HA connections retain their
+independent critical metric alerts; blackbox probes retain endpoint coverage.
+
+On 2026-10-28, bounded aggregate queries established that nearly all observed
+proxy-error logs had that exact incoming-cancellation signature. The remaining
+errors stayed below this sustained threshold. This does not identify the client
+or cancellation cause; cancellation metrics/logs remain searchable. No DNS,
+origin-address or tunnel-protocol change is justified by this observation.
+
+Source: [cloudflared 2026.10.4 request-context handling](https://github.com/cloudflare/cloudflared/blob/2026.10.4/proxy/proxy.go#L255-L261).
+
+The HTTP/2 wrapper is defined in [the same pinned connection handler](https://github.com/cloudflare/cloudflared/blob/2026.10.4/connection/http2.go#L119-L125).

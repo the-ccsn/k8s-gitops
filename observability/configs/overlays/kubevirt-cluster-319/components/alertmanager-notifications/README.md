@@ -67,3 +67,24 @@ receiver.
 The installed Prometheus Operator CRD chart serves `AlertmanagerConfig` as
 `monitoring.coreos.com/v1alpha1`. The WeCom payload field requires Prometheus
 Operator v0.92+ and Alertmanager v0.32+.
+
+## Existing-alert remediation (2026-10-28)
+
+Keep the current global silence until its existing expiry; merging rule changes
+does not authorize notifications or workload restarts.
+
+| Finding | Source correction | Remaining runtime work |
+| --- | --- | --- |
+| Missing limits in Longhorn, CNAO and K3s system Pods | Existing namespace LimitRanges already supply CPU/memory limits and preserve explicit requests | Completed: all active regular/init containers have both limits; both alert expressions are zero. Changing a LimitRange alone does not update existing Pods |
+| generic-device-plugin CPU saturation | Raise request/limit to 100m/500m; memory to 32Mi/64Mi | Observe CPU use and throttling after the declarative DaemonSet rollout |
+| Six incomplete local-path profiles | Declare actual RWO/filesystem/copy capabilities in CDI profiles | Verify complete=true; node-local storage remains unsuitable for VM live migration |
+| CDI default storage degraded | Prefer the existing longhorn-vm class for virtualization, with RWX filesystem/snapshot profile | Verify native status, then a new-volume clone and VM migration; existing PVCs are unchanged |
+| Cloudflared request errors | Use scoped Loki error logs instead of an undifferentiated request-error counter | Keep incoming-cancellation diagnostics visible; verify the new rule in Loki and continue investigating other errors |
+| Retired default/ubuntu-desktop-demo VMI | No configuration exclusion from resource-limit alerts | Completed separately: VM/VMI/runtime Pod removed; two DataVolumes and four PVCs preserved |
+
+Acceptance must examine live limits, Ready replicas, volume health, metrics
+freshness and the corresponding alert expression. A silenced alert disappearing
+from notifications is not evidence of a fix. No automatic restart Job, cleanup
+script or workload suspension is introduced.
+
+See [the container-limit maintenance runbook](../../../../../runbooks/container-limits.md) for all affected owners, including init containers and the retired VM.

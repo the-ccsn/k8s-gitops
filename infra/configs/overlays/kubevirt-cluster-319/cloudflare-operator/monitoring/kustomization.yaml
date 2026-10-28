@@ -4,6 +4,7 @@ resources:
   - ./service-monitor.yaml
   - ./cloudflared-pod-monitor.yaml
   - ./cloudflared-rules.yaml
+  - ./cloudflared-log-rules.yaml
   - ./cloudflared-dashboard.yaml
 
 configMapGenerator:

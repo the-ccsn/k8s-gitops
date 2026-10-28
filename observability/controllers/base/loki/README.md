@@ -77,3 +77,13 @@ frontend query builder cover empty/request/Ray/both combinations. Search returns
 first matches in range, not necessarily the newest traces. Missing traces can be
 caused by sampling. Source references: Grafana [query interpolation](https://github.com/grafana/grafana/blob/v13.0.1/public/app/plugins/datasource/tempo/SearchTraceQLEditor/utils.ts)
 and [filter generation](https://github.com/grafana/grafana/blob/v13.0.1/public/app/plugins/datasource/tempo/language_provider.ts).
+
+## Log-alert evaluation health
+
+`LokiRuleEvaluationErrors` monitors the native
+`loki_prometheus_rule_evaluation_failures_total` counter by cluster, namespace
+and rule group. Sustained failures are warnings even if the failing log rule
+emits no alert. Inspect query syntax, timeouts, ingestion freshness and ruler
+logs before interpreting an empty log-alert result as application health.
+Cloudflared's owner-local rule ConfigMap uses the existing `loki_rule=1`
+sidecar selection in `monitoring`; no additional ruler is deployed.

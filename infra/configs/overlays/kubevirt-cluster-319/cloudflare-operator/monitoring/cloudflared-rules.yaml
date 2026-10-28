@@ -25,7 +25,7 @@ spec:
           annotations:
             summary: Cloudflared tunnel metrics are missing
             description: No cloudflared Tunnel metrics have reached VictoriaMetrics for ten minutes.
-            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/cloudflared-tunnel.md
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/cloudflare-operator/monitoring/README.md
         - alert: CloudflaredTunnelDisconnected
           expr: cloudflared:tunnel_ha_connections < 1
           for: 3m
@@ -34,22 +34,4 @@ spec:
           annotations:
             summary: Cloudflared tunnel is disconnected for {{ $labels.namespace }}/{{ $labels.pod }}
             description: The tunnel has reported no active Cloudflare HA connections for three minutes.
-            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/cloudflared-tunnel.md
-        - alert: CloudflaredTunnelOriginErrors
-          expr: |
-            (
-              sum by (k8s_cluster_name, namespace, pod) (increase(cloudflared_tunnel_request_errors{namespace="cloudflare-operator-system"}[10m]))
-              / sum by (k8s_cluster_name, namespace, pod) (increase(cloudflared_tunnel_total_requests{namespace="cloudflare-operator-system"}[10m]))
-              > 0.05
-            )
-            and on (k8s_cluster_name, namespace, pod)
-            (
-              sum by (k8s_cluster_name, namespace, pod) (increase(cloudflared_tunnel_request_errors{namespace="cloudflare-operator-system"}[10m])) >= 10
-            )
-          for: 10m
-          labels:
-            severity: warning
-          annotations:
-            summary: Cloudflared is reporting origin proxy errors for {{ $labels.namespace }}/{{ $labels.pod }}
-            description: Origin proxy errors exceed five percent with at least ten errors per ten-minute window, sustained for ten minutes. Check the affected origin; occasional failures alone do not trigger this rule.
-            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/cloudflared-tunnel.md
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/cloudflare-operator/monitoring/README.md

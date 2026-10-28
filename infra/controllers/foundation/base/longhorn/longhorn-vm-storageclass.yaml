@@ -2,6 +2,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: longhorn-vm
+  annotations:
+    storageclass.kubevirt.io/is-default-virt-class: "true"
 provisioner: driver.longhorn.io
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer

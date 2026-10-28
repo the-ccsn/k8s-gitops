@@ -85,7 +85,7 @@ spec:
           annotations:
             summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} has no memory limit"
             description: "An application or init container in an active Pod has no positive memory limit"
-            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/runbooks/container-limits.md
         - alert: ContainerCpuLimitMissing
           expr: |
             (
@@ -106,7 +106,7 @@ spec:
           annotations:
             summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} has no CPU limit"
             description: "An application or init container in an active Pod has no positive CPU limit"
-            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/workload-health.md
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/runbooks/container-limits.md
     - name: kubernetes-availability
       rules:
         - alert: NodeNotReady

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-log-rules
+  namespace: monitoring
+  labels:
+    loki_rule: "1"
+    application: cloudflare
+    component: tunnel
+data:
+  cloudflared-errors.yaml: |-
+    groups:
+      - name: cloudflared-proxy-errors
+        rules:
+          - alert: CloudflaredProxyErrorLogs
+            expr: |
+              sum by (k8s_cluster_name, k8s_namespace_name, k8s_pod_name) (
+                count_over_time(
+                  {k8s_namespace_name="cloudflare-operator-system", service_name="cloudflared"}
+                  | k8s_container_name="cloudflared"
+                  | severity_text=~"(?i:error|err|critical|fatal)"
+                  !~ `(^|[[:space:]])error="(Failed to proxy HTTP: )?Incoming request ended abruptly: context canceled"([[:space:]]|$)`
+                  [10m]
+                )
+              ) >= 10
+            for: 10m
+            labels:
+              severity: warning
+              component: tunnel
+            annotations:
+              summary: "Cloudflared proxy errors persist in {{ $labels.k8s_namespace_name }}/{{ $labels.k8s_pod_name }}"
+              description: "At least ten error records per ten-minute window, sustained for ten minutes. Only the native incoming-request context-cancellation message is excluded; dial, TLS, timeout and other errors remain eligible. Log counts are not failed-request counts."
+              runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/cloudflare-operator/monitoring/README.md

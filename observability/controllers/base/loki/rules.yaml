@@ -26,3 +26,11 @@ spec:
             summary: "Loki {{ $labels.pod }} cannot write its WAL because the disk is full"
             description: Loki may continue accepting data without a durable WAL record. Restore local disk headroom and inspect ingestion and recovery health.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/loki/README.md
+        - alert: LokiRuleEvaluationErrors
+          expr: sum by (k8s_cluster_name, namespace, rule_group) (rate(loki_prometheus_rule_evaluation_failures_total[5m])) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: Loki log-alert evaluations are failing
+            description: Inspect the affected rule group and query errors; missing log alerts are not evidence of healthy applications.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/loki/README.md

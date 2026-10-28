@@ -86,7 +86,9 @@ spec:
         enabled: true
         remoteWriteUrl: http://vmsingle-victoriametrics-vmks.monitoring.svc.cluster.local:8428/api/v1/write
         processor:
-          service_graphs: {}
+          service_graphs:
+            dimensions: [service.namespace]
+            enable_client_server_prefix: true
           span_metrics:
             enable_target_info: true
             # Keep equal service names in different workload namespaces distinct.

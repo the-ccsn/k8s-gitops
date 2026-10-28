@@ -196,6 +196,33 @@ spec:
               "unit": "bytes"
             }
           }
+        },
+        {
+          "id": 6,
+          "title": "Service graph (logical namespaces)",
+          "type": "nodeGraph",
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 16
+          },
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "queryType": "serviceMap",
+              "serviceMapIncludeNamespace": true,
+              "serviceMapQuery": "{k8s_cluster_name=${k8s_cluster_name:doublequote}}",
+              "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+              }
+            }
+          ]
         }
       ],
       "description": "Project-specific summary of the installed metrics backends. Detailed component dashboards use pinned upstream sources.",

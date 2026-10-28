@@ -75,6 +75,11 @@ contextual logs can link by trace ID; this does not make every application log
 or request part of a stored trace. See each component's sampling and coverage
 limits before interpreting missing spans.
 
+[Kiali](../infra/controllers/networking/base/kiali/README.md) exports its own
+sampled server operations as `kiali.kiali-operator`, with logical namespace
+`kiali-operator`. These describe Kiali's work rather than the applications it
+observes; native trace-ID fields in every Kiali log are not assumed.
+
 For GitOps investigations, [Flux event tracing](../infra/configs/base/flux/monitoring/README.md#native-event-tracing)
 adds revision/object searches in Tempo. Its event-age spans are separate from
 application requests; use Flux's metrics dashboards for reconciliation duration.

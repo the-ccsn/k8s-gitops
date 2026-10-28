@@ -1,0 +1,38 @@
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: egress-observability
+  namespace: egress-system
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: waypoint
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: https-egress-gateway
+  accessLogging:
+    - providers:
+        - name: egress-json
+      # TCP/CONNECT has no HTTP response code or traceparent for the mesh filter.
+      filter:
+        expression: 'true'
+  tracing:
+    # HTTP spans inherit the mesh provider and sampling; opaque TCP emits no spans.
+    # A child customTags map replaces its parent, so keep the correlation headers.
+    - customTags:
+        istio.proxy.role:
+          literal:
+            value: egress
+        cloudflare.ray.id:
+          header:
+            name: cf-ray
+            defaultValue: ''
+        ccsn.request.id:
+          header:
+            name: x-ccsn-request-id
+            defaultValue: ''
+        istio.proxy.request_id:
+          header:
+            name: x-request-id
+            defaultValue: ''

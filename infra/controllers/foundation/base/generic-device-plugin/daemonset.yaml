@@ -65,11 +65,11 @@ spec:
         name: generic-device-plugin
         resources:
           requests:
-            cpu: 50m
-            memory: 10Mi
+            cpu: 100m
+            memory: 32Mi
           limits:
-            cpu: 50m
-            memory: 20Mi
+            cpu: 500m
+            memory: 64Mi
         ports:
         - containerPort: 8080
           name: http

@@ -1,0 +1,11 @@
+# Prefer shared VM disks for live migration; existing PVCs are unchanged.
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata:
+  name: longhorn-vm
+spec:
+  claimPropertySets:
+    - accessModes:
+        - ReadWriteMany
+      volumeMode: Filesystem
+  cloneStrategy: snapshot

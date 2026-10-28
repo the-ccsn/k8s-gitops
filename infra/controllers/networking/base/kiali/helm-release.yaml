@@ -130,6 +130,14 @@ spec:
           # Defines the context root path for the Kiali console and API endpoints and readiness probes. When providing a context root path that is not /, do not add a trailing slash (i.e. use /kiali not /kiali/). When empty, this will default to / on OpenShift and /kiali on other Kubernetes environments.
           web_root: "/"
           observability:
+            tracing:
+              enabled: true
+              collector_type: otel
+              collector_url: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317
+              sampling_rate: 0.01
+              otel:
+                protocol: grpc
+                tls_enabled: false
             metrics:
               enabled: true
               health_status:

@@ -1,4 +1,6 @@
-# OpenTelemetry Collector dashboard
+# OpenTelemetry Collector
+
+## Operational dashboard
 
 `dashboard.json` is rendered from Grafana's
 [OpenTelemetry Collector mixin](https://github.com/grafana/jsonnet-libs/tree/620b8b415f64286bf6ff8fe28590c81549155044/opentelemetry-collector-mixin),
@@ -33,6 +35,23 @@ configuration without batching or detailed internal telemetry. Failure counters
 can also be absent until their first event. Do not enable pipelines or synthesize
 series merely to populate these panels.
 
-This changes no Collector configuration, queue capacity, persistence or alert
-rules. For updates, verify both source commits and the rendered hash, reapply the
+This dashboard import changes no Collector configuration, queue capacity,
+persistence or alert rules. For updates, verify both source commits and the rendered hash, reapply the
 bindings, and validate selectors, metric names, memory/queue units and queries.
+
+
+## Kiali native trace payloads
+
+The trace transform matches Kiali's native resource identity
+(`kiali.kiali-operator`, logical namespace `kiali-operator`) and its explicit
+manual/otelmux scopes. It removes raw query/selector and `jsonPatch` attributes
+from manual spans, raw HTTP I/O-error strings from server spans, and panic
+message/stack attributes from HTTP span events. Operation names, timing,
+resource identity, trace/request IDs, HTTP status and exception type remain.
+Other producers and preexisting log bodies are outside these rules.
+
+Publish these filters before enabling Kiali's native tracing. After the first
+PR is merged, verify the live Collector relay contains all three groups and all
+Collector Pods are updated and Ready. Publish the separate Kiali enablement PR
+only after that check; merging both phases together would allow the producer to
+send payloads to an older Collector. No suspension or new component is needed.

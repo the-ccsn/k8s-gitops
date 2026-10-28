@@ -38,6 +38,33 @@ metrics generator, storage, authentication or trace-query policy.
 When updating, verify the source hash, preserve the UID, reapply topology/scopes,
 and check exact metric names, histogram format and every query.
 
+## Kubernetes namespace trace search
+
+In Grafana Explore, select the Tempo datasource and **Search**. Its default
+fields include resource attributes `k8s.namespace.name` (the traced workload's
+namespace) and `k8s.cluster.name`, alongside the native Service Name and Span
+Name fields. The native Status and Duration fields remain available. Select
+namespace and cluster values to scope trace discovery; for example, in TraceQL:
+
+```traceql
+{ resource.k8s.cluster.name = "kubevirt-cluster-319" && resource.k8s.namespace.name = "harbor" && resource.service.name = "harbor-core" }
+```
+
+These fields start empty and are optional. An empty field adds no predicate;
+spans without an attribute cannot match a selected value for it. The namespace
+is not Tempo's own namespace or the logical `service.namespace` attribute.
+TraceQL selects matching spans and their traces; opening a trace can show spans
+from other namespaces. These defaults do not enforce a namespace filter or
+provide user-access isolation, and do not separate same-name services in the
+aggregate service graph.
+
+The configuration follows Grafana 13.0.1's native
+[`search.filters` defaults](https://github.com/grafana/grafana/blob/v13.0.1/public/app/plugins/datasource/tempo/datasource.ts#L129-L150)
+and [filter contract](https://github.com/grafana/grafana/blob/v13.0.1/public/app/plugins/datasource/tempo/dataquery.gen.ts#L127-L156).
+Configured filters replace the default list, so the native service/span IDs and
+scopes are retained. This source-based configuration does not establish browser
+acceptance or live trace-attribute coverage.
+
 ## Trace-to-metric navigation
 
 The Tempo datasource supplies native span links to VictoriaMetrics: sampled span

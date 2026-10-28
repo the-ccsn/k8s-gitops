@@ -404,6 +404,14 @@ spec:
                   where resource.attributes["ccsn.site.name"] == nil
             - context: span
               conditions:
+                - instrumentation_scope.name == "envoy" and attributes["istio.proxy.role"] != nil
+              statements:
+                # Use the workload namespace as the proxy's default logical realm.
+                - set(resource.attributes["service.namespace"], resource.attributes["k8s.namespace.name"])
+                  where (resource.attributes["service.namespace"] == nil or resource.attributes["service.namespace"] == "")
+                  and resource.attributes["k8s.namespace.name"] != nil and resource.attributes["k8s.namespace.name"] != ""
+            - context: span
+              conditions:
                 - attributes["istio.proxy.request_id"] != nil or attributes["ccsn.ingress.entrypoint"] == "campus"
               statements:
                 - set(attributes["ccsn.request.id"], attributes["istio.proxy.request_id"])

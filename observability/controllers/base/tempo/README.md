@@ -65,6 +65,42 @@ Configured filters replace the default list, so the native service/span IDs and
 scopes are retained. This source-based configuration does not establish browser
 acceptance or live trace-attribute coverage.
 
+## Logical namespaces in service graphs
+
+Use **Service graph (logical namespaces)** in **Observability Platform**, or
+follow the link from **Application Logs**. The stock Grafana node graph uses
+the selected Kubernetes cluster and time range. Log namespace, service and ID
+filters do not truncate a graph that crosses services or namespaces.
+
+Tempo emits `client_service_namespace` and `server_service_namespace` using
+`service_graphs.dimensions: [service.namespace]` and
+`enable_client_server_prefix: true`. The native query explicitly sets
+`serviceMapIncludeNamespace: true`; Grafana uses logical `namespace/service`
+node identities and carries that identity into metric and trace navigation.
+Those built-in node links do not retain the graph's cluster matcher; inspect
+their query when working across clusters. The service names and metric names
+retain their native values.
+
+Istio proxy spans receive a default logical namespace from their enriched
+workload namespace when the producer omitted it. Explicit SDK namespaces stay
+unchanged. Logical `service.namespace` and workload `k8s.namespace.name` remain
+different concepts; callers, external peers and unenriched producers can have
+an empty logical namespace. Those nodes remain unqualified. This provides no
+user-access isolation or universal Kubernetes-namespace separation.
+
+Use the authored panel: generic service-map queries without the namespace flag
+still aggregate bare names. Grafana 13.0.1 has no datasource-wide namespace
+switch. Older stored graph metrics keep their old labels until retention; this
+change writes new series without historical aliases or backfill. Allow fresh
+samples after rollout and narrow the time range when inspecting the transition.
+Adding the proxy namespace also lets Tempo's native span-metrics `job` acquire
+its namespace prefix; service-name and workload-namespace selectors remain valid.
+
+The contract follows Tempo 2.9.0's
+[service-graph dimensions](https://github.com/grafana/tempo/blob/607c7fb69662262bbb4462da1e2d91067dab6785/modules/generator/processor/servicegraphs/config.go)
+and Grafana 13.0.1's
+[native namespace-aware query](https://github.com/grafana/grafana/blob/v13.0.1/public/app/plugins/datasource/tempo/datasource.ts#L1287-L1328).
+
 ## Trace-to-metric navigation
 
 The Tempo datasource supplies native span links to VictoriaMetrics: sampled span

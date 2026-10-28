@@ -90,6 +90,28 @@ connection IDs group its logs within a Pod/time window; they do not identify
 Tempo traces. Opaque HTTPS/CONNECT has connection telemetry, while genuine HTTP
 spans require an HTTP-visible proxy or an instrumented application client.
 
+## Inspect service relationships
+
+Open **Observability Platform** and scroll to **Service graph (logical
+namespaces)**, or follow the same-named link in **Application Logs**. The link
+carries the selected cluster and time range. The graph uses that cluster and
+dashboard range; backend namespace/job selectors and log namespace, service,
+Pod, severity, text and ID filters do not narrow it.
+
+Nodes use logical `service.namespace` plus `service.name`, keeping, for example,
+`prod/checkout` and `staging/checkout` separate while showing calls between
+namespaces. Logical service namespaces can differ from Kubernetes workload
+namespaces. A missing logical namespace falls back to the bare service name,
+so same-name services without it can merge. Coverage depends on sampled spans,
+propagated context and service-graph metrics collected after rollout; missing
+edges do not establish that services never communicate.
+
+Native node/edge links open metrics or traces using the available service name
+and logical namespace. These follow-up queries do **not** retain the graph's
+cluster matcher; add the cluster constraint in Explore when needed, especially
+when service names and logical namespaces repeat across clusters. They do not
+select a Kubernetes workload namespace.
+
 ## Investigate a probe
 
 Start with **Network Availability**, then open the HTTP, DNS, TLS or ICMP view.

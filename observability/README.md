@@ -100,6 +100,16 @@ uses the same Kubernetes-cluster and environment keys for its direct remote
 write. The Collector supplies the dotted cluster, environment and site resource
 attributes to logs and traces as defaults, preserving explicit producer values.
 
+For recognized Istio proxy spans (`envoy` scope with `istio.proxy.role`), the
+Collector defaults a missing or empty `service.namespace` to the enriched
+`k8s.namespace.name`. This defines the proxy's logical realm without changing
+its native service name. Nonempty producer namespaces remain authoritative;
+SDK spans and proxies without workload metadata receive no inferred namespace.
+Tempo's service-graph processor emits separate `client_service_namespace` and
+`server_service_namespace` labels from that logical identity. The native
+namespace-aware graph query consumes those labels; span-metrics dimensions
+remain a separate contract.
+
 OTLP resource attributes are not automatically labels on every metric. Our
 native metrics use explicit scrape relabeling. Loki normalizes the configured
 dotted resource attributes to underscore keys; new resource metadata is not

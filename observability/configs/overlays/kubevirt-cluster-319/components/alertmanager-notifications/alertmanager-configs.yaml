@@ -63,7 +63,7 @@ spec:
     - sourceMatch:
         - name: alertname
           matchType: =~
-          value: AlertmanagerDown|OtelCollectorTargetDown|BlackboxExporterDown|HarborMetricsTargetDown|SeaweedFsMetricsDown
+          value: AlertmanagerDown|OtelCollectorTargetDown|BlackboxExporterDown|HarborMetricsTargetDown|SeaweedFsMetricsDown|DragonflyMetricsDown
       targetMatch:
         - name: alertname
           matchType: "="

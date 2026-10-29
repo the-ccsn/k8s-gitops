@@ -12,6 +12,8 @@ spec:
       app.kubernetes.io/env: prod
   args:
   - --maxmemory=512mb
+  # io_uring's idle network waits pollute node/cgroup I/O pressure accounting.
+  - --force_epoll=true
   resources:
     requests:
       cpu: 50m

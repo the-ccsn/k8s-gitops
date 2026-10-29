@@ -14,6 +14,8 @@ spec:
   args:
     - --maxmemory=1600mb
     - --cache_mode=true
+    # io_uring's idle network waits pollute node/cgroup I/O pressure accounting.
+    - --force_epoll=true
   resources:
     limits:
       cpu: 500m

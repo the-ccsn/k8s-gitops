@@ -128,3 +128,19 @@ The link configuration follows Grafana's pinned
 [native trace-to-metrics settings](https://github.com/grafana/grafana/blob/v13.0.1/docs/sources/datasources/tempo/configure-tempo-data-source/configure-trace-to-metrics.md)
 and Tempo's pinned
 [span-metrics processor](https://github.com/grafana/tempo/blob/v2.9.0/modules/generator/processor/spanmetrics/config.go).
+
+## Trace lookup queue capacity
+
+Storage reads use four workers with Tempo 2.9's native queue depth of 10,000.
+The previous depth of 100 caused intermittent trace-detail HTTP 500 responses:
+`queue doesn't have room for 37 jobs`. One lookup fans out into multiple block
+jobs, so a few overlapping lookups can exhaust a small queue even while Tempo
+is Ready. Restoring queue capacity does not increase worker concurrency; the
+existing query and HDD concurrency limits remain in effect.
+
+Queue capacity is finite and does not guarantee latency under sustained load.
+After rollout, repeat bounded overlapping detail requests and inspect query
+errors, latency, memory and storage load. Check the same trace IDs that failed
+before the change. Native definitions:
+[pool admission](https://github.com/grafana/tempo/blob/v2.9.0/tempodb/pool/pool.go),
+[default capacity](https://github.com/grafana/tempo/blob/v2.9.0/tempodb/pool/config.go).

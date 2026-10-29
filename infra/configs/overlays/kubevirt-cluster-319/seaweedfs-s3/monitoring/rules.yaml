@@ -31,3 +31,11 @@ spec:
           annotations:
             summary: "SeaweedFS collection {{ $labels.collection }} has insufficient replicas"
             description: Check the configured replication layout and volume servers; this does not replace backup or restore verification.
+        - alert: SeaweedFsMetricsMissing
+          expr: absent(up{job="seaweedfs",component="master"}) or absent(up{job="seaweedfs",component="filer"}) or absent(up{job="seaweedfs",component="s3-gateway"})
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: A configured SeaweedFS component has disappeared from scraping
+            description: Check the ScrapeConfig and OMV metrics listeners. This checks the configured component families, not every volume server.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md

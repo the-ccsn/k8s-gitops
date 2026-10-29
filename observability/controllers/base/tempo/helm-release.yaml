@@ -65,7 +65,9 @@ spec:
           blocklist_poll_concurrency: 2
           pool:
             max_workers: 4
-            queue_depth: 100
+            # Keep native queue capacity: one trace lookup fans out across blocks.
+            # Worker count, not pending queue depth, bounds concurrent S3 reads.
+            queue_depth: 10000
           block:
             parquet_row_group_size_bytes: 10000000
       # Bound WAL completion work within the single-binary pod's memory budget.

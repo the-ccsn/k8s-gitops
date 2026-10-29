@@ -1,0 +1,65 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: control-plane-health
+  namespace: monitoring
+  labels:
+    application: control-plane-health
+    component: rules
+spec:
+  groups:
+  - name: control-plane-health
+    rules:
+    - alert: KubeAPIServerErrors
+      expr: >-
+        (sum by (k8s_cluster_name) (rate(apiserver_request_total{job="apiserver",code=~"5.."}[5m])) / sum by
+        (k8s_cluster_name) (rate(apiserver_request_total{job="apiserver"}[5m])) > 0.01) and on (k8s_cluster_name) (sum
+        by (k8s_cluster_name) (increase(apiserver_request_total{job="apiserver",code=~"5.."}[5m])) >= 5)
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Kubernetes API server has sustained server errors: {{ $labels.k8s_cluster_name }}'
+        description: Kubernetes API server has sustained server errors
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#control-plane
+    - alert: KubeAPIServerLatencyHigh
+      expr: >-
+        histogram_quantile(0.99, sum by (k8s_cluster_name, le, verb)
+        (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb!~"WATCH|CONNECT"}[5m]))) > 5
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Kubernetes API p99 request latency exceeds five seconds: {{ $labels.k8s_cluster_name }}'
+        description: Kubernetes API p99 request latency exceeds five seconds
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#control-plane
+    - alert: CoreDNSServerErrors
+      expr: >-
+        (sum by (k8s_cluster_name) (rate(coredns_dns_responses_total{rcode="SERVFAIL"}[5m])) / sum by (k8s_cluster_name)
+        (rate(coredns_dns_responses_total[5m])) > 0.03) and on (k8s_cluster_name) (sum by (k8s_cluster_name)
+        (increase(coredns_dns_responses_total{rcode="SERVFAIL"}[5m])) >= 5)
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'CoreDNS SERVFAIL rate exceeds 3%: {{ $labels.k8s_cluster_name }}'
+        description: CoreDNS SERVFAIL rate exceeds 3%
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: CoreDNSLatencyHigh
+      expr: histogram_quantile(0.99, sum by (k8s_cluster_name, le) (rate(coredns_dns_request_duration_seconds_bucket[5m]))) > 0.5
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'CoreDNS p99 query latency exceeds 500 ms: {{ $labels.k8s_cluster_name }}'
+        description: CoreDNS p99 query latency exceeds 500 ms
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: CoreDNSReloadFailed
+      expr: increase(coredns_reload_failed_total[5m]) > 0
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'CoreDNS configuration reload failed: {{ $labels.k8s_cluster_name }}'
+        description: CoreDNS configuration reload failed
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network

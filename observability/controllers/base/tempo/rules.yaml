@@ -34,3 +34,40 @@ spec:
             summary: Tempo cannot flush trace blocks reliably
             description: Check S3 credentials, permissions, connectivity and capacity. Receiver availability alone does not prove block persistence.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/tempo/README.md
+        - alert: TempoQueryErrors
+          expr: >-
+            (sum by (k8s_cluster_name, namespace, route)
+            (rate(tempo_request_duration_seconds_count{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*",status_code=~"5.."}[5m]))
+            / sum by (k8s_cluster_name, namespace, route)
+            (rate(tempo_request_duration_seconds_count{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*"}[5m]))
+            > 0.05) and on (k8s_cluster_name, namespace, route) (sum by (k8s_cluster_name, namespace, route)
+            (increase(tempo_request_duration_seconds_count{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*",status_code=~"5.."}[5m]))
+            >= 3)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Tempo query server errors exceed 5%: {{ $labels.namespace }}/{{ $labels.route }}'
+            description: At least three server errors per five-minute window are required. Inspect request errors, query queues and object storage.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#telemetry
+        - alert: TempoQueryLatencyHigh
+          expr: >-
+            histogram_quantile(0.95, sum by (k8s_cluster_name, namespace, route, le)
+            (rate(tempo_request_duration_seconds_bucket{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*"}[5m])))
+            > 10
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Tempo p95 query latency exceeds ten seconds: {{ $labels.namespace }}/{{ $labels.route }}'
+            description: Tempo p95 query latency exceeds ten seconds
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#telemetry
+        - alert: TempoStorageQueryQueueHigh
+          expr: max by (k8s_cluster_name, namespace, pod) (tempodb_work_queue_length / (tempodb_work_queue_max > 0)) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Tempo storage query queue exceeds 80%: {{ $labels.namespace }}/{{ $labels.pod }}'
+            description: Queue depth does not increase worker concurrency. Inspect block fan-out, HDD latency and concurrent users before changing worker count.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#telemetry

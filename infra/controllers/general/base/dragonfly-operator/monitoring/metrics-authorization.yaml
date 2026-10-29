@@ -1,0 +1,22 @@
+# Root baseline requires an authenticated mesh identity on the admin listener.
+# Owner-local policies further limit vmagent, Operator and per-instance peers.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: dragonfly-admin-authentication
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dragonfly
+      app.kubernetes.io/part-of: dragonfly
+  action: DENY
+  rules:
+  - from:
+    - source:
+        notPrincipals:
+        - '*'
+    to:
+    - operation:
+        ports:
+        - '9999'

@@ -58,7 +58,7 @@ spec:
         - name: severity
           matchType: "="
           value: warning
-      equal: [alertname, k8s_cluster_name, namespace, node, pod, container, persistentvolumeclaim, exporter, instance, service_name, k8s_namespace_name]
+      equal: [alertname, k8s_cluster_name, namespace, node, pod, container, persistentvolumeclaim, exporter, instance, service_name, k8s_namespace_name, device, fstype, disk, volume, bucket, backup, cnpg_cluster_name]
     # Prefer the component-specific diagnostic over a generic scrape failure.
     - sourceMatch:
         - name: alertname

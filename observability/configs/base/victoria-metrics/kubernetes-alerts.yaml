@@ -208,3 +208,63 @@ spec:
           annotations:
             summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 10% free inodes"
             description: Filesystem inode availability has remained below ten percent for fifteen minutes.
+        - alert: KubePodNotScheduled
+          expr: kube_pod_status_scheduled{condition="false"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Pod cannot be scheduled: {{ $labels.namespace }}/{{ $labels.pod }}'
+            description: Inspect Pending reasons, affinity, resources and PVC scheduling.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#workloads
+        - alert: KubeContainerWaiting
+          expr: >-
+            max_over_time(kube_pod_container_status_waiting_reason{reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError|InvalidImageName"}[5m])
+            == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Container remains in a failure waiting state: {{ $labels.namespace }}/{{ $labels.pod }} {{ $labels.container }}'
+            description: Container remains in a failure waiting state
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#workloads
+        - alert: KubeJobFailed
+          expr: >-
+            (max by (k8s_cluster_name, namespace, job_name) (kube_job_failed{condition="true"}) == 1) unless on
+            (k8s_cluster_name, namespace, job_name) ((label_replace((max by (k8s_cluster_name, namespace, job_name)
+            (kube_job_created) * on (k8s_cluster_name, namespace, job_name) group_left(owner_name) max by (k8s_cluster_name,
+            namespace, job_name, owner_name) (kube_job_owner{owner_kind="CronJob",owner_is_controller="true"})), "cronjob",
+            "$1", "owner_name", "(.+)")) < on (k8s_cluster_name, namespace, cronjob) group_left() (max by (k8s_cluster_name,
+            namespace, cronjob) (kube_cronjob_status_last_successful_time)))
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Kubernetes Job failed to complete: {{ $labels.namespace }}/{{ $labels.job_name }}'
+            description: Terminal Job failure only. A later successful run of the same CronJob clears earlier failures; retained failed Job history is not deleted.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#workloads
+        - alert: KubeCronJobOverdue
+          expr: (time() - kube_cronjob_next_schedule_time > 3600) and on (k8s_cluster_name, namespace, cronjob) (kube_cronjob_spec_suspend == 0)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'CronJob is more than one hour overdue: {{ $labels.namespace }}/{{ $labels.cronjob }}'
+            description: Suspended schedules are excluded. Inspect the controller and concurrency policy.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#workloads
+        - alert: ContainerCPUThrottlingHigh
+          expr: >-
+            (sum by (k8s_cluster_name, namespace, pod, container)
+            (rate(container_cpu_cfs_throttled_periods_total{container!="",container!="POD"}[5m])) / sum by
+            (k8s_cluster_name, namespace, pod, container)
+            (rate(container_cpu_cfs_periods_total{container!="",container!="POD"}[5m])) > 0.25) and on (k8s_cluster_name,
+            namespace, pod, container) (sum by (k8s_cluster_name, namespace, pod, container)
+            (rate(container_cpu_usage_seconds_total{container!="",container!="POD"}[5m])) / (max by (k8s_cluster_name,
+            namespace, pod, container) (kube_pod_container_resource_limits{resource="cpu",unit="core"}) > 0) > 0.8)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Container is heavily throttled near its CPU limit: {{ $labels.namespace }}/{{ $labels.pod }} {{ $labels.container }}'
+            description: Requires sustained throttling above 25% and CPU use above 80% of the limit to avoid tiny-quota idle noise.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#workloads

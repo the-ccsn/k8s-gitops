@@ -1,14 +1,26 @@
-groups:
-  - name: proxy-engine-fetch-nodes
-    rules:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-engine-log-rules
+  namespace: monitoring
+  labels:
+    loki_rule: '1'
+    application: proxy-engine
+data:
+  proxy-engine.yaml: |
+    groups:
+    - name: proxy-engine-fetch-nodes
+      rules:
       - alert: ProxyEngineFetchNodesFallbackUsed
-        expr: |
-          sum by (namespace, pod) (
-            count_over_time({namespace="egress-system", pod=~"proxy-engine-.*"} |= "FETCH_NODES_FALLBACK" [10m])
+        expr: >-
+          sum by (k8s_cluster_name, k8s_namespace_name, k8s_pod_name) (
+            count_over_time({k8s_namespace_name="egress-system"}
+              | k8s_container_name="fetch-nodes" |= "FETCH_NODES_FALLBACK" [15m])
           ) > 0
-        for: 5m
+        for: 1m
         labels:
           severity: warning
         annotations:
-          summary: "fetch-nodes used last known good data"
-          description: "Proxy-engine used fallback nodes cache for {{ $labels.namespace }}/{{ $labels.pod }}"
+          summary: 'Proxy subscription fetch used cached nodes: {{ $labels.k8s_namespace_name }}/{{ $labels.k8s_pod_name }}'
+          description: Check subscription retrieval without printing URLs or credentials. Cached service may remain available.
+          runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#egress

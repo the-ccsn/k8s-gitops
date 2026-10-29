@@ -17,3 +17,113 @@ spec:
           annotations:
             summary: "Longhorn volume {{ $labels.volume }} is not healthy"
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/docs/troubleshooting/runbooks/longhorn.md
+        - alert: LonghornDiskSpaceLow
+          expr: max by (k8s_cluster_name, node, disk) (longhorn_disk_usage_bytes) / (max by (k8s_cluster_name, node, disk) (longhorn_disk_capacity_bytes) > 0) > 0.75
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Longhorn disk utilization exceeds 75%: {{ $labels.node }} {{ $labels.disk }}'
+            description: The configured minimum available percentage is 25%; replica scheduling may fail before the filesystem is full.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornDiskSpaceLow
+          expr: max by (k8s_cluster_name, node, disk) (longhorn_disk_usage_bytes) / (max by (k8s_cluster_name, node, disk) (longhorn_disk_capacity_bytes) > 0) > 0.9
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: 'Longhorn disk utilization exceeds 90%: {{ $labels.node }} {{ $labels.disk }}'
+            description: Longhorn disk utilization exceeds 90%
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornDiskNotReady
+          expr: longhorn_disk_status{condition="ready"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: 'Longhorn disk is not Ready: {{ $labels.node }} {{ $labels.disk }}'
+            description: Longhorn disk is not Ready
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornDiskNotSchedulable
+          expr: longhorn_disk_status{condition="schedulable"} == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Longhorn disk cannot schedule replicas: {{ $labels.node }} {{ $labels.disk }}'
+            description: Check the condition reason, free bytes, disk tags and reservation. This is separate from intentional node allowScheduling=false.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornDiskHealthFailed
+          expr: longhorn_disk_health == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: 'Longhorn reports an unhealthy monitored disk: {{ $labels.node }} {{ $labels.disk }}'
+            description: Only disks with native health metrics are covered; this does not prove SMART visibility through RAID controllers.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornVolumeAttachStuck
+          expr: longhorn_volume_state{state="attaching"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Longhorn volume remains attaching: {{ $labels.volume }}'
+            description: Longhorn volume remains attaching
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornBackupFailed
+          expr: >-
+            (longhorn_backup_state == 4) and on (k8s_cluster_name, volume, backup) (max by (k8s_cluster_name, volume,
+            backup) (longhorn_backup_created_timestamp_seconds) > on (k8s_cluster_name, volume) group_left max by
+            (k8s_cluster_name, volume) (longhorn_volume_last_backup_at))
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Longhorn backup failed: {{ $labels.volume }} / {{ $labels.backup }}'
+            description: Native state 4 means error. Alert only for a current volume whose last successful backup predates the failed attempt.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornBackupStuck
+          expr: >-
+            ((longhorn_backup_state == 1) or (longhorn_backup_state == 2)) and on (k8s_cluster_name, volume, backup) (max by
+            (k8s_cluster_name, volume, backup) (longhorn_backup_created_timestamp_seconds) > on (k8s_cluster_name, volume)
+            group_left max by (k8s_cluster_name, volume) (longhorn_volume_last_backup_at))
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Longhorn backup remains in progress for over an hour: {{ $labels.volume }} / {{ $labels.backup }}'
+            description: Longhorn backup remains in progress for over an hour
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornBackupOverdue
+          expr: >-
+            ((time() - max by (k8s_cluster_name, volume) (longhorn_volume_last_backup_at)) > 172800) and on
+            (k8s_cluster_name, volume) (label_replace(max by (k8s_cluster_name, persistentvolume)
+            (kube_persistentvolume_info{storageclass="longhorn-backup"}), "volume", "$1", "persistentvolume", "(.+)")) and
+            on (k8s_cluster_name, volume) (label_replace((time() - max by (k8s_cluster_name, persistentvolume)
+            (kube_persistentvolume_created)) > 172800, "volume", "$1", "persistentvolume", "(.+)"))
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Recurring-backup volume has no successful backup in 48 hours: {{ $labels.volume }}'
+            description: Applies only to volumes associated with longhorn-backup PVs older than 48 hours; zero backup timestamps are treated as never backed up.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
+        - alert: LonghornDiskPendingSectors
+          expr: longhorn_disk_health_attribute_raw{attribute_id=~"197|198",attribute=~"Current_Pending_Sector|Offline_Uncorrectable"} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Disk {{ $labels.node }}/{{ $labels.disk }} reports pending or uncorrectable sectors
+            description: Only standard ATA attribute names and IDs are selected; vendor-specific encodings and hidden RAID members are not inferred.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#hardware
+        - alert: LonghornDiskReallocatedSectorsIncreasing
+          expr: delta(longhorn_disk_health_attribute_raw{attribute_id="5",attribute="Reallocated_Sector_Ct"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Disk {{ $labels.node }}/{{ $labels.disk }} is reallocating sectors
+            description: A positive raw-gauge change indicates newly reallocated sectors; inspect the physical device before maintenance.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#hardware

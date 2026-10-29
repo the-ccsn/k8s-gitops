@@ -54,6 +54,136 @@ spec:
 
     kube-state-metrics:
       enabled: true
+      # Native CR-state metrics distinguish successful plugin backups and stale failures.
+      rbac:
+        extraRules:
+        - apiGroups:
+          - postgresql.cnpg.io
+          resources:
+          - backups
+          - scheduledbackups
+          verbs:
+          - list
+          - watch
+        - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - list
+          - watch
+        - apiGroups:
+          - longhorn.io
+          resources:
+          - backups
+          verbs:
+          - list
+          - watch
+      customResourceState:
+        enabled: true
+        config:
+          kind: CustomResourceStateMetrics
+          spec:
+            resources:
+            - groupVersionKind:
+                group: postgresql.cnpg.io
+                version: v1
+                kind: Backup
+              resourcePlural: backups
+              metricNamePrefix: cnpg_backup
+              labelsFromPath:
+                namespace:
+                - metadata
+                - namespace
+                cnpg_cluster_name:
+                - spec
+                - cluster
+                - name
+                backup:
+                - metadata
+                - name
+                phase:
+                - status
+                - phase
+              metrics:
+              - name: created_timestamp_seconds
+                help: Creation time of the CNPG Backup resource.
+                each:
+                  type: Gauge
+                  gauge:
+                    path:
+                    - metadata
+                    - creationTimestamp
+              - name: stopped_timestamp_seconds
+                help: Completion time of the CNPG Backup resource.
+                each:
+                  type: Gauge
+                  gauge:
+                    path:
+                    - status
+                    - stoppedAt
+                    nilIsZero: true
+            - groupVersionKind:
+                group: postgresql.cnpg.io
+                version: v1
+                kind: ScheduledBackup
+              resourcePlural: scheduledbackups
+              metricNamePrefix: cnpg_scheduledbackup
+              labelsFromPath:
+                namespace:
+                - metadata
+                - namespace
+                cnpg_cluster_name:
+                - spec
+                - cluster
+                - name
+                schedule:
+                - metadata
+                - name
+              metrics:
+              - name: created_timestamp_seconds
+                help: Creation time of the configured CNPG backup schedule.
+                each:
+                  type: Gauge
+                  gauge:
+                    path:
+                    - metadata
+                    - creationTimestamp
+              - name: suspended
+                help: Whether a CNPG backup schedule is suspended.
+                each:
+                  type: Gauge
+                  gauge:
+                    path:
+                    - spec
+                    - suspend
+                    nilIsZero: true
+            - groupVersionKind:
+                group: longhorn.io
+                version: v1beta2
+                kind: Backup
+              resourcePlural: backups
+              metricNamePrefix: longhorn_backup
+              labelsFromPath:
+                namespace:
+                - metadata
+                - namespace
+                volume:
+                - metadata
+                - labels
+                - backup-volume
+                backup:
+                - metadata
+                - name
+              metrics:
+              - name: created_timestamp_seconds
+                help: Creation time of the Longhorn Backup resource.
+                each:
+                  type: Gauge
+                  gauge:
+                    path:
+                    - metadata
+                    - creationTimestamp
       metricLabelsAllowlist:
         - nodes=[topology.kubernetes.io/zone]
       podLabels:

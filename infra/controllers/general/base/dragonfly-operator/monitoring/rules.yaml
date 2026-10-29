@@ -1,0 +1,68 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: dragonfly-health
+  namespace: monitoring
+  labels:
+    application: dragonfly-health
+    component: rules
+spec:
+  groups:
+  - name: dragonfly-health
+    rules:
+    - alert: DragonflyMetricsDown
+      expr: up{job="dragonfly"} == 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Dragonfly native metrics are unavailable: {{ $labels.namespace }}/{{ $labels.pod }}'
+        description: Inspect the Pod, admin listener, PodMonitor and mesh policy. Workload exec readiness independently checks authenticated Redis PING.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#dragonfly
+    - alert: DragonflyMemoryNearLimit
+      expr: dragonfly_memory_used_bytes / (dragonfly_memory_max_bytes > 0) > 0.9
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Dragonfly used memory exceeds 90% of maxmemory: {{ $labels.namespace }}/{{ $labels.pod }}'
+        description: Cache-mode eviction can be intentional; inspect application latency and eviction rate before changing maxmemory.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#dragonfly
+    - alert: DragonflyConnectionsNearLimit
+      expr: dragonfly_connected_clients / (dragonfly_max_clients > 0) > 0.8
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Dragonfly client connections exceed 80% of max_clients: {{ $labels.namespace }}/{{ $labels.pod }}'
+        description: Dragonfly client connections exceed 80% of max_clients
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#dragonfly
+    - alert: DragonflyBackupFailed
+      expr: increase(dragonfly_failed_backups_total[15m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Dragonfly native snapshot backup failed: {{ $labels.namespace }}/{{ $labels.pod }}'
+        description: Dragonfly native snapshot backup failed
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#dragonfly
+    - alert: DragonflyAcceptErrors
+      expr: increase(dragonfly_listener_accept_error_total[5m]) > 0
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Dragonfly listener cannot accept client connections: {{ $labels.namespace }}/{{ $labels.pod }}'
+        description: Dragonfly listener cannot accept client connections
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#dragonfly
+    - alert: DragonflyMetricsMissing
+      expr: >-
+        max by (k8s_cluster_name, namespace, pod) (kube_pod_container_info{container="dragonfly"}) unless on
+        (k8s_cluster_name, namespace, pod) up{job="dragonfly"}
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Dragonfly metrics are absent for {{ $labels.namespace }}/{{ $labels.pod }}
+        description: A known Dragonfly container has no native scrape target. Inspect Pod labels, namespace discovery and the admin port policy.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#dragonfly

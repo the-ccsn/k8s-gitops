@@ -35,6 +35,17 @@ patchesJson6902:
     patch: |-
       - op: remove
         path: /spec/selector/matchLabels/app.kubernetes.io~1env
+  # Source Pods belong to monitoring/operator namespaces, not the prod overlay.
+  - target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: cloudreve-dragonfly-metrics
+    patch: |-
+      - op: remove
+        path: /spec/ingress/0/from/0/podSelector/matchLabels/app.kubernetes.io~1env
+      - op: remove
+        path: /spec/ingress/0/from/1/podSelector/matchLabels/app.kubernetes.io~1env
 
 components:
   - ../../../../observability/components/flux-event-tracing/

@@ -116,6 +116,10 @@ successful backup; old errors for removed volumes do not alert.
 
 ## Workloads
 
+Restart and OOM alerts use VictoriaMetrics' `increase_prometheus` so a newly
+discovered kube-state-metrics target does not count historical restarts as new
+events. Real counter increases remain alertable; thresholds are unchanged.
+
 Inspect scheduling events, image-pull/config errors and PVC conditions. Job
 alerts use the terminal failed condition. Retained failed history for a CronJob
 clears after a newer successful run; standalone failed Jobs remain visible.
@@ -167,6 +171,10 @@ RBAC grant and do not automount API tokens. The namespace ambient setup alone
 is not a substitute for the per-instance admin identity policy.
 Harbor's namespace is not enrolled in ambient; its Dragonfly Pod must carry
 `istio.io/dataplane-mode: ambient` to use the authenticated metrics path.
+The cache NetworkPolicy must also admit same-namespace clients on HBONE port
+15008; allowing only the original Redis port 6379 blocks mesh clients. This
+transport permission does not grant access to the identity-restricted admin
+port 9999 or remove native Redis authentication.
 
 ## Egress
 

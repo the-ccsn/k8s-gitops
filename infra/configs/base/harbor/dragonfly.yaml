@@ -37,7 +37,7 @@ metadata:
   namespace: harbor
 automountServiceAccountToken: false
 ---
-# Admit encrypted metrics and native Operator administration.
+# Admit same-namespace Redis clients, metrics, and native Operator administration.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -53,6 +53,7 @@ spec:
   - Ingress
   ingress:
   - from:
+    - podSelector: {}
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: monitoring

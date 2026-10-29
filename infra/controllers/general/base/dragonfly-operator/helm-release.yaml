@@ -16,6 +16,9 @@ spec:
     name: helm-chart-dragonfly-operator
     namespace: dragonfly-operator-system
   values:
+    # Native admin requests need a mesh identity under the Dragonfly port policy.
+    podLabels:
+      istio.io/dataplane-mode: ambient
     # Default Dragonfly runtime image for all instances; can be overridden per-CR via spec.image.
     dragonflyImage: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
     crds:

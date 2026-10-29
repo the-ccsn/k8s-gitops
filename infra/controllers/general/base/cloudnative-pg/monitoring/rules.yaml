@@ -22,3 +22,102 @@ spec:
           labels: {severity: warning}
           annotations:
             summary: "CloudNativePG instance {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}/{{ $labels.pod }} replication lag exceeds 60 seconds"
+        - alert: CloudNativePgConnectionsNearLimit
+          expr: >-
+            sum by (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (cnpg_backends_total) / (max by (k8s_cluster_name,
+            namespace, cnpg_cluster_name, pod) (cnpg_pg_settings_setting{name="max_connections"}) > 0) > 0.8
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL connections exceed 80% of max_connections: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }} {{ $labels.pod }}'
+            description: PostgreSQL connections exceed 80% of max_connections
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgLongRunningTransaction
+          expr: cnpg_backends_max_tx_duration_seconds > 300
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL transaction runs for more than five minutes: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }} {{ $labels.pod }}'
+            description: PostgreSQL transaction runs for more than five minutes
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgDeadlocks
+          expr: sum by (k8s_cluster_name, namespace, cnpg_cluster_name, datname) (increase(cnpg_pg_stat_database_deadlocks[15m])) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL has repeated deadlocks: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}/{{ $labels.datname }}'
+            description: Investigate transaction ordering and lock contention; the counter is evaluated as an increase, not a lifetime total.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgArchivingFailed
+          expr: >-
+            max by (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (cnpg_pg_stat_archiver_last_failed_time) > max by
+            (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (cnpg_pg_stat_archiver_last_archived_time)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL WAL archiving last failed after its last success: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }} {{ $labels.pod }}'
+            description: PostgreSQL WAL archiving last failed after its last success
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgWalArchiveBacklog
+          expr: cnpg_collector_pg_wal_archive_status{value="ready"} > 10
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL has more than ten WAL segments waiting to archive: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }} {{ $labels.pod }}'
+            description: PostgreSQL has more than ten WAL segments waiting to archive
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgReplicaNotStreaming
+          expr: >-
+            (max by (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (cnpg_pg_replication_in_recovery) == 1) and on
+            (k8s_cluster_name, namespace, cnpg_cluster_name, pod) (max by (k8s_cluster_name, namespace, cnpg_cluster_name,
+            pod) (cnpg_pg_replication_is_wal_receiver_up) == 0)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL standby is not receiving WAL: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }} {{ $labels.pod }}'
+            description: PostgreSQL standby is not receiving WAL
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgBackupOverdue
+          expr: >-
+            (time() - (min by (k8s_cluster_name, namespace, cnpg_cluster_name)
+            (cnpg_scheduledbackup_created_timestamp_seconds and on (k8s_cluster_name, namespace, schedule)
+            (cnpg_scheduledbackup_suspended == 0))) > 129600) unless on (k8s_cluster_name, namespace, cnpg_cluster_name)
+            (max by (k8s_cluster_name, namespace, cnpg_cluster_name)
+            (cnpg_backup_stopped_timestamp_seconds{phase="completed"} > 0) > time() - 129600)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Scheduled PostgreSQL backup has no completion in 36 hours: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}'
+            description: Uses completed Backup resources for both native and plugin backups; suspended schedules and new schedules within their first 36 hours are excluded.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgBackupFailed
+          expr: >-
+            (max by (k8s_cluster_name, namespace, cnpg_cluster_name)
+            (cnpg_backup_created_timestamp_seconds{phase="failed"})) unless on (k8s_cluster_name, namespace,
+            cnpg_cluster_name) (max by (k8s_cluster_name, namespace, cnpg_cluster_name)
+            (cnpg_backup_stopped_timestamp_seconds{phase="completed"} > 0) >= on (k8s_cluster_name, namespace,
+            cnpg_cluster_name) (max by (k8s_cluster_name, namespace, cnpg_cluster_name)
+            (cnpg_backup_created_timestamp_seconds{phase="failed"})))
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Latest PostgreSQL backup failure has no later successful backup: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}'
+            description: Latest PostgreSQL backup failure has no later successful backup
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql
+        - alert: CloudNativePgBackupStuck
+          expr: time() - cnpg_backup_created_timestamp_seconds{phase!~"completed|failed|skipped"} > 7200
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'PostgreSQL backup has not completed within two hours: {{ $labels.namespace }}/{{ $labels.cnpg_cluster_name }}/{{ $labels.backup }}'
+            description: PostgreSQL backup has not completed within two hours
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#postgresql

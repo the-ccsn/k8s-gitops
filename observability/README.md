@@ -216,3 +216,6 @@ The rules were checked with synthetic series, not a production outage.
 A cluster-wide loss of VictoriaMetrics, the evaluator, or Alertmanager cannot
 reliably notify through that same stack; an independent external dead-man
 receiver remains separate work.
+
+The [alert coverage and response guide](./alerts.md) lists source contracts,
+thresholds, component response steps and remaining hardware/etcd prerequisites.

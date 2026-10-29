@@ -1,0 +1,320 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: node-health
+  namespace: monitoring
+  labels:
+    application: node-health
+    component: rules
+spec:
+  groups:
+  - name: node-health
+    rules:
+    - alert: NodeFilesystemSpaceLow
+      expr: >-
+        ((min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_avail_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_avail_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"})) / (max by (k8s_cluster_name,
+        node, device, fstype)
+        ((node_filesystem_size_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_size_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"})) > 0)) < 0.15) and on
+        (k8s_cluster_name, node, device, fstype) (min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_readonly{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_readonly{job="node-exporter",fstype="tmpfs",mountpoint="/"})) == 0)
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node filesystem has less than 15% free on {{ $labels.node }} / {{ $labels.device }}
+        description: Find the device on {{ $labels.node }}; inspect logs, snapshots, container images and Longhorn storage before any cleanup.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeFilesystemSpaceLow
+      expr: >-
+        ((min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_avail_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_avail_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"})) / (max by (k8s_cluster_name,
+        node, device, fstype)
+        ((node_filesystem_size_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_size_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"})) > 0)) < 0.05) and on
+        (k8s_cluster_name, node, device, fstype) (min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_readonly{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_readonly{job="node-exporter",fstype="tmpfs",mountpoint="/"})) == 0)
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Node filesystem has less than 5% free on {{ $labels.node }} / {{ $labels.device }}
+        description: Node filesystem has less than 5% free
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeFilesystemSpaceFillingUp
+      expr: >-
+        ((min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_avail_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_avail_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"})) / (max by (k8s_cluster_name,
+        node, device, fstype)
+        ((node_filesystem_size_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_size_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"})) > 0)) < 0.4) and on
+        (k8s_cluster_name, node, device, fstype) (min by (k8s_cluster_name, node, device, fstype)
+        (predict_linear(node_filesystem_avail_bytes{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}[6h],
+        24*3600) or predict_linear(node_filesystem_avail_bytes{job="node-exporter",fstype="tmpfs",mountpoint="/"}[6h],
+        24*3600)) < 0) and on (k8s_cluster_name, node, device, fstype) (min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_readonly{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_readonly{job="node-exporter",fstype="tmpfs",mountpoint="/"})) == 0)
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        summary: Node filesystem is predicted to fill within 24 hours on {{ $labels.node }} / {{ $labels.device }}
+        description: Prediction uses six hours of samples and requires less than 40% free; verify growth before changing retention.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeFilesystemInodesLow
+      expr: >-
+        min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_files_free{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_files_free{job="node-exporter",fstype="tmpfs",mountpoint="/"}) /
+        ((node_filesystem_files{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_files{job="node-exporter",fstype="tmpfs",mountpoint="/"}) > 0)) < 0.1
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node filesystem has less than 10% free inodes on {{ $labels.node }} / {{ $labels.device }}
+        description: Node filesystem has less than 10% free inodes
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeFilesystemReadOnly
+      expr: >-
+        min by (k8s_cluster_name, node, device, fstype)
+        ((node_filesystem_readonly{job="node-exporter",fstype=~"ext[234]|xfs|btrfs|zfs|f2fs|vfat",mountpoint!~"/run(/.*)?|/var/lib/kubelet/pods(/.*)?|/nix/store(/.*)?|/snapshots(/.*)?"}
+        or node_filesystem_readonly{job="node-exporter",fstype="tmpfs",mountpoint="/"})) == 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Node filesystem has become read-only on {{ $labels.node }} / {{ $labels.device }}
+        description: Intentional read-only bind mounts are ignored when a writable alias exists. Check kernel and device health.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeDiskIOSaturation
+      expr: >-
+        (max by (k8s_cluster_name, node, device)
+        (rate(node_disk_io_time_weighted_seconds_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m]))
+        > 10) and on (k8s_cluster_name, node, device) max by (k8s_cluster_name, node, device)
+        (node_disk_info{job="node-exporter",model!="VIRTUAL-DISK"})
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node disk has a sustained I/O queue on {{ $labels.node }} / {{ $labels.device }}
+        description: Weighted I/O time indicates average outstanding work, not throughput. Correlate latency and workload; virtual Longhorn disks are excluded.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeDiskReadLatencyHigh
+      expr: >-
+        (max by (k8s_cluster_name, node, device)
+        (rate(node_disk_read_time_seconds_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m])
+        /
+        rate(node_disk_reads_completed_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m]))
+        > 0.05) and on (k8s_cluster_name, node, device) (max by (k8s_cluster_name, node, device)
+        (rate(node_disk_reads_completed_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m]))
+        > 1) and on (k8s_cluster_name, node, device) max by (k8s_cluster_name, node, device)
+        (node_disk_info{job="node-exporter",model!="VIRTUAL-DISK"})
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node disk average read latency exceeds 50 ms on {{ $labels.node }} / {{ $labels.device }}
+        description: Requires more than one operation per second; inspect physical-device contention and errors.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeDiskWriteLatencyHigh
+      expr: >-
+        (max by (k8s_cluster_name, node, device)
+        (rate(node_disk_write_time_seconds_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m])
+        /
+        rate(node_disk_writes_completed_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m]))
+        > 0.05) and on (k8s_cluster_name, node, device) (max by (k8s_cluster_name, node, device)
+        (rate(node_disk_writes_completed_total{job="node-exporter",device!~"dm-.*|loop.*|ram.*|nbd.*|zd.*|zram.*|sr.*"}[5m]))
+        > 1) and on (k8s_cluster_name, node, device) max by (k8s_cluster_name, node, device)
+        (node_disk_info{job="node-exporter",model!="VIRTUAL-DISK"})
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node disk average write latency exceeds 50 ms on {{ $labels.node }} / {{ $labels.device }}
+        description: Requires more than one operation per second; inspect physical-device contention and errors.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeIOPressureHigh
+      expr: max by (k8s_cluster_name, node) (rate(node_pressure_io_stalled_seconds_total{job="node-exporter"}[5m])) > 0.1
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: All runnable work is I/O-stalled for more than 10% of time on {{ $labels.node }}
+        description: All runnable work is I/O-stalled for more than 10% of time
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-storage
+    - alert: NodeMemoryAvailableLow
+      expr: min by (k8s_cluster_name, node) (node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"}) < 0.1
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node available memory is below 10% on {{ $labels.node }}
+        description: Node available memory is below 10%
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeCPUHighUsage
+      expr: 1 - avg by (k8s_cluster_name, node) (rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])) > 0.9
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node CPU utilization exceeds 90% on {{ $labels.node }}
+        description: I/O wait contributes to non-idle time; inspect CPU modes before increasing workload CPU limits.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeSystemSaturation
+      expr: >-
+        max by (k8s_cluster_name, node) (node_load1{job="node-exporter"}) / count by (k8s_cluster_name, node)
+        (node_cpu_seconds_total{job="node-exporter",mode="idle"}) > 2
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node load exceeds twice its CPU count on {{ $labels.node }}
+        description: Node load exceeds twice its CPU count
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeTimeNotSynchronising
+      expr: min by (k8s_cluster_name, node) (node_timex_sync_status{job="node-exporter"}) == 0
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node clock is not synchronized on {{ $labels.node }}
+        description: Node clock is not synchronized
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeClockOffsetHigh
+      expr: max by (k8s_cluster_name, node) (abs(node_timex_offset_seconds{job="node-exporter"})) > 0.05
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node clock offset exceeds 50 ms on {{ $labels.node }}
+        description: Node clock offset exceeds 50 ms
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeTemperatureCritical
+      expr: node_hwmon_temp_celsius{job="node-exporter"} > node_hwmon_temp_crit_celsius{job="node-exporter"}
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: A hardware temperature exceeds its reported critical threshold on {{ $labels.node }}
+        description: Uses the sensor-provided critical threshold, not a universal temperature.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#hardware
+    - alert: NodeMemoryUncorrectableErrors
+      expr: increase(node_edac_uncorrectable_errors_total{job="node-exporter"}[5m]) > 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Node reports uncorrectable memory errors on {{ $labels.node }}
+        description: Node reports uncorrectable memory errors
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#hardware
+    - alert: NodeMemoryCorrectableErrors
+      expr: increase(node_edac_correctable_errors_total{job="node-exporter"}[1h]) > 100
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node reports more than 100 corrected memory errors per hour on {{ $labels.node }}
+        description: Node reports more than 100 corrected memory errors per hour
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#hardware
+    - alert: NodeConntrackTableNearFull
+      expr: max by (k8s_cluster_name, node) (node_nf_conntrack_entries{job="node-exporter"} / (node_nf_conntrack_entries_limit{job="node-exporter"} > 0)) > 0.8
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node conntrack table exceeds 80% on {{ $labels.node }}
+        description: Node conntrack table exceeds 80%
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: NodeNetworkReceiveErrors
+      expr: >-
+        (rate(node_network_receive_errs_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        /
+        (rate(node_network_receive_packets_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        > 1)) > 0.01
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node interface receive errors exceed 1% on {{ $labels.node }}
+        description: Requires packet traffic; inspect interface counters, MTU and links.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: NodeNetworkTransmitErrors
+      expr: >-
+        (rate(node_network_transmit_errs_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        /
+        (rate(node_network_transmit_packets_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        > 1)) > 0.01
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node interface transmit errors exceed 1% on {{ $labels.node }}
+        description: Requires packet traffic; inspect interface counters, MTU and links.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: NodeOOMKill
+      expr: increase(node_vmstat_oom_kill{job="node-exporter"}[5m]) > 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Kernel OOM kill occurred on {{ $labels.node }}
+        description: Inspect kernel and workload memory pressure; container-limit OOM alerts do not cover every host process.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeSwapThrashing
+      expr: >-
+        ((rate(node_vmstat_pswpin{job="node-exporter"}[5m]) + rate(node_vmstat_pswpout{job="node-exporter"}[5m])) > 100)
+        and (node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"} <
+        0.1)
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node {{ $labels.node }} is swapping under memory pressure
+        description: Requires more than 100 swapped pages per second and less than 10% available memory.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#node-resources
+    - alert: NodeConntrackDrops
+      expr: rate(node_nf_conntrack_stat_drop{job="node-exporter"}[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node {{ $labels.node }} conntrack is dropping traffic
+        description: Node {{ $labels.node }} conntrack is dropping traffic
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: NodeNetworkReceiveDrops
+      expr: >-
+        (rate(node_network_receive_drop_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        /
+        (rate(node_network_receive_packets_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        > 1) > 0.01) and
+        (rate(node_network_receive_drop_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        > 10)
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node {{ $labels.node }} interface {{ $labels.device }} drops receive traffic
+        description: Requires more than ten dropped packets per second and more than one percent of packet traffic to avoid low-volume filter noise.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network
+    - alert: NodeNetworkTransmitDrops
+      expr: >-
+        (rate(node_network_transmit_drop_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        /
+        (rate(node_network_transmit_packets_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        > 1) > 0.01) and
+        (rate(node_network_transmit_drop_total{job="node-exporter",device!~"lo|veth.*|cali.*|cilium.*|lxc.*|ztunnel.*"}[5m])
+        > 10)
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node {{ $labels.node }} interface {{ $labels.device }} drops transmit traffic
+        description: Requires more than ten dropped packets per second and more than one percent of packet traffic to avoid low-volume filter noise.
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#network

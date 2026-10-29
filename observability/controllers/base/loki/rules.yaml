@@ -50,3 +50,31 @@ spec:
             summary: Loki cannot flush chunks reliably
             description: Check S3 credentials, permissions, connectivity and capacity. WAL buffering can temporarily hide backend failure from ingestion health.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/loki/README.md
+        - alert: LokiQueryErrors
+          expr: >-
+            (sum by (k8s_cluster_name, namespace, route)
+            (rate(loki_request_duration_seconds_count{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*",status_code=~"5.."}[5m]))
+            / sum by (k8s_cluster_name, namespace, route)
+            (rate(loki_request_duration_seconds_count{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*"}[5m]))
+            > 0.05) and on (k8s_cluster_name, namespace, route) (sum by (k8s_cluster_name, namespace, route)
+            (increase(loki_request_duration_seconds_count{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*",status_code=~"5.."}[5m]))
+            >= 3)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Loki query server errors exceed 5%: {{ $labels.namespace }}/{{ $labels.route }}'
+            description: At least three server errors per five-minute window are required. Inspect request errors, query queues and object storage.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#telemetry
+        - alert: LokiQueryLatencyHigh
+          expr: >-
+            histogram_quantile(0.95, sum by (k8s_cluster_name, namespace, route, le)
+            (rate(loki_request_duration_seconds_bucket{namespace="monitoring",route=~".*(quer|search|trace|tag|label|series).*"}[5m])))
+            > 10
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Loki p95 query latency exceeds ten seconds: {{ $labels.namespace }}/{{ $labels.route }}'
+            description: Loki p95 query latency exceeds ten seconds
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#telemetry

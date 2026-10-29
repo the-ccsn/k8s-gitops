@@ -1,22 +1,33 @@
-apiVersion: operator.victoriametrics.com/v1beta1
-kind: VMRule
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
 metadata:
-  name: proxy-engine
-  namespace: egress-system
+  name: proxy-engine-health
+  namespace: monitoring
   labels:
-    app: proxy-engine
+    application: proxy-engine-health
+    component: rules
 spec:
   groups:
-    - name: proxy-engine-fetch-nodes
-      rules:
-        - alert: ProxyEngineFetchNodesInitFailing
-          expr: |
-            sum by (namespace, pod, container) (
-              increase(kube_pod_init_container_status_restarts_total{namespace="egress-system",container="fetch-nodes"}[15m])
-            ) > 0
-          for: 5m
-          labels:
-            severity: critical
-          annotations:
-            summary: "fetch-nodes init container is failing"
-            description: "Init container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} restarted during the last 15m"
+  - name: proxy-engine-health
+    rules:
+    - alert: ProxyEngineFetchNodesInitFailing
+      expr: >-
+        sum by (k8s_cluster_name, namespace, pod, container)
+        (increase(kube_pod_init_container_status_restarts_total{namespace="egress-system",container="fetch-nodes"}[15m]))
+        > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Proxy subscription initialization keeps restarting: {{ $labels.namespace }}/{{ $labels.pod }} {{ $labels.container }}'
+        description: Proxy subscription initialization keeps restarting
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#egress
+    - alert: ProxyEngineUnavailable
+      expr: max by (k8s_cluster_name, namespace, statefulset) (kube_statefulset_status_replicas_ready{namespace="egress-system",statefulset="proxy-engine"}) < 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'No proxy-engine replica is Ready: {{ $labels.namespace }}/{{ $labels.statefulset }}'
+        description: No proxy-engine replica is Ready
+        runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#egress

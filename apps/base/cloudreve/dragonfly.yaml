@@ -4,6 +4,7 @@ metadata:
   name: cloudreve-dragonfly
   namespace: prod
 spec:
+  serviceAccountName: cloudreve-dragonfly
   image: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
   replicas: 1
   podMetadata:
@@ -51,3 +52,68 @@ spec:
     ports:
     - protocol: TCP
       port: 15008
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudreve-dragonfly
+  namespace: prod
+automountServiceAccountToken: false
+---
+# Admit encrypted metrics and native Operator administration.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloudreve-dragonfly-metrics
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudreve-dragonfly
+      app.kubernetes.io/name: dragonfly
+      app.kubernetes.io/part-of: dragonfly
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: vmagent
+          app.kubernetes.io/instance: victoriametrics-vmks
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dragonfly-operator-system
+      podSelector:
+        matchLabels:
+          control-plane: controller-manager
+    ports:
+    - protocol: TCP
+      port: 15008
+---
+# Preserve native Operator/peer administration while excluding unrelated workloads.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: cloudreve-dragonfly-admin
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: cloudreve-dragonfly
+      app.kubernetes.io/name: dragonfly
+  action: DENY
+  rules:
+  - from:
+    - source:
+        notPrincipals:
+        - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+        - cluster.local/ns/dragonfly-operator-system/sa/dragonfly-operator-controller-manager
+        - cluster.local/ns/prod/sa/cloudreve-dragonfly
+    to:
+    - operation:
+        ports:
+        - '9999'

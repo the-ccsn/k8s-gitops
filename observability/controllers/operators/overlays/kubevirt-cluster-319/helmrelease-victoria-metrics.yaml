@@ -3,6 +3,11 @@ metadata:
   name: will-be-ignored
 spec:
   values:
+    kube-state-metrics:
+      # K3s controllers use local CST for CronJobs without spec.timeZone.
+      env:
+        - name: TZ
+          value: Asia/Shanghai
     vmagent:
       spec:
         scrapeInterval: 20s

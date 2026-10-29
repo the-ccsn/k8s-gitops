@@ -6,11 +6,17 @@ metadata:
   namespace: harbor
 spec:
   serviceAccountName: harbor-dragonfly
+  # Harbor is not namespace-enrolled; protect this instance's admin port in ambient.
+  podMetadata:
+    labels:
+      istio.io/dataplane-mode: ambient
   image: ghcr.io/the-ccsn/dragonfly:v1.40.1-auto-b204b3d41b2c@sha256:73ffbda489e1b16cf2378cad179bc612c1e99a22030d6b0eef0bd604fba9f862
   replicas: 1
   args:
     - --maxmemory=1600mb
     - --cache_mode=true
+    # io_uring's idle network waits pollute node/cgroup I/O pressure accounting.
+    - --force_epoll=true
   resources:
     limits:
       cpu: 500m

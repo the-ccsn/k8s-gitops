@@ -36,6 +36,9 @@ of checking the underlying expression and telemetry freshness.
   Backup metadata supplies the timestamp needed to suppress stale failures. Its
   [native CR-state implementation](https://github.com/kubernetes/kube-state-metrics/blob/v2.18.0/docs/metrics/extend/customresourcestate-metrics.md)
   parses RFC3339 times. No credentials or backup content become metrics.
+  CRD discovery caches the full schemas, so kube-state-metrics requests 256 MiB
+  and is limited to 512 MiB. The former 128 MiB limit was insufficient with the
+  deployed CRDs and caused repeated OOM kills.
 - Dragonfly 1.40.1 exposes native `dragonfly_*` metrics on admin port 9999.
   One PodMonitor discovers labeled instances across namespaces. Root-namespace
   policy rejects unauthenticated admin access. Owner-local policies permit only
@@ -44,7 +47,7 @@ of checking the underlying expression and telemetry freshness.
   their existing policy. The Operator Pod is enrolled in ambient for its native
   admin calls. Dedicated instance identities require a rolling update of all
   three single-replica caches, which can briefly interrupt Redis connections.
-  Ambient enrollment is already configured for production and Harbor namespaces.
+  Production is namespace-enrolled; Harbor's cache is explicitly Pod-enrolled.
 - SeaweedFS 4.48 metrics follow the [pinned producer](https://github.com/seaweedfs/seaweedfs/blob/530be3e37337488ecc34d58441e0bc476e121c93/weed/stats/metrics.go).
   Bucket read-only gauges use max, avoiding duplicate component reports. S3
   latency uses only the S3-gateway histogram and preserves request type.
@@ -70,6 +73,13 @@ requires more than one operation per second and sustained averages above
 50 ms; physical queue saturation requires more than ten outstanding operations
 for 15 minutes. Keep HDD and SSD behavior in mind. Virtual Longhorn device
 statistics remain available but do not generate duplicate physical-disk alerts.
+
+Dragonfly uses its native epoll backend. Its io_uring network waits can be
+[accounted as I/O wait](https://github.com/dragonflydb/dragonfly/issues/7375)
+while disks are nearly idle. This produced near-100% container I/O pressure and
+a node alert in this cluster. The backend choice preserves the pressure alert
+and its threshold; it does not exclude Dragonfly from monitoring. It gives up
+io_uring-specific optimizations; recheck application latency after rollout.
 
 ## Node resources
 
@@ -155,6 +165,8 @@ keep its mesh identity restriction, native Operator/peer exceptions and HBONE
 NetworkPolicy admission together. Instance ServiceAccounts have no Kubernetes
 RBAC grant and do not automount API tokens. The namespace ambient setup alone
 is not a substitute for the per-instance admin identity policy.
+Harbor's namespace is not enrolled in ambient; its Dragonfly Pod must carry
+`istio.io/dataplane-mode: ambient` to use the authenticated metrics path.
 
 ## Egress
 

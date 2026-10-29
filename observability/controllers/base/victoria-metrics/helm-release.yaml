@@ -191,10 +191,11 @@ spec:
       resources:
         requests:
           cpu: 20m
-          memory: 64Mi
+          memory: 256Mi
         limits:
           cpu: 200m
-          memory: 128Mi
+          # Native CR-state discovery caches the cluster's full CRD schemas.
+          memory: 512Mi
       # Scraping policy is owned by observability/configs as ServiceMonitor.
       vmScrape:
         enabled: false

@@ -34,6 +34,21 @@ spec:
             summary: Tempo cannot flush trace blocks reliably
             description: Check S3 credentials, permissions, connectivity and capacity. Receiver availability alone does not prove block persistence.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/tempo/README.md
+        - alert: TempoS3PutLatencyHigh
+          expr: >-
+            (sum by (k8s_cluster_name, namespace, pod)
+            (rate(tempodb_backend_request_duration_seconds_sum{namespace="monitoring",operation="PUT",status_code=~"2.."}[5m]))
+            / sum by (k8s_cluster_name, namespace, pod)
+            (rate(tempodb_backend_request_duration_seconds_count{namespace="monitoring",operation="PUT",status_code=~"2.."}[5m]))
+            > 2) and on (k8s_cluster_name, namespace, pod) (sum by (k8s_cluster_name, namespace, pod)
+            (increase(tempodb_backend_request_duration_seconds_count{namespace="monitoring",operation="PUT",status_code=~"2.."}[5m]))
+            >= 3)
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: 'Tempo mean S3 PUT latency exceeds two seconds: {{ $labels.namespace }}/{{ $labels.pod }}'
+            description: At least three successful PUTs per five-minute window are required. Inspect OMV memory pressure, FUSE/background I/O and HDD contention on the configured S3 path.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#seaweedfs
         - alert: TempoQueryErrors
           expr: >-
             (sum by (k8s_cluster_name, namespace, route)

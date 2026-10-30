@@ -10,8 +10,9 @@ spec:
     - name: application-monitoring
       rules:
         - alert: PodFrequentlyRestarting
+          # Ignore historical counter values when a kube-state-metrics target appears.
           expr: |
-            sum by (k8s_cluster_name, namespace, pod) (increase(kube_pod_container_status_restarts_total[1h])) > 5
+            sum by (k8s_cluster_name, namespace, pod) (increase_prometheus(kube_pod_container_status_restarts_total[1h])) > 5
           for: 5m
           labels:
             severity: warning
@@ -153,7 +154,7 @@ spec:
         - alert: ContainerOOMKilled
           expr: |
             (
-              max by (k8s_cluster_name, namespace, pod, container) (increase(kube_pod_container_status_restarts_total[10m])) > 0
+              max by (k8s_cluster_name, namespace, pod, container) (increase_prometheus(kube_pod_container_status_restarts_total[10m])) > 0
             )
             and on (k8s_cluster_name, namespace, pod, container)
             (

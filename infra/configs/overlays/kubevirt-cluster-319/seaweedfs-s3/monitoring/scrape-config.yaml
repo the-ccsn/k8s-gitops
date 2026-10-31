@@ -1,6 +1,5 @@
-# Existing private OMV listeners, verified against SeaweedFS 4.48 on 2026-10-24.
-# The campus/direct gateway and volume servers do not yet expose metrics.
-# These targets do not replace the direct S3 HTTPS probe or OMV node/SMART mTLS.
+# Activate only after the two OMV mTLS frontends pass acceptance.
+# See ../portainer/README.md for the certificate and maintenance barriers.
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: ScrapeConfig
 metadata:
@@ -14,19 +13,69 @@ spec:
   scrapeInterval: 30s
   scrapeTimeout: 10s
   metricsPath: /metrics
-  scheme: HTTP
+  scheme: HTTPS
   sampleLimit: 10000
+  tlsConfig:
+    insecureSkipVerify: false
+    ca:
+      secret:
+        name: seaweedfs-metrics-client-tls
+        key: ca.crt
+    cert:
+      secret:
+        name: seaweedfs-metrics-client-tls
+        key: tls.crt
+    keySecret:
+      name: seaweedfs-metrics-client-tls
+      key: tls.key
   staticConfigs:
-    - targets: [192.168.1.22:9327]
+    - targets: [openmediavault.local:9443]
       labels:
         component: master
-    - targets: [192.168.1.22:9328]
+        __metrics_path__: /master/metrics
+    - targets: [openmediavault.local:9443]
       labels:
         component: filer
-    - targets: [192.168.1.22:9329]
+        __metrics_path__: /filer/metrics
+    - targets: [openmediavault.local:9443]
       labels:
         component: s3-gateway
+        __metrics_path__: /s3/metrics
+    - targets: [openmediavault.local:9443]
+      labels:
+        component: volume-server
+        __metrics_path__: /volume-6a/metrics
+    - targets: [openmediavault.local:9443]
+      labels:
+        component: volume-server
+        __metrics_path__: /volume-6b/metrics
+    - targets: [openmediavault.local:9443]
+      labels:
+        component: volume-server
+        __metrics_path__: /volume-12b/metrics
+    - targets: [openmediavault.local:9443]
+      labels:
+        component: volume-server
+        __metrics_path__: /volume-12a/metrics
+    - targets: [openmediavault.local:9443]
+      labels:
+        component: volume-server
+        __metrics_path__: /volume-3a/metrics
+    - targets: [openmediavault.local:9443]
+      labels:
+        component: volume-server
+        __metrics_path__: /volume-3b/metrics
+    - targets: [s3.ccsn.dev:9443]
+      labels:
+        component: s3-gateway-direct
+        __metrics_path__: /s3-direct/metrics
   relabelings:
+    # The host has several metrics paths; retain a unique native scrape identity.
+    - action: replace
+      sourceLabels: [__address__, __metrics_path__]
+      separator: ""
+      targetLabel: instance
+      replacement: $1
     - action: replace
       targetLabel: job
       replacement: seaweedfs

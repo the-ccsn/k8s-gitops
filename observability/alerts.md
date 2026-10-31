@@ -50,10 +50,13 @@ of checking the underlying expression and telemetry freshness.
   Production is namespace-enrolled; Harbor's cache is explicitly Pod-enrolled.
 - SeaweedFS 4.48 metrics follow the [pinned producer](https://github.com/seaweedfs/seaweedfs/blob/530be3e37337488ecc34d58441e0bc476e121c93/weed/stats/metrics.go).
   Bucket read-only gauges use max, avoiding duplicate component reports. S3
-  latency uses only the S3-gateway histogram and preserves request type. That
-  listener belongs to the ordinary gateway; direct/campus gateway requests are
-  not covered by its request counters. Loki and Tempo additionally alert on
-  their own successful S3 PUT timing, covering their configured storage path.
+  latency uses only the ordinary/direct S3-gateway histograms and preserves
+  instance and request type, so a busy healthy gateway cannot hide the other
+  gateway's latency. Each of six volume servers has a distinct scrape instance;
+  I/O, read and write failures retain that instance. Component absence, partial
+  volume-inventory loss and failed scrapes are separate alerts. Loki and Tempo
+  additionally alert on their own successful S3 PUT timing, covering their
+  configured storage path.
 - Loki/Tempo query alerts use the deployed HTTP histogram and counter labels.
   Query 5xx needs more than 5% errors and at least three errors per five-minute
   window, sustained for five minutes. Query p95 above ten seconds for 15 minutes

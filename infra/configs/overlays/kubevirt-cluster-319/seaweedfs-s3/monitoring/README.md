@@ -21,21 +21,33 @@ Master/filer job filters use the existing `component` labels. Bucket size/object
 gauges retain upstream `max by(bucket)` to avoid counting copies from multiple
 components. The refresh interval defaults to 30 seconds.
 
-These are the existing master, filer and S3-gateway listeners from
-`scrape-config.yaml`. The direct S3 HTTPS probe remains separate. The volume
-servers already expose metrics on OMV, but those listeners are not yet included
-in this ScrapeConfig. The direct/campus gateway has no enabled metrics listener.
-Their charts can be empty until collection is configured. Existing OMV metrics
-listeners are private HTTP without authentication; this does not provide the
-identity protection used for in-cluster metrics. S3 latency quantiles are also empty without requests
-in the selected time window, and bucket traffic metrics depend on producer support.
+Volume disk totals sum native `normal` and `ec` bytes. `deleted_bytes` is already
+part of a normal data file, so it remains visible in the type breakdown but is
+not added again to totals. These metrics cover SeaweedFS data files/shards, not
+complete filesystem, index or metadata usage.
+
+`scrape-config.yaml` declares ten authenticated HTTPS paths: master, filer,
+ordinary S3, direct S3 and six volume servers. The target names use internal DNS,
+with no fixed IP or site-alias hostname. `instance` combines target address and
+metrics path so the six volume servers on one host cannot overwrite each other.
+The client Secret supplies CA trust, certificate and key; normal DNS-name
+verification remains enabled. The direct S3 HTTPS transport probe stays separate.
+S3 latency quantiles are empty without requests in the selected time window,
+and bucket traffic metrics depend on producer support.
 
 The [Portainer Stacks](../portainer/README.md) prepare loopback-only native
 listeners and a common mTLS policy in both network namespaces. Dedicated
 cert-manager resources and read access to only the server leaf Secret are
-included here. Their publication does not deploy the external Stacks or switch
-the existing scrape targets. Complete the documented certificate/OMV barrier
-before publishing the HTTPS collection changes.
+included here. This version requires those Stacks to be deployed; publishing it
+does not update OMV. Complete the documented certificate/OMV barrier before
+publishing these HTTPS collection changes. The preparation commit keeps the old
+three-target HTTP configuration until that barrier is satisfied.
+
+Alerts cover failed targets, disappearance of any of the five component families
+and fewer than six volume targets remaining in discovery. A failed but discovered
+volume still counts toward that inventory and triggers the failed-target alert
+instead. Volume I/O/read/write failures retain the affected `instance`; S3 latency
+retains both gateway identity and request type. Bucket gauges remain deduplicated.
 
 When updating, verify the pinned source, preserve the UID, reapply the
 host/component bindings, and validate active queries and bucket deduplication.

@@ -1,0 +1,493 @@
+# Prepare only; deploy after volume maintenance and certificate issuance.
+name: seaweedfs
+services:
+  filer:
+    image: chrislusf/seaweedfs:4.48
+    pull_policy: never
+    container_name: seaweed-filer
+    entrypoint:
+    - /entrypoint.sh
+    command:
+    - filer
+    - -master=192.168.1.22:9333
+    - -ip=192.168.1.22
+    - -ip.bind=0.0.0.0
+    - -port=8888
+    - -defaultStoreDir=/data
+    - -defaultReplicaPlacement=000
+    - -maxMB=32
+    - -metricsPort=9328
+    - -metricsIp=127.0.0.1
+    network_mode: host
+    restart: unless-stopped
+    working_dir: /data
+    stop_grace_period: 30s
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/filer
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8888/
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 12
+  master:
+    image: chrislusf/seaweedfs:4.48
+    pull_policy: never
+    container_name: seaweed-master
+    entrypoint:
+    - /entrypoint.sh
+    command:
+    - master
+    - -ip=192.168.1.22
+    - -ip.bind=0.0.0.0
+    - -port=9333
+    - -mdir=/data
+    - -peers=none
+    - -defaultReplication=000
+    - -volumeSizeLimitMB=30000
+    - -metricsPort=9327
+    - -telemetry=false
+    - -metricsIp=127.0.0.1
+    network_mode: host
+    restart: unless-stopped
+    working_dir: /data
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/master
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:9333/cluster/status
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 12
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-s3
+    entrypoint:
+    - /entrypoint.sh
+    command:
+    - s3
+    - -filer=127.0.0.1:8888
+    - -ip=192.168.1.22
+    - -ip.bind=0.0.0.0
+    - -port=8333
+    - -config=/etc/seaweedfs/s3.json
+    - -allowDeleteBucketNotEmpty=false
+    - -autoCreateBucket=false
+    - -metricsPort=9329
+    - -readerCacheSizeMB=512
+    - -metricsIp=127.0.0.1
+    network_mode: host
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+    volumes:
+    - type: bind
+      target: /etc/seaweedfs/s3.json
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/config/s3.json
+      read_only: true
+    - type: volume
+      target: /data
+      source: s3-data
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8333/healthz
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 8
+    pull_policy: never
+    working_dir: /data
+  volume-12a:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-volume-12a
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 30s
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |-
+      test "$(cat /disk-id)" = 12a || exit 42
+      exec /usr/bin/weed volume --master=127.0.0.1:9333 --ip=192.168.1.22 --ip.bind=0.0.0.0 --port=8084 --dir=/data --max=320 --minFreeSpace=1 --disk=hdd --dataCenter=home --rack=omv --preStopSeconds=10 --maintenanceMBps=80 --compactionMBps=30 --metricsPort=9404 --metricsIp=127.0.0.1
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-09953e3f-cc08-48a1-89f8-9074714529d5/seaweed
+    - type: bind
+      target: /disk-id
+      source: /srv/dev-disk-by-uuid-09953e3f-cc08-48a1-89f8-9074714529d5/.seaweed-disk-id
+      read_only: true
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8084/status
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+    pull_policy: never
+    working_dir: /data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  volume-12b:
+    image: chrislusf/seaweedfs:4.48
+    pull_policy: never
+    container_name: seaweed-volume-12b
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |-
+      test "$(cat /disk-id-12b)" = 12b || exit 42
+      exec /usr/bin/weed volume --master=127.0.0.1:9333 --ip=192.168.1.22 --ip.bind=0.0.0.0 --port=8083 --dir=/data/12b --max=410 --minFreeSpace=1 --disk=hdd --dataCenter=home --rack=omv --preStopSeconds=10 --maintenanceMBps=80 --compactionMBps=30 --metricsPort=9403 --metricsIp=127.0.0.1
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+    - type: bind
+      target: /data/12b
+      source: /srv/dev-disk-by-uuid-89e25129-0326-4323-94f7-1a3656267537/seaweed
+    - type: bind
+      target: /disk-id-12b
+      source: /srv/dev-disk-by-uuid-89e25129-0326-4323-94f7-1a3656267537/.seaweed-disk-id
+      read_only: true
+    - type: volume
+      target: /data
+      source: volume-12b-data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8083/status
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 8
+    working_dir: /data
+    labels:
+      ccsn.capacity.slot-recovery: '20261023'
+  volume-3a:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-volume-3a
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 30s
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |-
+      test "$(cat /disk-id)" = 3a || exit 42
+      exec /usr/bin/weed volume --master=127.0.0.1:9333 --ip=192.168.1.22 --ip.bind=0.0.0.0 --port=8085 --dir=/data --max=200 --minFreeSpace=1 --disk=hdd --dataCenter=home --rack=omv --preStopSeconds=10 --maintenanceMBps=80 --compactionMBps=30 --metricsPort=9405 --metricsIp=127.0.0.1
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-8af7c1d9-1eea-45e4-ad21-5ad90e2eb71e/seaweed
+    - type: bind
+      target: /disk-id
+      source: /srv/dev-disk-by-uuid-8af7c1d9-1eea-45e4-ad21-5ad90e2eb71e/.seaweed-disk-id
+      read_only: true
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8085/status
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+    pull_policy: never
+    working_dir: /data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  volume-3b:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-volume-3b
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 30s
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |-
+      test "$(cat /disk-id)" = 3b || exit 42
+      exec /usr/bin/weed volume --master=127.0.0.1:9333 --ip=192.168.1.22 --ip.bind=0.0.0.0 --port=8086 --dir=/data --max=200 --minFreeSpace=1 --disk=hdd --dataCenter=home --rack=omv --preStopSeconds=10 --maintenanceMBps=80 --compactionMBps=30 --metricsPort=9406 --metricsIp=127.0.0.1
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-c24b23a1-eb6b-41f1-8387-bc79fcb4f1c9/seaweed
+    - type: bind
+      target: /disk-id
+      source: /srv/dev-disk-by-uuid-c24b23a1-eb6b-41f1-8387-bc79fcb4f1c9/.seaweed-disk-id
+      read_only: true
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8086/status
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+    pull_policy: never
+    working_dir: /data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  volume-6a:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-volume-6a
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 30s
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |-
+      test "$(cat /disk-id)" = 6a || exit 42
+      exec /usr/bin/weed volume --master=127.0.0.1:9333 --ip=192.168.1.22 --ip.bind=0.0.0.0 --port=8081 --dir=/data --max=400 --minFreeSpace=1 --disk=hdd --dataCenter=home --rack=omv --preStopSeconds=10 --maintenanceMBps=80 --compactionMBps=30 --metricsPort=9401 --metricsIp=127.0.0.1
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-78123244-cc7b-45f1-a275-8c373cb929e3/seaweed
+    - type: bind
+      target: /disk-id
+      source: /srv/dev-disk-by-uuid-78123244-cc7b-45f1-a275-8c373cb929e3/.seaweed-disk-id
+      read_only: true
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8081/status
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+    pull_policy: never
+    working_dir: /data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  volume-6b:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-volume-6b
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 30s
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |-
+      test "$(cat /disk-id)" = 6b || exit 42
+      exec /usr/bin/weed volume --master=127.0.0.1:9333 --ip=192.168.1.22 --ip.bind=0.0.0.0 --port=8082 --dir=/data --max=400 --minFreeSpace=1 --disk=hdd --dataCenter=home --rack=omv --preStopSeconds=10 --maintenanceMBps=80 --compactionMBps=30 --metricsPort=9402 --metricsIp=127.0.0.1
+    volumes:
+    - type: bind
+      target: /data
+      source: /srv/dev-disk-by-uuid-033f7f7f-a2b6-437b-ba0a-93fab72a980a/seaweed
+    - type: bind
+      target: /disk-id
+      source: /srv/dev-disk-by-uuid-033f7f7f-a2b6-437b-ba0a-93fab72a980a/.seaweed-disk-id
+      read_only: true
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8082/status
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 8
+    pull_policy: never
+    working_dir: /data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  metrics:
+    image: nginx:1.29.8-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    container_name: seaweed-metrics
+    restart: unless-stopped
+    network_mode: host
+    user: 1000:1000
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges=true
+    cpus: 0.25
+    mem_limit: 128m
+    memswap_limit: 128m
+    tmpfs:
+    - /tmp:size=16m,uid=1000,gid=1000,mode=0700
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |
+      set -eu
+      while :; do
+          METRICS_LISTEN_IP=openmediavault.local
+          if [ -n "$$METRICS_LISTEN_IP" ] && [ -r /etc/metrics-tls/server.pem ] && [ -r /etc/metrics-tls/ca.crt ]; then break; fi
+          sleep 2
+      done
+      export METRICS_LISTEN_IP
+      envsubst '$$METRICS_LISTEN_IP' < /etc/nginx/metrics.conf.template > /tmp/nginx.conf
+      exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+    configs:
+    - source: metrics-nginx
+      target: /etc/nginx/metrics.conf.template
+    volumes:
+    - type: bind
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure/metrics-tls
+      target: /etc/metrics-tls
+      read_only: true
+    labels:
+      ccsn.service: seaweedfs-metrics
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 5m
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - test -s /tmp/nginx.pid && kill -0 "$$(cat /tmp/nginx.pid)" && nginx -c /tmp/nginx.conf -t
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+volumes:
+  s3-data:
+    external: true
+    name: 9fb5ffc384d4c2d199cb5e3829907e1c2e3f7c78b4af82cfead63f245dcda3e5
+  volume-12b-data:
+    external: true
+    name: 94ae80dfa6745a6e0b4ec87aba0171bc309ece0412ae75b33805f194bc7ca0ce
+configs:
+  metrics-nginx:
+    content: |
+      worker_processes 1;
+      pid /tmp/nginx.pid;
+      error_log /dev/stderr warn;
+      events { worker_connections 128; }
+      http {
+          client_body_temp_path /tmp/client_body;
+          proxy_temp_path /tmp/proxy;
+          fastcgi_temp_path /tmp/fastcgi;
+          uwsgi_temp_path /tmp/uwsgi;
+          scgi_temp_path /tmp/scgi;
+          access_log off;
+          server_tokens off;
+          client_max_body_size 1k;
+          client_header_timeout 5s;
+          client_body_timeout 5s;
+          send_timeout 10s;
+          keepalive_timeout 15s;
+          proxy_connect_timeout 2s;
+          proxy_read_timeout 8s;
+          proxy_send_timeout 5s;
+          proxy_pass_request_body off;
+          proxy_pass_request_headers off;
+          proxy_set_header Host 127.0.0.1;
+          proxy_set_header Connection "";
+          proxy_set_header Content-Length "";
+          proxy_http_version 1.1;
+          proxy_buffering off;
+          server {
+              listen $${METRICS_LISTEN_IP}:9443 ssl;
+              server_name openmediavault.local s3.ccsn.dev;
+              ssl_certificate /etc/metrics-tls/server.pem;
+              ssl_certificate_key /etc/metrics-tls/server.pem;
+              ssl_client_certificate /etc/metrics-tls/ca.crt;
+              ssl_verify_client on;
+              ssl_verify_depth 1;
+              ssl_protocols TLSv1.2 TLSv1.3;
+              ssl_session_tickets off;
+              if ($$ssl_client_s_dn != "CN=vmagent-seaweedfs-metrics") { return 403; }
+              if ($$request_method != GET) { return 405; }
+              if ($$args != "") { return 400; }
+              location = /master/metrics { proxy_pass http://127.0.0.1:9327/metrics; }
+              location = /filer/metrics { proxy_pass http://127.0.0.1:9328/metrics; }
+              location = /s3/metrics { proxy_pass http://127.0.0.1:9329/metrics; }
+              location = /volume-6a/metrics { proxy_pass http://127.0.0.1:9401/metrics; }
+              location = /volume-6b/metrics { proxy_pass http://127.0.0.1:9402/metrics; }
+              location = /volume-12b/metrics { proxy_pass http://127.0.0.1:9403/metrics; }
+              location = /volume-12a/metrics { proxy_pass http://127.0.0.1:9404/metrics; }
+              location = /volume-3a/metrics { proxy_pass http://127.0.0.1:9405/metrics; }
+              location = /volume-3b/metrics { proxy_pass http://127.0.0.1:9406/metrics; }
+              location / { return 404; }
+          }
+      }

@@ -1,0 +1,82 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seaweedfs-metrics-bootstrap
+  namespace: monitoring
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seaweedfs-metrics-ca
+  namespace: monitoring
+spec:
+  secretName: seaweedfs-metrics-ca
+  commonName: SeaweedFS metrics CA
+  isCA: true
+  usages:
+    - cert sign
+    - crl sign
+  duration: 87600h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Never
+  issuerRef:
+    name: seaweedfs-metrics-bootstrap
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seaweedfs-metrics
+  namespace: monitoring
+spec:
+  ca:
+    secretName: seaweedfs-metrics-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seaweedfs-metrics-server
+  namespace: monitoring
+spec:
+  secretName: seaweedfs-metrics-server-tls
+  dnsNames:
+    - openmediavault.local
+    - s3.ccsn.dev
+  usages:
+    - digital signature
+    - server auth
+  duration: 2160h
+  renewBefore: 360h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  issuerRef:
+    name: seaweedfs-metrics
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seaweedfs-metrics-client
+  namespace: monitoring
+spec:
+  secretName: seaweedfs-metrics-client-tls
+  commonName: vmagent-seaweedfs-metrics
+  usages:
+    - digital signature
+    - client auth
+  duration: 2160h
+  renewBefore: 360h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  issuerRef:
+    name: seaweedfs-metrics
+    kind: Issuer

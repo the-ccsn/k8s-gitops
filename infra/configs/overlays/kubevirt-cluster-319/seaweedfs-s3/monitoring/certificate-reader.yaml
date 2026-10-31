@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: omv-seaweedfs-metrics-cert-reader
+  namespace: monitoring
+rules:
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [seaweedfs-metrics-server-tls]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: omv-seaweedfs-metrics-cert-reader
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: omv-seaweedfs-metrics-cert-reader
+subjects:
+  - kind: ServiceAccount
+    name: omv-s3-cert-reader
+    namespace: prod

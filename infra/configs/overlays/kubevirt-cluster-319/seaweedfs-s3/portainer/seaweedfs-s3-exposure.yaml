@@ -1,0 +1,391 @@
+# Prepare only; deploy after volume maintenance and certificate issuance.
+name: seaweedfs-s3-exposure
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.0@sha256:9b49eed8f62806d5d45ddf59ecefb5710429598ea6d3fcccd2af938f621b2b07
+    container_name: seaweed-s3-tunnel
+    restart: unless-stopped
+    command:
+    - tunnel
+    - --no-autoupdate
+    - --edge-ip-version
+    - '4'
+    - --protocol
+    - http2
+    - --metrics
+    - 0.0.0.0:2000
+    - run
+    - --token-file
+    - /run/secrets/tunnel-token
+    user: 65532:65532
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges=true
+    tmpfs:
+    - /tmp:size=16m,mode=1777
+    mem_limit: 268435456
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    volumes:
+    - type: bind
+      target: /run/secrets/tunnel-token
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure/public-tunnel-token
+      read_only: true
+    ports:
+    - 127.0.0.1:2034:2000
+    networks:
+    - egress
+    labels:
+      ccsn.service: seaweedfs-s3-public
+    entrypoint:
+    - cloudflared
+    - --no-autoupdate
+    pull_policy: never
+    memswap_limit: 536870912
+    working_dir: /home/nonroot
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  controller:
+    image: ccsn/seaweedfs-s3-controller:20261010
+    pull_policy: never
+    container_name: seaweed-s3-controller
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+    privileged: true
+    read_only: true
+    tmpfs:
+    - /tmp:size=32m,mode=1777
+    mem_limit: 536870912
+    environment:
+      GATEWAY_CONTAINER_NAME: seaweed-s3-direct
+      KUBERNETES_API_SERVER: https://control-plane-kubevirt-cluster-319.ccsn.dev:6443
+    volumes:
+    - type: bind
+      target: /var/run/docker.sock
+      source: /var/run/docker.sock
+    - type: bind
+      target: /var/lib/openmediavault/seaweedfs/exposure
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure
+    depends_on:
+      s3:
+        condition: service_started
+    labels:
+      ccsn.service: seaweedfs-s3-controller
+    healthcheck:
+      test:
+      - CMD
+      - /bin/python3
+      - /var/lib/openmediavault/seaweedfs/exposure/stack-controller.py
+      - --check
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    command:
+    - |
+      import base64
+      import hashlib
+      import importlib.util
+      import json
+      import os
+      import ssl
+      import subprocess
+      import threading
+      import urllib.request
+
+      root = '/var/lib/openmediavault/seaweedfs/exposure'
+      spec = importlib.util.spec_from_file_location('controller', root + '/stack-controller.py')
+      controller = importlib.util.module_from_spec(spec)
+      spec.loader.exec_module(controller)
+      directory = controller.ROOT / 'metrics-tls'
+      directory.mkdir(mode=0o750, exist_ok=True)
+      os.chown(directory, 0, 1000)
+      directory.chmod(0o750)
+      applied = {}
+
+
+      def runtime(name, service, project):
+          result = subprocess.run(['docker', 'inspect', '--format',
+              '{{.State.Pid}} {{.State.Running}} {{index .Config.Labels "ccsn.service"}} {{index .Config.Labels "com.docker.compose.project"}}', name],
+              capture_output=True, text=True, timeout=10)
+          if result.returncode:
+              return None
+          pid, running, actual_service, actual_project = result.stdout.split()
+          if (actual_service, actual_project) != (service, project):
+              raise RuntimeError('Unexpected metrics container ownership')
+          return int(pid) if running == 'true' else None
+
+
+      def sync_metrics():
+          access = json.loads((controller.ROOT / 'cert-reader.json').read_text())
+          endpoint = os.environ['KUBERNETES_API_SERVER'].rstrip('/') + '/api/v1/namespaces/monitoring/secrets/seaweedfs-metrics-server-tls'
+          request = urllib.request.Request(endpoint, headers={'Authorization': 'Bearer ' + access['token']})
+          with urllib.request.urlopen(request, context=ssl.create_default_context(cadata=access['ca']), timeout=20) as response:
+              data = json.load(response)['data']
+          certificate, key, ca = [base64.b64decode(data[name], validate=True) for name in ['tls.crt', 'tls.key', 'ca.crt']]
+          bundle = certificate + b'\n' + key
+          for name, value in [('server.pem', bundle), ('ca.crt', ca)]:
+              staged = directory / (name + '.next')
+              with os.fdopen(os.open(staged, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'wb') as output:
+                  os.fchown(output.fileno(), 0, 1000)
+                  os.fchmod(output.fileno(), 0o640)
+                  output.write(value)
+          pem = str(directory / 'server.pem.next')
+          cert_pub = subprocess.check_output(['openssl', 'x509', '-in', pem, '-pubkey', '-noout'])
+          key_pub = subprocess.check_output(['openssl', 'pkey', '-in', pem, '-pubout'], stderr=subprocess.DEVNULL)
+          if cert_pub != key_pub:
+              raise RuntimeError('Metrics certificate/key mismatch')
+          subprocess.run(['openssl', 'x509', '-in', pem, '-checkend', '86400', '-noout'], check=True, stdout=subprocess.DEVNULL)
+          for hostname in ['openmediavault.local', 's3.ccsn.dev']:
+              subprocess.run(['openssl', 'verify', '-CAfile', str(directory / 'ca.crt.next'), '-purpose', 'sslserver', '-verify_hostname', hostname, pem], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+          for name, value in [('ca.crt', ca), ('server.pem', bundle)]:
+              path = directory / name
+              if not path.exists() or path.read_bytes() != value:
+                  (directory / (name + '.next')).replace(path)
+          digest = hashlib.sha256(bundle + ca).hexdigest()
+          gateway_pid = runtime('seaweed-s3-direct', 'seaweedfs-s3-campus', 'seaweedfs-s3-exposure')
+          for name, service, project in [('seaweed-metrics', 'seaweedfs-metrics', 'seaweedfs'),
+                                          ('seaweed-s3-direct-metrics', 'seaweedfs-s3-direct-metrics', 'seaweedfs-s3-exposure')]:
+              pid = runtime(name, service, project)
+              if not pid:
+                  continue
+              if name == 'seaweed-s3-direct-metrics' and gateway_pid:
+                  if os.stat(f'/proc/{pid}/ns/net').st_ino != os.stat(f'/proc/{gateway_pid}/ns/net').st_ino:
+                      subprocess.run(['docker', 'restart', name], check=True, timeout=30, stdout=subprocess.DEVNULL)
+                      applied.pop(name, None)
+              if applied.get(name) != digest:
+                  subprocess.run(['docker', 'exec', name, 'nginx', '-c', '/tmp/nginx.conf', '-t'], check=True, timeout=10, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                  subprocess.run(['docker', 'exec', name, 'nginx', '-c', '/tmp/nginx.conf', '-s', 'reload'], check=True, timeout=10, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                  applied[name] = digest
+
+
+      def worker():
+          while not controller.shutdown.is_set():
+              try:
+                  sync_metrics()
+                  delay = 60
+              except Exception as error:
+                  print('Metrics certificate/network synchronization failed: ' + type(error).__name__, flush=True)
+                  delay = 15
+              controller.shutdown.wait(delay)
+
+
+      threading.Thread(target=worker, daemon=True).start()
+      try:
+          raise SystemExit(controller.main())
+      finally:
+          controller.shutdown.set()
+    entrypoint:
+    - /bin/python3
+    - -u
+    - -c
+    memswap_limit: 1073741824
+    security_opt:
+    - label=disable
+    user: 0:0
+    working_dir: /
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    container_name: seaweed-s3-direct
+    restart: unless-stopped
+    network_mode: none
+    user: 1000:1000
+    entrypoint:
+    - /bin/sh
+    - -c
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges=true
+    tmpfs:
+    - /tmp:size=64m,mode=1777
+    mem_limit: 1073741824
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: '0'
+    volumes:
+    - type: volume
+      target: /data
+      source: s3-data
+    - type: bind
+      target: /etc/seaweedfs/s3.json
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/config/s3.json
+      read_only: true
+    - type: bind
+      target: /etc/seaweedfs/tls
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure/tls
+      read_only: true
+    labels:
+      ccsn.service: seaweedfs-s3-campus
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8333/healthz
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+    command:
+    - |
+      set -eu
+      while :; do
+          lan_ip=$$(ip -4 -o addr show dev lan0 scope global 2>/dev/null | awk '{print $$4}' | cut -d/ -f1)
+          campus_ip=$$(ip -6 -o addr show dev campus0 scope global 2>/dev/null | grep -v tentative | awk '{print $$4}' | cut -d/ -f1)
+          if [ -n "$$lan_ip" ] && [ -n "$$campus_ip" ]; then
+              break
+          fi
+          sleep 1
+      done
+      exec weed s3 \
+          -readerCacheSizeMB=512 \
+          -metricsPort=9330 \
+          -metricsIp=127.0.0.1 \
+          -filer=192.168.1.22:8888 \
+          -ip="$$lan_ip" \
+          -ip.bind=:: \
+          -port=8333 \
+          -port.https=443 \
+          -cert.file=/etc/seaweedfs/tls/tls.crt \
+          -key.file=/etc/seaweedfs/tls/tls.key \
+          -config=/etc/seaweedfs/s3.json \
+          -allowDeleteBucketNotEmpty=false \
+          -autoCreateBucket=false \
+          -port.iceberg=0 \
+          -port.lance=0
+    pull_policy: never
+    memswap_limit: 2147483648
+    working_dir: /data
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 20m
+    environment:
+      GOMEMLIMIT: 768MiB
+  metrics:
+    image: nginx:1.29.8-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    container_name: seaweed-s3-direct-metrics
+    restart: unless-stopped
+    network_mode: service:s3
+    user: 1000:1000
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges=true
+    cpus: 0.25
+    mem_limit: 128m
+    memswap_limit: 128m
+    tmpfs:
+    - /tmp:size=16m,uid=1000,gid=1000,mode=0700
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - |
+      set -eu
+      while :; do
+          METRICS_LISTEN_IP=$$(ip -4 -o addr show dev lan0 scope global 2>/dev/null | awk '{print $$4}' | cut -d/ -f1)
+          if [ -n "$$METRICS_LISTEN_IP" ] && [ -r /etc/metrics-tls/server.pem ] && [ -r /etc/metrics-tls/ca.crt ]; then break; fi
+          sleep 2
+      done
+      export METRICS_LISTEN_IP
+      envsubst '$$METRICS_LISTEN_IP' < /etc/nginx/metrics.conf.template > /tmp/nginx.conf
+      exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+    configs:
+    - source: metrics-nginx
+      target: /etc/nginx/metrics.conf.template
+    volumes:
+    - type: bind
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure/metrics-tls
+      target: /etc/metrics-tls
+      read_only: true
+    labels:
+      ccsn.service: seaweedfs-s3-direct-metrics
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 5m
+    depends_on:
+      s3:
+        condition: service_started
+        restart: true
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - test -s /tmp/nginx.pid && kill -0 "$$(cat /tmp/nginx.pid)" && nginx -c /tmp/nginx.conf -t
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+volumes:
+  s3-data:
+    external: true
+    name: e7f164067d4fb56fb6d851a16e1babcfd8555821bda38fabbad5ca10ae37181d
+networks:
+  egress:
+    name: seaweedfs-s3-exposure-egress
+    driver: bridge
+configs:
+  metrics-nginx:
+    content: |
+      worker_processes 1;
+      pid /tmp/nginx.pid;
+      error_log /dev/stderr warn;
+      events { worker_connections 128; }
+      http {
+          client_body_temp_path /tmp/client_body;
+          proxy_temp_path /tmp/proxy;
+          fastcgi_temp_path /tmp/fastcgi;
+          uwsgi_temp_path /tmp/uwsgi;
+          scgi_temp_path /tmp/scgi;
+          access_log off;
+          server_tokens off;
+          client_max_body_size 1k;
+          client_header_timeout 5s;
+          client_body_timeout 5s;
+          send_timeout 10s;
+          keepalive_timeout 15s;
+          proxy_connect_timeout 2s;
+          proxy_read_timeout 8s;
+          proxy_send_timeout 5s;
+          proxy_pass_request_body off;
+          proxy_pass_request_headers off;
+          proxy_set_header Host 127.0.0.1;
+          proxy_set_header Connection "";
+          proxy_set_header Content-Length "";
+          proxy_http_version 1.1;
+          proxy_buffering off;
+          server {
+              listen $${METRICS_LISTEN_IP}:9443 ssl;
+              server_name openmediavault.local s3.ccsn.dev;
+              ssl_certificate /etc/metrics-tls/server.pem;
+              ssl_certificate_key /etc/metrics-tls/server.pem;
+              ssl_client_certificate /etc/metrics-tls/ca.crt;
+              ssl_verify_client on;
+              ssl_verify_depth 1;
+              ssl_protocols TLSv1.2 TLSv1.3;
+              ssl_session_tickets off;
+              if ($$ssl_client_s_dn != "CN=vmagent-seaweedfs-metrics") { return 403; }
+              if ($$request_method != GET) { return 405; }
+              if ($$args != "") { return 400; }
+              location = /s3-direct/metrics { proxy_pass http://127.0.0.1:9330/metrics; }
+              location / { return 404; }
+          }
+      }

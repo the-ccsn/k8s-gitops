@@ -1896,12 +1896,12 @@
             "uid": "victoriametrics"
           },
           "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum(rate(SeaweedFS_s3_request_seconds_bucket{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}[$__rate_interval])) by(le,type,node))",
+          "expr": "histogram_quantile(0.99, sum(rate(SeaweedFS_s3_request_seconds_bucket{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}[$__rate_interval])) by(le,type,instance))",
           "format": "time_series",
           "hide": false,
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "{{type}}-{{node}}",
+          "legendFormat": "{{type}}-{{instance}}",
           "refId": "B",
           "step": 60
         }
@@ -2452,11 +2452,11 @@
       "pluginVersion": "10.3.1",
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum(rate(SeaweedFS_volumeServer_request_seconds_bucket{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}[$__rate_interval])) by(le,exported_instance))",
+          "expr": "histogram_quantile(0.99, sum(rate(SeaweedFS_volumeServer_request_seconds_bucket{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}[$__rate_interval])) by(le,instance))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
-          "legendFormat": "{{exported_instance}}",
+          "legendFormat": "{{instance}}",
           "refId": "B"
         },
         {
@@ -2904,15 +2904,15 @@
       "pluginVersion": "10.3.1",
       "targets": [
         {
-          "expr": "sum(SeaweedFS_volumeServer_total_disk_size{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}) by(exported_instance)",
+          "expr": "sum(SeaweedFS_volumeServer_total_disk_size{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}) by(instance)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
-          "legendFormat": "{{exported_instance}}",
+          "legendFormat": "{{instance}}",
           "refId": "A"
         }
       ],
-      "title": "Used Disk Space by Host",
+      "title": "Used Disk Space by Volume Server",
       "type": "timeseries"
     },
     {
@@ -3457,7 +3457,7 @@
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "{{exported_instance}}",
+          "legendFormat": "{{instance}}",
           "refId": "B"
         }
       ],

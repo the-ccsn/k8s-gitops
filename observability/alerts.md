@@ -50,7 +50,10 @@ of checking the underlying expression and telemetry freshness.
   Production is namespace-enrolled; Harbor's cache is explicitly Pod-enrolled.
 - SeaweedFS 4.48 metrics follow the [pinned producer](https://github.com/seaweedfs/seaweedfs/blob/530be3e37337488ecc34d58441e0bc476e121c93/weed/stats/metrics.go).
   Bucket read-only gauges use max, avoiding duplicate component reports. S3
-  latency uses only the S3-gateway histogram and preserves request type.
+  latency uses only the S3-gateway histogram and preserves request type. That
+  listener belongs to the ordinary gateway; direct/campus gateway requests are
+  not covered by its request counters. Loki and Tempo additionally alert on
+  their own successful S3 PUT timing, covering their configured storage path.
 - Loki/Tempo query alerts use the deployed HTTP histogram and counter labels.
   Query 5xx needs more than 5% errors and at least three errors per five-minute
   window, sustained for five minutes. Query p95 above ten seconds for 15 minutes
@@ -193,6 +196,25 @@ listeners can report overlapping counters; a positive I/O-error alert identifies
 the host rather than claiming an exact failed-operation count. S3 transport
 probing accepts a private-root 403; it does not prove signed bucket permissions,
 object retention, backup or recovery.
+
+For under-replication, inspect normal-volume and EC-shard registrations together
+before choosing a repair. Coexistence requires checking conversion state and
+data freshness; a shard listing alone does not establish data integrity.
+
+`LokiS3PutLatencyHigh` and `TempoS3PutLatencyHigh` use each client's duration
+sum/count to detect a five-minute mean above two seconds for 15 minutes, with
+at least three successful PUTs per window. Failed persistence retains its
+existing flush-failure alerts. No traffic does not produce a latency alert.
+Loki's deployed S3 histogram has a highest finite bucket of two seconds;
+its p95 can stop at that boundary even when requests take longer. The mean
+uses the recorded duration sum and does not have that histogram limit.
+
+Compare OMV MemAvailable, memory/I/O pressure, swap activity, per-process I/O
+and HDD queues. Reader-cache budgets limit one cache, while Go memory targets
+are soft; neither guarantees a process memory ceiling. Host pressure and S3
+latency still need observation after changes. The direct gateway's native
+metrics and individual volume-server listeners remain a collection gap;
+client timing does not provide their full internal metrics.
 
 ## Telemetry
 

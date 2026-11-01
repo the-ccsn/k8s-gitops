@@ -15,8 +15,8 @@ spec:
           for: 5m
           labels: {severity: critical}
           annotations:
-            summary: "SeaweedFS {{ $labels.component }} metrics are unavailable"
-            description: Check the OMV container, its existing metrics listener, and private network connectivity.
+            summary: "SeaweedFS {{ $labels.component }} metrics are unavailable: {{ $labels.instance }}"
+            description: Check the OMV container, loopback metrics listener, mTLS frontend, certificate renewal and private DNS/connectivity.
         - alert: SeaweedFsWriteAllocationFailures
           expr: rate(SeaweedFS_master_pick_for_write_error{job="seaweedfs",component="master"}[5m]) > 0
           for: 5m
@@ -32,12 +32,25 @@ spec:
             summary: "SeaweedFS collection {{ $labels.collection }} has insufficient replicas"
             description: Check the configured replication layout and volume servers; this does not replace backup or restore verification.
         - alert: SeaweedFsMetricsMissing
-          expr: absent(up{job="seaweedfs",component="master"}) or absent(up{job="seaweedfs",component="filer"}) or absent(up{job="seaweedfs",component="s3-gateway"})
+          expr: >-
+            absent(up{job="seaweedfs",component="master"})
+            or absent(up{job="seaweedfs",component="filer"})
+            or absent(up{job="seaweedfs",component="s3-gateway"})
+            or absent(up{job="seaweedfs",component="s3-gateway-direct"})
+            or absent(up{job="seaweedfs",component="volume-server"})
           for: 10m
           labels: {severity: critical}
           annotations:
             summary: A configured SeaweedFS component has disappeared from scraping
-            description: Check the ScrapeConfig and OMV metrics listeners. This checks the configured component families, not every volume server.
+            description: Check the ScrapeConfig and both OMV mTLS frontends. This checks all five configured component families.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md
+        - alert: SeaweedFsVolumeMetricsMissing
+          expr: count by (k8s_cluster_name, node) (up{job="seaweedfs",component="volume-server"}) < 6
+          for: 10m
+          labels: {severity: critical}
+          annotations:
+            summary: "SeaweedFS volume scrape targets have disappeared: {{ $labels.node }}"
+            description: Fewer than six volume targets remain in discovery. Check the target inventory; a discovered but failed target is covered by SeaweedFsMetricsDown.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md
         - alert: SeaweedFsBucketReadOnly
           expr: max by (k8s_cluster_name, bucket) (SeaweedFS_s3_bucket_read_only{job="seaweedfs"}) == 1
@@ -49,40 +62,40 @@ spec:
             description: SeaweedFS bucket is read-only
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#seaweedfs
         - alert: SeaweedFsStorageIOErrors
-          expr: sum by (k8s_cluster_name, node) (increase(SeaweedFS_volumeServer_storage_io_error_total{job="seaweedfs"}[5m])) > 0
+          expr: sum by (k8s_cluster_name, node, instance) (increase(SeaweedFS_volumeServer_storage_io_error_total{job="seaweedfs",component="volume-server"}[5m])) > 0
           for: 1m
           labels:
             severity: critical
           annotations:
-            summary: 'SeaweedFS reports storage I/O errors: {{ $labels.node }}'
+            summary: 'SeaweedFS reports storage I/O errors: {{ $labels.node }} / {{ $labels.instance }}'
             description: SeaweedFS reports storage I/O errors
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#seaweedfs
         - alert: SeaweedFsVolumeReadFailures
-          expr: sum by (k8s_cluster_name, node) (rate(SeaweedFS_volumeServer_file_read_failures{job="seaweedfs"}[5m])) > 0
+          expr: sum by (k8s_cluster_name, node, instance) (rate(SeaweedFS_volumeServer_file_read_failures{job="seaweedfs",component="volume-server"}[5m])) > 0
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: 'SeaweedFS reports repeated volume read failures: {{ $labels.node }}'
+            summary: 'SeaweedFS reports repeated volume read failures: {{ $labels.node }} / {{ $labels.instance }}'
             description: SeaweedFS reports repeated volume read failures
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#seaweedfs
         - alert: SeaweedFsVolumeWriteFailures
-          expr: sum by (k8s_cluster_name, node) (rate(SeaweedFS_volumeServer_file_write_failures{job="seaweedfs"}[5m])) > 0
+          expr: sum by (k8s_cluster_name, node, instance) (rate(SeaweedFS_volumeServer_file_write_failures{job="seaweedfs",component="volume-server"}[5m])) > 0
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: 'SeaweedFS reports repeated volume write failures: {{ $labels.node }}'
+            summary: 'SeaweedFS reports repeated volume write failures: {{ $labels.node }} / {{ $labels.instance }}'
             description: SeaweedFS reports repeated volume write failures
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#seaweedfs
         - alert: SeaweedFsS3LatencyHigh
           expr: >-
-            histogram_quantile(0.95, sum by (k8s_cluster_name, type, le)
-            (rate(SeaweedFS_s3_request_seconds_bucket{job="seaweedfs",component="s3-gateway"}[5m]))) > 2
+            histogram_quantile(0.95, sum by (k8s_cluster_name, instance, type, le)
+            (rate(SeaweedFS_s3_request_seconds_bucket{job="seaweedfs",component=~"s3-gateway|s3-gateway-direct"}[5m]))) > 2
           for: 15m
           labels:
             severity: warning
           annotations:
-            summary: 'SeaweedFS S3 p95 request latency exceeds two seconds: {{ $labels.type }}'
+            summary: 'SeaweedFS S3 p95 request latency exceeds two seconds: {{ $labels.instance }} / {{ $labels.type }}'
             description: Check HDD contention and request type; a private-root HTTP 403 transport probe does not measure authenticated request latency.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#seaweedfs

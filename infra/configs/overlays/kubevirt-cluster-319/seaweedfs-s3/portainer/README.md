@@ -8,13 +8,17 @@ references come from the reviewed OMV configuration on 2026-10-31.
 
 | Stack | Metrics listener | Native backends |
 | --- | --- | --- |
-| `seaweedfs.yaml` | `openmediavault.local:9443` | master, filer, ordinary S3 and six volume servers |
+| `seaweedfs.yaml` | current management-interface IPv4 address, port 9443; queried as `openmediavault.local` | master, filer, ordinary S3 and six volume servers |
 | `seaweedfs-s3-exposure.yaml` | current `lan0` IPv4 address, port 9443; queried as `s3.ccsn.dev` | direct S3 |
 
 The existing gateways use different network namespaces. Each therefore has one
-NGINX frontend; the direct frontend shares the S3 service's namespace. Native
-metrics bind only to `127.0.0.1` in their respective namespaces. The public S3
+NGINX frontend; the direct frontend shares the S3 service's namespace. The
+desired native listeners bind only to `127.0.0.1` in their respective namespaces.
+Existing processes can use the maintenance-safe rollout below. The public S3
 HTTP/HTTPS listeners and their dual-stack configuration remain independent.
+The core frontend reads the current address of `METRICS_INTERFACE` (`enp6s18`),
+OMV's existing management interface. It does not bind addresses returned by the
+host's own-name resolver, which can include unscoped IPv6 link-local addresses.
 Both frontends require the dedicated CA and exact client subject
 `CN=vmagent-seaweedfs-metrics`. Only GET requests to the enumerated metrics paths
 are proxied; arbitrary targets, query strings and application endpoints are not
@@ -58,31 +62,71 @@ its Secret to attempt automatic rotation.
    endpoints are ready. Wait for both leaf Certificates to become Ready and
    verify the existing identity can get the server Secret but cannot get the
    client or CA Secret. Do not print Secret data.
-2. Wait for the independently owned EC/volume maintenance to finish. Recompare
-   these Stacks with the then-current OMV service configuration; do not overwrite
-   maintenance changes. Stage the controller update, verify certificate sync,
-   then update data services one at a time in the maintenance window. Each
-   native `metricsIp` change requires that service to restart. Confirm readiness
-   before proceeding to the next volume. Update direct S3 and its dependent
-   metrics service together. A full-stack redeploy can recreate all changed
-   volumes together and is unsuitable for this sequence.
-3. Before switching collection, verify all ten authenticated routes, rejection
-   without a client certificate, rejection of a different subject and closure of
-   the old LAN metrics ports. Then publish the HTTPS ScrapeConfig and its alert
-   changes separately. No suspension fields are required.
-4. Accept ten `up == 1` targets, effective TLS configuration, per-volume disk/QPS
-   and latency panels, distinct S3 instances, alert evaluation and a leaf renewal.
-   Direct requests must use the internal DNS answer for `s3.ccsn.dev`; no fixed
-   address or `s3.319.ccsn.dev` target is needed.
+2. Recompare these Stacks with the current OMV configuration; do not overwrite
+   another task's changes. Record container IDs, start times and health for
+   master, filer, ordinary S3 and all six volume servers. Update only exposure
+   `controller` with `--no-deps`, verify certificate sync, and start only core
+   `metrics` with `--no-deps`. Recheck direct S3's start time after the controller
+   update: its existing supervision can also restart the gateway. Count such a
+   restart against any approved budget before scheduling its metrics update.
+   Existing wildcard native listeners also accept
+   loopback connections, so these nine routes need no data-service restart.
+   Update exposure `s3` and its dependent `metrics` together; the new direct-S3
+   metrics port requires that gateway to restart and can briefly interrupt
+   direct S3 requests. Do not restart master, filer, ordinary S3 or any volume.
+   A full-stack Portainer update can recreate them and is unsuitable while
+   maintenance is running. Keep the original maintenance Stack source intact;
+   named-service updates may use separate copies of these complete Stack YAMLs.
+3. Verify all ten authenticated routes and rejection without a client certificate
+   or with a different subject. Publish the HTTPS ScrapeConfig and alert changes
+   separately, then verify ten `up == 1` targets and effective client TLS assets.
+   Keep the existing HTTP targets working until HTTPS collection has been
+   adopted. No suspension fields are required.
+4. Close the native-metrics bypass using the persistent OMV rules below. Verify
+   rejection from outside OMV and successful local access, and recheck that the
+   recorded data-service container IDs/start times are unchanged. Future planned
+   service updates use the desired loopback settings; this release does not
+   require waiting for the independently owned EC/volume maintenance to end.
+5. Accept per-volume disk/QPS and latency panels, distinct S3 instances, alert
+   evaluation and a leaf renewal. Direct requests must use the internal DNS
+   answer for `s3.ccsn.dev`; no fixed address or `s3.319.ccsn.dev` target is needed.
+
+## Native metrics access during maintenance
+
+The mTLS frontend alone does not protect native ports that still listen on the
+LAN. Persist two matching rules through OMV's existing firewall configuration,
+one for each IP family:
+
+| Field | Value |
+| --- | --- |
+| Family | `inet` / `inet6` |
+| Chain / action / protocol | `INPUT` / `REJECT` / `tcp` |
+| Source, destination, source port, destination port | Empty |
+| Extra options | `! -i lo -m multiport --dports 9327,9328,9329,9401,9402,9403,9404,9405,9406 --reject-with tcp-reset` |
+| Comment | `SeaweedFS native metrics: loopback only` |
+
+Apply only these two rules to the running firewall after HTTPS collection works.
+Place them before broader allow rules; preserve every unrelated rule. The
+installed OMV firewall template flushes INPUT/OUTPUT during a full reload, so
+do not restart the firewall or run its whole deployment during maintenance.
+Persist the configuration and generate only its managed script without invoking
+the service restart. Neither this restriction nor the loopback settings affect
+the mTLS port `9443`, application ports, volume data, or EC maintenance ports.
+Check both IPv4 and IPv6, including a Docker bridge source, and verify that the
+rules survive a subsequent scheduled firewall refresh or host reboot.
+
+## Stack validation
 
 ```sh
 docker compose -f seaweedfs.yaml config --quiet
 docker compose -f seaweedfs-s3-exposure.yaml config --quiet
 ```
 
-Compose's `configs.content` requires version 2.23.1 or newer. `$$` preserves
-container-shell and NGINX variables through Compose interpolation; runtime
-`envsubst` expands only the listener address. The existing custom network
+Each metrics service writes its inline NGINX template to its bounded `/tmp`
+filesystem. This works with a read-only root filesystem; Compose's inline
+`configs.content` delivery does not support these read-only services. `$$`
+preserves container-shell and NGINX variables through Compose interpolation;
+runtime `envsubst` expands only the listener address. The existing custom network
 controller image and its credentials remain external dependencies, not included
 as image layers or literal credentials in these files.
 

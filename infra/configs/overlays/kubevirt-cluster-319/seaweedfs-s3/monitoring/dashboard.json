@@ -2810,7 +2810,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(SeaweedFS_volumeServer_total_disk_size{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"})",
+          "expr": "sum(SeaweedFS_volumeServer_total_disk_size{type=~\"normal|ec\",node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"})",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Total",
@@ -2818,7 +2818,8 @@
         }
       ],
       "title": "Used Disk Space by Collection and Type",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Normal data-file size already includes deleted bytes awaiting compaction. deleted_bytes is a subset, not additional disk use. Total adds normal data files and EC shards only; filesystem/index/metadata usage is outside this metric."
     },
     {
       "datasource": {
@@ -2904,7 +2905,7 @@
       "pluginVersion": "10.3.1",
       "targets": [
         {
-          "expr": "sum(SeaweedFS_volumeServer_total_disk_size{node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}) by(instance)",
+          "expr": "sum(SeaweedFS_volumeServer_total_disk_size{type=~\"normal|ec\",node=~\"$node\",k8s_cluster_name=\"$k8s_cluster_name\",job=\"seaweedfs\"}) by(instance)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -2913,7 +2914,8 @@
         }
       ],
       "title": "Used Disk Space by Volume Server",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Physical normal data-file and EC-shard bytes by directly scraped volume server. deleted_bytes is already contained in normal files and is excluded from the sum. This is not total filesystem usage."
     },
     {
       "collapsed": false,

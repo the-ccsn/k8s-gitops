@@ -1,4 +1,4 @@
-# Prepare only; deploy after volume maintenance and certificate issuance.
+# Require issued certificates; use the named-service rollout in README.md.
 name: seaweedfs
 services:
   filer:
@@ -390,6 +390,8 @@ services:
     cpus: 0.25
     mem_limit: 128m
     memswap_limit: 128m
+    environment:
+      METRICS_INTERFACE: enp6s18
     tmpfs:
     - /tmp:size=16m,uid=1000,gid=1000,mode=0700
     entrypoint:
@@ -398,47 +400,7 @@ services:
     command:
     - |
       set -eu
-      while :; do
-          METRICS_LISTEN_IP=openmediavault.local
-          if [ -n "$$METRICS_LISTEN_IP" ] && [ -r /etc/metrics-tls/server.pem ] && [ -r /etc/metrics-tls/ca.crt ]; then break; fi
-          sleep 2
-      done
-      export METRICS_LISTEN_IP
-      envsubst '$$METRICS_LISTEN_IP' < /etc/nginx/metrics.conf.template > /tmp/nginx.conf
-      exec nginx -c /tmp/nginx.conf -g 'daemon off;'
-    configs:
-    - source: metrics-nginx
-      target: /etc/nginx/metrics.conf.template
-    volumes:
-    - type: bind
-      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure/metrics-tls
-      target: /etc/metrics-tls
-      read_only: true
-    labels:
-      ccsn.service: seaweedfs-metrics
-    logging:
-      driver: json-file
-      options:
-        max-file: '3'
-        max-size: 5m
-    healthcheck:
-      test:
-      - CMD-SHELL
-      - test -s /tmp/nginx.pid && kill -0 "$$(cat /tmp/nginx.pid)" && nginx -c /tmp/nginx.conf -t
-      interval: 30s
-      timeout: 5s
-      start_period: 90s
-      retries: 3
-volumes:
-  s3-data:
-    external: true
-    name: 9fb5ffc384d4c2d199cb5e3829907e1c2e3f7c78b4af82cfead63f245dcda3e5
-  volume-12b-data:
-    external: true
-    name: 94ae80dfa6745a6e0b4ec87aba0171bc309ece0412ae75b33805f194bc7ca0ce
-configs:
-  metrics-nginx:
-    content: |
+      cat > /tmp/metrics.conf.template <<'METRICS_NGINX'
       worker_processes 1;
       pid /tmp/nginx.pid;
       error_log /dev/stderr warn;
@@ -491,3 +453,39 @@ configs:
               location / { return 404; }
           }
       }
+      METRICS_NGINX
+      while :; do
+          METRICS_LISTEN_IP=$$(ip -4 -o addr show dev "$$METRICS_INTERFACE" scope global 2>/dev/null | awk 'NR == 1 {print $$4}' | cut -d/ -f1)
+          if [ -n "$$METRICS_LISTEN_IP" ] && [ -r /etc/metrics-tls/server.pem ] && [ -r /etc/metrics-tls/ca.crt ]; then break; fi
+          sleep 2
+      done
+      export METRICS_LISTEN_IP
+      envsubst '$$METRICS_LISTEN_IP' < /tmp/metrics.conf.template > /tmp/nginx.conf
+      exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+    volumes:
+    - type: bind
+      source: /srv/dev-disk-by-uuid-f1ac8fce-2374-4b20-be0a-8649ede3686e/seaweed_metadata/s3-exposure/metrics-tls
+      target: /etc/metrics-tls
+      read_only: true
+    labels:
+      ccsn.service: seaweedfs-metrics
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 5m
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - test -s /tmp/nginx.pid && kill -0 "$$(cat /tmp/nginx.pid)" && nginx -c /tmp/nginx.conf -t
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+volumes:
+  s3-data:
+    external: true
+    name: 9fb5ffc384d4c2d199cb5e3829907e1c2e3f7c78b4af82cfead63f245dcda3e5
+  volume-12b-data:
+    external: true
+    name: 94ae80dfa6745a6e0b4ec87aba0171bc309ece0412ae75b33805f194bc7ca0ce

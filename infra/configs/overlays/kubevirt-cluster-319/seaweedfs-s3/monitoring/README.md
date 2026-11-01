@@ -35,8 +35,11 @@ verification remains enabled. The direct S3 HTTPS transport probe stays separate
 S3 latency quantiles are empty without requests in the selected time window,
 and bucket traffic metrics depend on producer support.
 
-The [Portainer Stacks](../portainer/README.md) prepare loopback-only native
-listeners and a common mTLS policy in both network namespaces. Dedicated
+The [Portainer Stacks](../portainer/README.md) define loopback-only native
+listeners and a common mTLS policy in both network namespaces. During ongoing
+volume maintenance, the frontends can use existing listeners without restarting
+the data services; persistent OMV firewall rules then restrict native metrics to
+local access after HTTPS collection is adopted. Dedicated
 cert-manager resources and read access to only the server leaf Secret are
 included here. This version requires those Stacks to be deployed; publishing it
 does not update OMV. Complete the documented certificate/OMV barrier before

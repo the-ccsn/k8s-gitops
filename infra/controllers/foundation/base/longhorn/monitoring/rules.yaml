@@ -97,7 +97,7 @@ spec:
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
         - alert: LonghornBackupOverdue
           expr: >-
-            ((time() - max by (k8s_cluster_name, volume) (longhorn_volume_last_backup_at)) > 172800) and on
+            ((time() - max by (k8s_cluster_name, volume, pvc, pvc_namespace) (longhorn_volume_last_backup_at)) > 172800) and on
             (k8s_cluster_name, volume) (label_replace(max by (k8s_cluster_name, persistentvolume)
             (kube_persistentvolume_info{storageclass="longhorn-backup"}), "volume", "$1", "persistentvolume", "(.+)")) and
             on (k8s_cluster_name, volume) (label_replace((time() - max by (k8s_cluster_name, persistentvolume)
@@ -106,7 +106,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: 'Recurring-backup volume has no successful backup in 48 hours: {{ $labels.volume }}'
+            summary: 'Recurring-backup volume has no successful backup in 48 hours: {{ if $labels.pvc }}{{ $labels.pvc_namespace }}/{{ $labels.pvc }} ({{ $labels.volume }}){{ else }}{{ $labels.volume }}{{ end }}'
             description: Applies only to volumes associated with longhorn-backup PVs older than 48 hours; zero backup timestamps are treated as never backed up.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/alerts.md#longhorn
         - alert: LonghornDiskPendingSectors

@@ -18,6 +18,29 @@ and Longhorn-generated Pods. Explicit component budgets take precedence. The
 Longhorn fallback must not be lowered below existing explicit requests; it is
 not a recommended budget for every storage sidecar.
 
+## New KubeVirt VMs
+
+The completion above is a dated snapshot. New VMs still need their own resource
+policy; check the generated `compute` container as well as the VM definition.
+
+KubeVirt 1.8.1 rejects explicit domain CPU/memory requests or limits when the VM
+also references an instance type. Use the native instance-type expansion before
+adding explicit domain budgets, preserving its guest CPU, memory, device and
+preference settings. Do not edit a shared instance type to repair one VM.
+See the pinned [CPU](https://github.com/kubevirt/kubevirt/blob/v1.8.1/pkg/instancetype/apply/cpu.go#L103-L113)
+and [memory](https://github.com/kubevirt/kubevirt/blob/v1.8.1/pkg/instancetype/apply/memory.go#L67-L87)
+conflict checks.
+
+Keep requests explicit when setting limits: the pinned renderer can otherwise
+use a memory limit as the memory request. Account for guest hotplug bounds and
+let KubeVirt add its calculated memory overhead. Verify the resulting launcher
+Pod's resources; guest memory alone is not its full memory footprint.
+See the pinned [resource renderer](https://github.com/kubevirt/kubevirt/blob/v1.8.1/pkg/virt-controller/services/renderresources.go#L235-L275).
+
+Updating a VM template does not establish that an existing launcher acquired
+limits. Run a server-side dry-run first, then arrange the native rollout and
+verify both missing-limit expressions after the replacement Pod is Ready.
+
 ## Apply existing defaults to old Pods
 
 Keep this as an operator-led maintenance sequence, not a restart Job or a patch

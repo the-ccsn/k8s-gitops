@@ -120,6 +120,18 @@ A later completed CNPG backup clears its earlier failure alert. Longhorn backup
 failure alerts compare Backup creation time to the current volume's last
 successful backup; old errors for removed volumes do not alert.
 
+Backup-overdue notifications retain Longhorn's native `pvc_namespace` and `pvc`
+labels alongside the volume ID. These identify the workload's claim; the scrape
+namespace is the Longhorn manager's namespace. Volumes without claim metadata
+still alert using their volume ID. The 48-hour age limit and 30-minute hold are
+unchanged.
+
+A detached volume can remain overdue when
+`allow-recurring-job-while-volume-detached` is disabled: the recurring job will
+not attach it to create a backup. Confirm whether its workload is active or
+retired before changing backup policy. Retirement requires a separate cleanup
+decision; do not exclude all detached volumes from backup coverage.
+
 ## Workloads
 
 Restart and OOM alerts use VictoriaMetrics' `increase_prometheus` so a newly
@@ -215,9 +227,11 @@ uses the recorded duration sum and does not have that histogram limit.
 Compare OMV MemAvailable, memory/I/O pressure, swap activity, per-process I/O
 and HDD queues. Reader-cache budgets limit one cache, while Go memory targets
 are soft; neither guarantees a process memory ceiling. Host pressure and S3
-latency still need observation after changes. The direct gateway's native
-metrics and individual volume-server listeners remain a collection gap;
-client timing does not provide their full internal metrics.
+latency still need observation after changes. Ten mTLS scrape paths now cover
+master, filer, both S3 gateways and all six volume servers. Those native metrics
+complement client timing; they do not supply OMV host memory/pressure or physical
+SMART metrics. Native metric ports are restricted to loopback access, and
+cert-manager readiness/expiry rules cover the dedicated metrics certificates.
 
 ## Telemetry
 

@@ -7,6 +7,9 @@ resources:
   - ./rules.yaml
   - ./dashboard.yaml
   - ./availability-probe.yaml
+  - ./host-scrape-config.yaml
+  - ./host-rules.yaml
+  - ./host-dashboard.yaml
 
 configMapGenerator:
   - name: seaweedfs-dashboard
@@ -15,6 +18,14 @@ configMapGenerator:
       - dashboard.json
     options:
       # Grafana Operator watches this ConfigMap for dashboard updates.
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled
+  - name: omv-host-dashboard
+    namespace: grafana
+    files:
+      - host-dashboard.json
+    options:
       disableNameSuffixHash: true
       annotations:
         kustomize.toolkit.fluxcd.io/substitute: disabled

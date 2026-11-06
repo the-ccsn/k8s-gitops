@@ -104,10 +104,14 @@ are available. Vendor-specific raw values are not interpreted as these counters.
 A healthy RAID virtual disk does not prove its member disks are healthy.
 
 Standalone SMART/NVMe attributes, RAID controller/battery status, fans, PSU and
-UPS are not comprehensively collected. OMV has SeaweedFS metrics and transport
-probing, but no active node-exporter/SMART metrics were found during this audit.
-Adding empty metric selectors would not fill these gaps. Device-side exporter
-and hardware visibility must be confirmed before claiming that coverage.
+UPS are not comprehensively collected. OMV's
+[host collection](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics)
+adds native node-exporter metrics over the existing mTLS frontend, alongside
+SeaweedFS metrics and transport probing. It reuses node resource/storage rules
+and explicitly checks for disappearance of the external host. SMART and physical
+RAID-member health remain uncollected. Timex is disabled on OMV, so the clock
+rules do not cover that host. Empty hardware selectors cannot fill these gaps;
+device visibility must be confirmed before claiming coverage.
 
 ## Longhorn
 

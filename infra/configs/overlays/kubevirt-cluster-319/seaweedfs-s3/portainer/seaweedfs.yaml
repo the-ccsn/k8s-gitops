@@ -393,6 +393,7 @@ services:
     memswap_limit: 128m
     command:
     - --path.rootfs=/host
+    - --path.udev.data=/host/run/udev/data
     - --web.listen-address=127.0.0.1:9100
     # Read host metrics without adding the host-clock capability.
     - --no-collector.timex

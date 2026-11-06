@@ -36,8 +36,10 @@ exporter's landing page or add a public port. No additional certificate or
 startup script is needed.
 
 Default native collectors provide CPU, memory, filesystem capacity/inodes,
-disk I/O, pressure and network metrics. `timex` is disabled to avoid requesting
-the host-clock capability, so this addition does not provide timex-based NTP
+disk I/O, pressure and network metrics. Disk properties use the host's udev data
+under `/host/run/udev/data`. Collectors for absent subsystems can report no data;
+this does not establish a failure of the core host metrics. `timex` is disabled
+to avoid requesting the host-clock capability, so this addition does not provide timex-based NTP
 synchronization alerts. SMART and physical RAID-member health remain separate:
 OMV exposes MegaRAID devices, and virtual-disk health does not establish each
 member's health.

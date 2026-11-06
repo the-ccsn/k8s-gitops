@@ -76,7 +76,7 @@ spec:
         emptyDir: {}
       initContainers:
       - name: server-timing-module
-        image: nginx:mainline-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+        image: nginx:mainline-alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11
         command:
         - sh
         - -eu

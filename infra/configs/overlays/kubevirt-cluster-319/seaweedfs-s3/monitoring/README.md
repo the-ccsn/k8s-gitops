@@ -54,3 +54,42 @@ retains both gateway identity and request type. Bucket gauges remain deduplicate
 
 When updating, verify the pinned source, preserve the UID, reapply the
 host/component bindings, and validate active queries and bucket deduplication.
+
+## OMV host metrics
+
+`host-scrape-config.yaml` collects the official node-exporter through
+`https://openmediavault.local:9443/node/metrics`, using the existing mTLS client
+Secret and hostname verification. It retains native `node_*` metrics with
+`job="node-exporter"`, `node="openmediavault-1"` and the collecting cluster's
+`k8s_cluster_name`. OMV is not a Kubernetes node. The exporter and frontend must
+pass the [Stack acceptance steps](../portainer/README.md#host-telemetry-addition)
+before publishing this target. Collection runs every 30 seconds with a
+10-second timeout and a 10,000-sample limit.
+
+The shared node rules cover filesystem space/inodes/read-only state, disk
+latency/queues, I/O pressure, memory, CPU/load, swap, OOM and network counters
+when their native metrics exist. `ScrapeTargetDown` covers failed requests.
+`OMVHostMetricsMissing` separately detects removal of this known host while
+other node exporters remain healthy. `OMVHostCollectorFailed` checks only the
+six expected core collectors on a reachable endpoint; absent optional hardware
+subsystems do not trigger it. Check exporter logs and mounts before changing
+permissions or disabling a core collector.
+
+**Infrastructure → OMV / Node Exporter Full** uses rfmoz's Apache 2.0 community
+[Node Exporter Full dashboard](https://github.com/rfmoz/grafana-dashboards/blob/b07d8a90d8fadd112e9ac841b777ee863cda850b/prometheus/node-exporter-full.json),
+commit `b07d8a90d8fadd112e9ac841b777ee863cda850b`.
+Upstream SHA-256:
+`c2e79a5ead15537e0ebe276a2878c95d6286ca1ab8db2cd7f69d4ba8c079de7e`.
+`LICENSE.host-dashboard` preserves the license. The upstream layout, panels,
+units and calculations remain intact. Local bindings use UID `omv-host`,
+datasource `victoriametrics`, a collection-cluster selector and exact OMV host
+matchers in every query. The upstream `node` dashboard variable selects a scrape
+`instance`; the metric's `node` label still identifies OMV. Saved demo selections
+are cleared. No recording rules, aliases or extra collectors are installed.
+
+Optional systemd, process, interrupt and TCP-state collectors are not enabled
+just for this dashboard. Timex is intentionally disabled, and unsupported
+hardware panels can be empty. Disk I/O and filesystem counters do not establish
+SMART, RAID-member, controller/battery or physical temperature health; those
+still need separate hardware-aware collection. Cluster/host selectors organize
+queries and do not provide Grafana user-access isolation.

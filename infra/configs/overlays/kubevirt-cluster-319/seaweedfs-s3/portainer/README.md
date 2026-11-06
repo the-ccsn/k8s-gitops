@@ -44,8 +44,10 @@ synchronization alerts. SMART and physical RAID-member health remain separate:
 OMV exposes MegaRAID devices, and virtual-disk health does not establish each
 member's health.
 
-This is preparation only; it does not add an active Kubernetes scrape target.
-Use this order after reviewing the current maintenance Stack:
+The Stack does not itself create a Kubernetes scrape target. Publish the
+[host collection resources](../monitoring/README.md#omv-host-metrics) only after
+the external endpoint passes acceptance. Use this order after reviewing the
+current maintenance Stack:
 
 1. Validate the complete Stack with `docker compose -f seaweedfs.yaml config --quiet`.
    Preserve the other task's data-service definitions and record their IDs/start
@@ -59,10 +61,10 @@ Use this order after reviewing the current maintenance Stack:
    Confirm the native host metrics describe OMV and its real filesystems, and
    that port 9100 cannot be reached off-host.
 4. Only then publish the host ScrapeConfig using `job="node-exporter"` and
-   `node="openmediavault-1"`, with the existing native node alerts and a reviewed
-   upstream host dashboard. The Kubernetes node dashboard is not an OMV host
-   view. Include target-absence coverage for this known external host; the other
-   three exporters must not hide its loss.
+   `node="openmediavault-1"`, with the existing native node alerts and the
+   **OMV / Node Exporter Full** dashboard. The Kubernetes node dashboard is not
+   an OMV host view. Include target-absence coverage for this known external
+   host; the other three exporters must not hide its loss.
 
 The container flags and mount arrangement follow the pinned
 [upstream deployment guide](https://github.com/prometheus/node_exporter/blob/v1.10.2/README.md#docker).

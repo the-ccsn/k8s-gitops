@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: omv-host-health
+  namespace: monitoring
+  labels:
+    application: openmediavault
+    component: rules
+spec:
+  groups:
+    - name: omv-host-health
+      rules:
+        - alert: OMVHostMetricsMissing
+          expr: absent(up{job="node-exporter",node="openmediavault-1"})
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: OMV host has disappeared from metrics collection
+            description: Check the omv-node-exporter ScrapeConfig and vmagent discovery. Other node exporters do not establish OMV coverage; a discovered but unreachable target is covered by ScrapeTargetDown.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics
+        - alert: OMVHostCollectorFailed
+          expr: >-
+            (node_scrape_collector_success{job="node-exporter",node="openmediavault-1",collector=~"cpu|diskstats|filesystem|meminfo|netdev|pressure"} == 0)
+            and on (k8s_cluster_name, job, node, instance)
+            (up{job="node-exporter",node="openmediavault-1"} == 1)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'OMV core host collector is failing: {{ $labels.collector }}'
+            description: The endpoint is reachable, but an expected core collector failed. Check exporter logs, read-only host mounts and kernel support; absent optional hardware subsystems are excluded.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics

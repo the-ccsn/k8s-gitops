@@ -376,6 +376,51 @@ services:
       options:
         max-file: '3'
         max-size: 20m
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:v1.10.2@sha256:337ff1d356b68d39cef853e8c6345de11ce7556bb34cda8bd205bcf2ed30b565
+    container_name: omv-node-exporter
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+    user: 65534:65534
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges=true
+    cpus: 0.25
+    mem_limit: 128m
+    memswap_limit: 128m
+    command:
+    - --path.rootfs=/host
+    - --path.udev.data=/host/run/udev/data
+    - --web.listen-address=127.0.0.1:9100
+    # Read host metrics without adding the host-clock capability.
+    - --no-collector.timex
+    volumes:
+    - type: bind
+      source: /
+      target: /host
+      read_only: true
+      bind:
+        propagation: rslave
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 5m
+    healthcheck:
+      test:
+      - CMD
+      - /bin/wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:9100/
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
   metrics:
     image: nginx:1.29.8-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
     container_name: seaweed-metrics
@@ -450,6 +495,7 @@ services:
               location = /volume-12a/metrics { proxy_pass http://127.0.0.1:9404/metrics; }
               location = /volume-3a/metrics { proxy_pass http://127.0.0.1:9405/metrics; }
               location = /volume-3b/metrics { proxy_pass http://127.0.0.1:9406/metrics; }
+              location = /node/metrics { proxy_pass http://127.0.0.1:9100/metrics; }
               location / { return 404; }
           }
       }

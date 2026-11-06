@@ -1,14 +1,14 @@
-# OMV SeaweedFS metrics
+# OMV metrics
 
 These complete Portainer Stacks prepare authenticated metrics for SeaweedFS
-4.48. They are external-host configuration, not Kustomize resources. Both keep
-startup commands and NGINX configuration inline; no new startup script or custom
-image is required. Existing data mounts, disk guards and S3 authentication-file
+4.48 and node-exporter 1.10.2 host telemetry. They are external-host configuration,
+not Kustomize resources. Both keep startup commands and NGINX configuration
+inline; no new startup script or custom image is required. Existing data mounts, disk guards and S3 authentication-file
 references come from the reviewed OMV configuration on 2026-10-31.
 
 | Stack | Metrics listener | Native backends |
 | --- | --- | --- |
-| `seaweedfs.yaml` | current management-interface IPv4 address, port 9443; queried as `openmediavault.local` | master, filer, ordinary S3 and six volume servers |
+| `seaweedfs.yaml` | current management-interface IPv4 address, port 9443; queried as `openmediavault.local` | master, filer, ordinary S3, six volume servers and node-exporter |
 | `seaweedfs-s3-exposure.yaml` | current `lan0` IPv4 address, port 9443; queried as `s3.ccsn.dev` | direct S3 |
 
 The existing gateways use different network namespaces. Each therefore has one
@@ -24,6 +24,48 @@ Both frontends require the dedicated CA and exact client subject
 are proxied; arbitrary targets, query strings and application endpoints are not
 exposed. Client headers and bodies are not forwarded. Each new frontend has a
 0.25 CPU / 128 MiB hard limit and a 16 MiB temporary filesystem.
+
+## Host telemetry addition
+
+`node-exporter` uses the official digest-pinned image, a read-only host root
+mounted at `/host`, and the host PID/network namespaces. It runs as nobody with
+all capabilities dropped, a read-only container root and a 0.25 CPU / 128 MiB
+hard limit. The native HTTP listener binds only to `127.0.0.1:9100`; the existing
+authenticated frontend exposes exactly `/node/metrics`. It does not expose the
+exporter's landing page or add a public port. No additional certificate or
+startup script is needed.
+
+Default native collectors provide CPU, memory, filesystem capacity/inodes,
+disk I/O, pressure and network metrics. Disk properties use the host's udev data
+under `/host/run/udev/data`. Collectors for absent subsystems can report no data;
+this does not establish a failure of the core host metrics. `timex` is disabled
+to avoid requesting the host-clock capability, so this addition does not provide timex-based NTP
+synchronization alerts. SMART and physical RAID-member health remain separate:
+OMV exposes MegaRAID devices, and virtual-disk health does not establish each
+member's health.
+
+This is preparation only; it does not add an active Kubernetes scrape target.
+Use this order after reviewing the current maintenance Stack:
+
+1. Validate the complete Stack with `docker compose -f seaweedfs.yaml config --quiet`.
+   Preserve the other task's data-service definitions and record their IDs/start
+   times before making any named-service change.
+2. Start only `node-exporter` and refresh only the core `metrics` frontend with
+   `docker compose -f seaweedfs.yaml up -d --no-deps node-exporter metrics`.
+   This change requires no master, filer, S3 or volume restart. Avoid a whole-Stack
+   update while independent volume maintenance is running.
+3. Verify `/node/metrics` with the existing vmagent client identity, rejection
+   without that identity, and continued operation of all ten SeaweedFS routes.
+   Confirm the native host metrics describe OMV and its real filesystems, and
+   that port 9100 cannot be reached off-host.
+4. Only then publish the host ScrapeConfig using `job="node-exporter"` and
+   `node="openmediavault-1"`, with the existing native node alerts and a reviewed
+   upstream host dashboard. The Kubernetes node dashboard is not an OMV host
+   view. Include target-absence coverage for this known external host; the other
+   three exporters must not hide its loss.
+
+The container flags and mount arrangement follow the pinned
+[upstream deployment guide](https://github.com/prometheus/node_exporter/blob/v1.10.2/README.md#docker).
 
 ## Certificates and renewal
 

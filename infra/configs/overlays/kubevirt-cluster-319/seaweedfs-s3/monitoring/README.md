@@ -90,6 +90,73 @@ are cleared. No recording rules, aliases or extra collectors are installed.
 Optional systemd, process, interrupt and TCP-state collectors are not enabled
 just for this dashboard. Timex is intentionally disabled, and unsupported
 hardware panels can be empty. Disk I/O and filesystem counters do not establish
-SMART, RAID-member, controller/battery or physical temperature health; those
-still need separate hardware-aware collection. Cluster/host selectors organize
+SMART, RAID-member, controller/battery or physical temperature health. The
+separate SMART addition below covers verified physical disks. Cluster/host selectors organize
 queries and do not provide Grafana user-access isolation.
+
+## OMV physical-disk SMART
+
+`smart-scrape-config.yaml` adds native smartctl-exporter metrics through
+`https://openmediavault.local:9443/smart/metrics`, using the existing mTLS client
+and hostname verification. Its native job is `smartctl`, host label is
+`node="openmediavault-1"`, and `k8s_cluster_name` identifies the collecting cluster.
+It runs every 60 seconds with a ten-second timeout and a 5,000-sample limit.
+Publish these resources only after the
+[external Stack acceptance barrier](../portainer/README.md#physical-disk-smart-addition).
+They do not install an exporter on OMV.
+
+Read-only checks on 2026-11-09 matched three ATA and four SAS direct physical
+disks to their MegaRAID member identities. Stable native by-id labels distinguish
+them without duplicate controller paths or virtual QEMU disks. Disk replacement
+therefore creates a new identity rather than inheriting the previous disk's
+history. The expected minimum is seven health-reporting disks; revise that count
+only after an intentional inventory change.
+
+Nine rules cover missing discovery, incomplete disk health coverage, failed
+SMART health, approaching/reached native temperature limits, ATA pending or
+uncorrectable sectors, increasing standard reallocated-sector counts, increasing
+SAS grown-defect/uncorrected read/write counts, and active prefailure thresholds.
+The existing `ScrapeTargetDown` covers a reachable-in-discovery but failed target.
+Temperature warnings use native `drive_trip - 5 C`, falling back to 55 C only
+when no trip threshold exists; critical temperature alerts require a reported
+native threshold. Vendor operating limits remain authoritative. ATA IDs 197/198
+are raw pending/uncorrectable counts; ID 5 additionally requires the standard
+`Reallocated_Sector_Ct` name. Vendor-specific wear attributes are not reinterpreted.
+Native SAS gauges use `delta`, not counter `rate`; corrected ECC totals alone
+are not treated as failures. Historical nonzero error logs do not page forever.
+
+The command exit status is a bitmask, not a Boolean health result. Bit 4 denotes
+an active prefailure threshold. An unsupported optional error-log command can
+produce status 4 while health and attributes remain valid, as observed on this
+host's SATA SSD; that value alone is not a failed disk. Inspect the original
+flags and attributes before scheduling tests or replacement. No alert performs
+recovery, disk writes or self-tests.
+
+Native exporter limits matter: failed reads can leave cached last-good results
+with no per-disk freshness timestamp. Startup missing-health and rescan removal
+are detectable, but this configuration cannot prove every cached value was just
+read. Keep exporter logs and direct read-only `smartctl` verification in the
+runbook. Controller/battery/array health is not supplied by SMART; neither are
+PSU/fan sensors. The four SAS drives do not expose ATA attributes, and this
+official version does not export their verify-error totals.
+
+**Infrastructure → OMV / SMART Disk Health** retains the 18 panel/row entries
+from the Apache 2.0 community smartctl mixin proposed in upstream PR #369:
+[`mixin/output/smartctl-overview.json`](https://github.com/clementduveau/smartctl_exporter/blob/3d67aa1dff9cc57a322fe73795b7435030023018/mixin/output/smartctl-overview.json),
+commit `3d67aa1dff9cc57a322fe73795b7435030023018`.
+Upstream SHA-256:
+`daf5d288a1ece45629e0d6d6750d93a06943ca215312441989bf5f465e1f14f9`.
+`LICENSE.smart-dashboard` preserves the license. This is a pinned community
+proposal, not a released official mixin. Only its dashboard is imported;
+upstream generic alerts are not installed.
+
+Local bindings use UID `omv-smart`, datasource `victoriametrics`, a collection
+cluster variable and OMV/instance matchers on every native selector. Two query
+corrections preserve no-data behavior: command flags no longer invent success
+when metrics are absent, and failed-disk count handles all-failed inputs. The
+command-flags card is explicitly diagnostic, not a failed-health indicator.
+The layout, native metric names and units are retained. NVMe/wear panels without
+a matching producer remain empty. SAS errors are available through native
+Explore queries and alerts; the inherited overview has no dedicated SAS error
+panel. The host dashboard remains the capacity/I/O view. Neither dashboard
+provides Grafana user-access isolation.

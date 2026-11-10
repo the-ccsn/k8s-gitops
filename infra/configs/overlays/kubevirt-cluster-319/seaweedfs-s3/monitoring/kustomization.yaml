@@ -10,6 +10,9 @@ resources:
   - ./host-scrape-config.yaml
   - ./host-rules.yaml
   - ./host-dashboard.yaml
+  - ./smart-scrape-config.yaml
+  - ./smart-rules.yaml
+  - ./smart-dashboard.yaml
 
 configMapGenerator:
   - name: seaweedfs-dashboard
@@ -25,6 +28,14 @@ configMapGenerator:
     namespace: grafana
     files:
       - host-dashboard.json
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled
+  - name: omv-smart-dashboard
+    namespace: grafana
+    files:
+      - smart-dashboard.json
     options:
       disableNameSuffixHash: true
       annotations:

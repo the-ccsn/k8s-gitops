@@ -1,6 +1,6 @@
 # Dashboard catalogue and investigation
 
-The active overlays declare 42 GrafanaDashboard resources: 39 use pinned
+The active overlays declare 43 GrafanaDashboard resources: 40 use pinned
 upstream dashboards or official component definitions, and three combine this
 installation's signals. Component owners keep source commits, hashes, licenses
 and local metric bindings beside their dashboards. Helm- or Operator-generated
@@ -26,6 +26,7 @@ dashboards are managed by their own charts and are outside this count.
 | Cloudflare | Tunnel connectors | [Official cloudflared dashboard](../infra/configs/overlays/kubevirt-cluster-319/cloudflare-operator/monitoring/README.md) |
 | Object storage | SeaweedFS | [Official SeaweedFS dashboard](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md) |
 | OMV host | Node Exporter Full | [rfmoz community dashboard and native host collection](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics) |
+| OMV physical disks | SMART Disk Health | [Pinned community smartctl mixin and native ATA/SAS coverage](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart) |
 | Installation-specific | Application Logs, Ingress Requests, Observability Platform | [Log investigation](controllers/base/loki/README.md), [ingress correlation](../infra/configs/base/istio/monitoring/README.md), [metrics runtime](controllers/base/victoria-metrics/README.md) |
 
 ## Follow an ingress request

@@ -1,14 +1,14 @@
 # OMV metrics
 
 These complete Portainer Stacks prepare authenticated metrics for SeaweedFS
-4.48 and node-exporter 1.10.2 host telemetry. They are external-host configuration,
+4.48, node-exporter 1.10.2 host telemetry and smartctl-exporter 0.14.0 disk health. They are external-host configuration,
 not Kustomize resources. Both keep startup commands and NGINX configuration
 inline; no new startup script or custom image is required. Existing data mounts, disk guards and S3 authentication-file
 references come from the reviewed OMV configuration on 2026-10-31.
 
 | Stack | Metrics listener | Native backends |
 | --- | --- | --- |
-| `seaweedfs.yaml` | current management-interface IPv4 address, port 9443; queried as `openmediavault.local` | master, filer, ordinary S3, six volume servers and node-exporter |
+| `seaweedfs.yaml` | current management-interface IPv4 address, port 9443; queried as `openmediavault.local` | master, filer, ordinary S3, six volume servers, node-exporter and smartctl-exporter |
 | `seaweedfs-s3-exposure.yaml` | current `lan0` IPv4 address, port 9443; queried as `s3.ccsn.dev` | direct S3 |
 
 The existing gateways use different network namespaces. Each therefore has one
@@ -40,9 +40,8 @@ disk I/O, pressure and network metrics. Disk properties use the host's udev data
 under `/host/run/udev/data`. Collectors for absent subsystems can report no data;
 this does not establish a failure of the core host metrics. `timex` is disabled
 to avoid requesting the host-clock capability, so this addition does not provide timex-based NTP
-synchronization alerts. SMART and physical RAID-member health remain separate:
-OMV exposes MegaRAID devices, and virtual-disk health does not establish each
-member's health.
+synchronization alerts. SMART and physical RAID-member health come from the
+separate exporter below, not from node-exporter's filesystem or I/O counters.
 
 The Stack does not itself create a Kubernetes scrape target. Publish the
 [host collection resources](../monitoring/README.md#omv-host-metrics) only after
@@ -68,6 +67,77 @@ current maintenance Stack:
 
 The container flags and mount arrangement follow the pinned
 [upstream deployment guide](https://github.com/prometheus/node_exporter/blob/v1.10.2/README.md#docker).
+
+## Physical-disk SMART addition
+
+This addition is prepared for a separate external-host rollout. It starts only
+`smartctl-exporter` and refreshes only `metrics`; it does not update any
+SeaweedFS data service. Keep all commands in this complete Stack. No startup
+script, custom image, new certificate or firewall change is required.
+
+On 2026-11-09, read-only `smartctl` checks confirmed seven unique physical disks
+behind OMV's passed-through MegaRAID controller: three ATA and four SAS devices.
+Their direct by-id identities match the seven controller-member serials. Native
+automatic `by-id` discovery and an ATA/physical-SCSI filter select them once,
+excluding the two QEMU disks and duplicate `/dev/bus/*` controller paths. This
+does not depend on `/dev/sdX` ordering or a manually maintained serial list.
+Rescanning runs every ten minutes and SMART reads every minute. Standby checks
+avoid waking ATA disks for routine reads; hardware/controller behavior still
+needs deployment verification. No self-test or SMART-setting command is used.
+
+The official image is pinned to 0.14.0 and its multi-platform digest. Replaying
+the seven native disk results through official 0.15.0 reproduced HTTP 500 from
+missing SAS metric descriptors; 0.14.0 returned HTTP 200 with all seven health
+series and four SAS grown-defect/read/write error series. See upstream
+[descriptor fix #397](https://github.com/prometheus-community/smartctl_exporter/pull/397).
+Use a later official release only after the same SAS fixture passes; no local
+patch is carried.
+
+The exporter uses root with only `SYS_RAWIO`, a read-only `/dev` mount, and a
+device-cgroup read rule for Linux SCSI/SATA block major 8. It is not privileged
+and receives no controller character-device, NVMe, host-PID or Docker-socket
+access. The mount is read-only, but `SYS_RAWIO` permits storage ioctls: this is a
+trusted host-monitoring process, not a security boundary against malicious disk
+commands. Its official smartctl arguments perform reads only. Host and actual
+container reads passed with all other capabilities removed. Its hard budget is
+0.25 CPU / 128 MiB, without swap. The image's native `wget` health-check binary
+is `/usr/bin/wget`.
+
+Native HTTP binds only to `127.0.0.1:9633`. The existing mTLS frontend exposes
+exactly `/smart/metrics`, using the existing authorized vmagent identity and
+normal hostname validation. All existing frontend restrictions still apply.
+
+The external-host barrier passed on 2026-11-10: seven unique healthy disks,
+four SAS defect/read/write series, 471 samples, authenticated HTTPS success for
+the new route and all eleven existing SeaweedFS/host routes, and rejection of
+missing client certificates, extra paths, query strings and off-host port 9633.
+Both monitoring containers are healthy. Data-service container identities and
+start times were preserved. Acceptance used a temporary native vmagent process
+with all samples dropped; it did not activate continuous SMART collection or
+publish Kubernetes resources. Those remain a separate GitOps change.
+
+Roll out in two phases, keeping source publication separate from activation:
+
+1. Publish the Stack preparation independently of the new Kubernetes SMART
+   resources. Compare with the currently maintained OMV Stack and preserve
+   every data-service definition. Validate Compose, pull only the pinned
+   `smartctl-exporter` image, then use
+   `docker compose -f seaweedfs.yaml up -d --no-deps smartctl-exporter metrics`.
+   Do not run a whole-Stack update. Record and compare data-service container
+   IDs/start times before and after; independent EC maintenance must continue.
+2. Verify seven unique native health series and four SAS error/defect series,
+   all within the scrape sample limit; check current temperatures, permissions,
+   memory and exporter logs. Verify authenticated HTTPS success, rejection
+   without the client identity, all eleven pre-existing SeaweedFS/host targets,
+   and off-host rejection on port 9633. Only after this barrier publish
+   `smart-scrape-config.yaml`, `smart-rules.yaml`, `smart-dashboard.yaml`, its JSON
+   and license, and the monitoring Kustomization changes. Then accept the new
+   target, rules and dashboard. No suspension flags are needed.
+
+Changing device families or adding another SCSI block major needs a reviewed
+discovery/permission change. This configuration does not collect RAID-array,
+controller/battery, PSU or fan health. See the
+[SMART runbook and native cache limits](../monitoring/README.md#omv-physical-disk-smart).
 
 ## Certificates and renewal
 

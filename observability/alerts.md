@@ -103,13 +103,19 @@ Reallocated_Sector_Ct (ID 5) are monitored only when native Longhorn attributes
 are available. Vendor-specific raw values are not interpreted as these counters.
 A healthy RAID virtual disk does not prove its member disks are healthy.
 
-Standalone SMART/NVMe attributes, RAID controller/battery status, fans, PSU and
-UPS are not comprehensively collected. OMV's
+RAID controller/battery status, fans, PSU, UPS and standalone NVMe attributes
+are not comprehensively collected. OMV's
 [host collection](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics)
 adds native node-exporter metrics over the existing mTLS frontend, alongside
 SeaweedFS metrics and transport probing. It reuses node resource/storage rules
-and explicitly checks for disappearance of the external host. SMART and physical
-RAID-member health remain uncollected. Timex is disabled on OMV, so the clock
+and explicitly checks for disappearance of the external host. The separate
+[OMV SMART addition](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart)
+prepares authenticated collection and nine rules for seven verified physical
+ATA/SAS disks: health, temperature, standard sector counters, SAS media errors
+and coverage. It requires the documented external exporter acceptance before
+publishing Kubernetes resources. Cached last-good readings have no native
+freshness timestamp; SMART does not establish controller/battery health.
+Timex is disabled on OMV, so the clock
 rules do not cover that host. Empty hardware selectors cannot fill these gaps;
 device visibility must be confirmed before claiming coverage.
 

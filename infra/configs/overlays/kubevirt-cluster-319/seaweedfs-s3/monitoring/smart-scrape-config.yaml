@@ -1,0 +1,43 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: omv-smartctl-exporter
+  namespace: monitoring
+  labels:
+    application: openmediavault
+    component: smart
+spec:
+  jobName: smartctl
+  scrapeInterval: 60s
+  scrapeTimeout: 10s
+  metricsPath: /smart/metrics
+  scheme: HTTPS
+  sampleLimit: 5000
+  tlsConfig:
+    insecureSkipVerify: false
+    ca:
+      secret:
+        name: seaweedfs-metrics-client-tls
+        key: ca.crt
+    cert:
+      secret:
+        name: seaweedfs-metrics-client-tls
+        key: tls.crt
+    keySecret:
+      name: seaweedfs-metrics-client-tls
+      key: tls.key
+  staticConfigs:
+    - targets: [openmediavault.local:9443]
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: smartctl
+    - action: replace
+      targetLabel: node
+      replacement: openmediavault-1
+    - action: replace
+      targetLabel: application
+      replacement: openmediavault
+    - action: replace
+      targetLabel: component
+      replacement: smart

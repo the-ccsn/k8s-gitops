@@ -1209,7 +1209,7 @@
         "multi": true,
         "name": "instance",
         "options": [],
-        "query": "label_values(smartctl_device_smart_status{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=~\"$instance\",job=\"smartctl\"}, instance)",
+        "query": "label_values(smartctl_device_smart_status{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\"}, instance)",
         "refresh": 1,
         "sort": 1,
         "type": "query"

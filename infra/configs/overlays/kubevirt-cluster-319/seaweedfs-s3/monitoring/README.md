@@ -112,7 +112,8 @@ therefore creates a new identity rather than inheriting the previous disk's
 history. The expected minimum is seven health-reporting disks; revise that count
 only after an intentional inventory change.
 
-Nine rules cover missing discovery, incomplete disk health coverage, failed
+Two OMV-specific rules cover missing discovery and incomplete seven-disk health
+coverage. Seven shared rules cover every `job="smartctl"` target: failed
 SMART health, approaching/reached native temperature limits, ATA pending or
 uncorrectable sectors, increasing standard reallocated-sector counts, increasing
 SAS grown-defect/uncorrected read/write counts, and active prefailure thresholds.
@@ -140,7 +141,7 @@ runbook. Controller/battery/array health is not supplied by SMART; neither are
 PSU/fan sensors. The four SAS drives do not expose ATA attributes, and this
 official version does not export their verify-error totals.
 
-**Infrastructure → OMV / SMART Disk Health** retains the 18 panel/row entries
+**Infrastructure → SMART / Physical Disks** retains the 18 panel/row entries
 from the Apache 2.0 community smartctl mixin proposed in upstream PR #369:
 [`mixin/output/smartctl-overview.json`](https://github.com/clementduveau/smartctl_exporter/blob/3d67aa1dff9cc57a322fe73795b7435030023018/mixin/output/smartctl-overview.json),
 commit `3d67aa1dff9cc57a322fe73795b7435030023018`.
@@ -150,8 +151,8 @@ Upstream SHA-256:
 proposal, not a released official mixin. Only its dashboard is imported;
 upstream generic alerts are not installed.
 
-Local bindings use UID `omv-smart`, datasource `victoriametrics`, a collection
-cluster variable and OMV/instance matchers on every native selector. Two query
+Local bindings use UID `omv-smart`, datasource `victoriametrics`, and collection
+cluster/instance matchers on every native selector. Two query
 corrections preserve no-data behavior: command flags no longer invent success
 when metrics are absent, and failed-disk count handles all-failed inputs. The
 command-flags card is explicitly diagnostic, not a failed-health indicator.
@@ -160,3 +161,26 @@ a matching producer remain empty. SAS errors are available through native
 Explore queries and alerts; the inherited overview has no dedicated SAS error
 panel. The host dashboard remains the capacity/I/O view. Neither dashboard
 provides Grafana user-access isolation.
+
+### Additional SMART hosts
+
+The shared dashboard discovers `job="smartctl"` targets from `up` in the selected
+collection cluster. Its **Host** selector supports one, several, or all instances.
+Grafana's native named capture groups display the target's `node` name while
+retaining its native `instance` endpoint as the selection value. The options
+query does not depend on its own selection. A failed scrape remains selectable.
+
+Each new physical host needs its own authorized exporter and owner-local
+ServiceMonitor or ScrapeConfig. Set `job="smartctl"`, a unique readable `node`
+host name, and a distinct native `instance`; VMAgent supplies the existing global
+collection labels. Keep the host's metrics authentication and transport policy.
+Do not attach a host name globally to a multi-target scrape job: labels must
+identify the individual target. The OMV Stack and mTLS endpoint remain specific
+to OMV; this dashboard change does not install exporters on other machines.
+
+Plots retain host and instance identity when aggregating identical disk names.
+Legends use **host / disk**; tables show the host name instead of repeating the
+metrics address. Command flags and failed-disk counts are separate per host.
+The shared health rules apply automatically to new SMART targets. Discovery
+absence and expected disk counts require that host's actual inventory; the
+OMV-specific seven-disk check must not be copied as a universal expectation.

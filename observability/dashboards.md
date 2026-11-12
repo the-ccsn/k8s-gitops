@@ -26,7 +26,7 @@ dashboards are managed by their own charts and are outside this count.
 | Cloudflare | Tunnel connectors | [Official cloudflared dashboard](../infra/configs/overlays/kubevirt-cluster-319/cloudflare-operator/monitoring/README.md) |
 | Object storage | SeaweedFS | [Official SeaweedFS dashboard](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md) |
 | OMV host | Node Exporter Full | [rfmoz community dashboard and native host collection](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics) |
-| OMV physical disks | SMART Disk Health | [Pinned community smartctl mixin and native ATA/SAS coverage](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart) |
+| Physical disks | SMART / Physical Disks (multiple hosts) | [Pinned community smartctl mixin and native ATA/SAS coverage](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#additional-smart-hosts) |
 | Installation-specific | Application Logs, Ingress Requests, Observability Platform | [Log investigation](controllers/base/loki/README.md), [ingress correlation](../infra/configs/base/istio/monitoring/README.md), [metrics runtime](controllers/base/victoria-metrics/README.md) |
 
 ## Follow an ingress request

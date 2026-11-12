@@ -1751,4 +1751,24 @@
       { kind = "Deployment"; namespace = "monitoring"; name = "otel-events"; }
     ];
   }
+  {
+    imageName = "quay.io/prometheuscommunity/smartctl-exporter";
+    imageDigest = "sha256:cfe22c36d7d2fac48ebf619707305acb65eb0fb670656eb80f356e606d782bc1";
+    finalImageName = "quay.io/prometheuscommunity/smartctl-exporter";
+    finalImageTag = "v0.14.0";
+    archiveHash = "sha256-6CzH4h1OmtsR1pt4MTouSrUHmCWiPh6f1bFcm+cyxU4=";
+    os = "linux";
+    arch = "amd64";
+    sources = [
+      { kind = "Kustomization"; namespace = "flux-system"; name = "observability-runtimes"; }
+    ];
+    sourceChains = [
+      [
+        { kind = "Kustomization"; namespace = "flux-system"; name = "observability-runtimes"; }
+      ]
+    ];
+    targets = [
+      { kind = "DaemonSet"; namespace = "monitoring"; name = "smartctl-exporter"; }
+    ];
+  }
 ]

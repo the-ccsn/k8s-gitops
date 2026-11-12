@@ -1,0 +1,28 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: smartctl-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: smartctl-exporter
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: smartctl-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: smartctl-exporter
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/monitoring/sa/vmagent-victoriametrics-vmks
+      to:
+        - operation:
+            ports: ["9633"]

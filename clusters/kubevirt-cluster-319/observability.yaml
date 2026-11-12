@@ -6,6 +6,8 @@ metadata:
 spec:
   dependsOn:
     - name: infra-controllers-monitoring
+    # Node SMART collection consumes Istio security APIs and ambient transport.
+    - name: infra-controllers-networking-core
   interval: 30m
   retryInterval: 30s
   timeout: 10m

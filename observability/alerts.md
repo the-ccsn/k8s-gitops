@@ -119,6 +119,10 @@ and their own inventory expectations; seven disks is not a global requirement.
 New collectors require their documented exporter acceptance before
 publishing Kubernetes resources. Cached last-good readings have no native
 freshness timestamp; SMART does not establish controller/battery health.
+The [node SMART DaemonSet](controllers/base/smartctl-exporter/README.md) uses the
+same native job and health rules for labeled Kubernetes nodes, including the
+verified PERC member disks. Its two coverage rules detect absent node targets
+and missing readings from selected devices without a manual host list.
 Timex is disabled on OMV, so the clock
 rules do not cover that host. Empty hardware selectors cannot fill these gaps;
 device visibility must be confirmed before claiming coverage.

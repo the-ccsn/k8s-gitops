@@ -178,6 +178,10 @@ Do not attach a host name globally to a multi-target scrape job: labels must
 identify the individual target. The OMV Stack and mTLS endpoint remain specific
 to OMV; this dashboard change does not install exporters on other machines.
 
+Kubernetes nodes use the [owner-local SMART DaemonSet](../../../../../../observability/controllers/base/smartctl-exporter/README.md).
+It selects the existing opt-in node label and joins ambient for authenticated
+Pod metrics collection, preserving this dashboard's native target contract.
+
 Plots retain host and instance identity when aggregating identical disk names.
 Legends use **host / disk**; tables show the host name instead of repeating the
 metrics address. Command flags and failed-disk counts are separate per host.

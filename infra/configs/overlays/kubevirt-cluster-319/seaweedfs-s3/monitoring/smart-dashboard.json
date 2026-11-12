@@ -167,7 +167,7 @@
           "exemplar": false,
           "expr": "max by (instance, device)(smartctl_device_power_on_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\"})",
           "instant": true,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": false,
           "refId": "On-time"
         }
@@ -256,7 +256,7 @@
           "exemplar": false,
           "expr": "sum by (instance, device)(smartctl_device_temperature{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\", temperature_type=\"current\"}) and on(instance, device) smartctl_device{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\",instance=~\"$instance\",model_name!=\"IET VIRTUAL-DISK\"}",
           "instant": false,
-          "legendFormat": "{{instance}}/{{device}}",
+          "legendFormat": "{{device}}",
           "range": true,
           "refId": "Temperature"
         }
@@ -604,7 +604,7 @@
           "expr": "sum by (instance, device)(max_over_time(smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\", attribute_name=~\"Offline_Uncorrectable|Current_Pending_Sector|Reallocated_Sector_Ct\", attribute_value_type=\"raw\"}[$__range])) > 0",
           "format": "table",
           "instant": true,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": false,
           "refId": "Failing HDD"
         }
@@ -690,7 +690,7 @@
           "exemplar": false,
           "expr": "smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\", attribute_name=\"Media_Wearout_Indicator\", attribute_value_type=\"value\"}",
           "instant": true,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": false,
           "refId": "SSD wearout"
         }
@@ -752,7 +752,7 @@
           "exemplar": false,
           "expr": "smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\", attribute_name=\"Offline_Uncorrectable\", attribute_value_type=\"raw\"}",
           "instant": false,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": true,
           "refId": "Offline sectors"
         }
@@ -814,7 +814,7 @@
           "exemplar": false,
           "expr": "smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\", attribute_name=\"Current_Pending_Sector\", attribute_value_type=\"raw\"}",
           "instant": false,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": true,
           "refId": "Pending sectors"
         }
@@ -903,7 +903,7 @@
           "exemplar": false,
           "expr": "sum by (instance, device)(smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\", attribute_name=\"Reallocated_Sector_Ct\", attribute_value_type=\"raw\"})",
           "instant": false,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": true,
           "refId": "Reallocated sectors"
         }
@@ -992,7 +992,7 @@
           "exemplar": false,
           "expr": "sum by (instance, device)(smartctl_device_error_log_count{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\"})",
           "instant": false,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": true,
           "refId": "Errors"
         }
@@ -1076,7 +1076,7 @@
           "exemplar": false,
           "expr": "smartctl_device_percentage_used{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\"}",
           "instant": true,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": false,
           "refId": "NVMe life"
         }
@@ -1161,7 +1161,7 @@
           "exemplar": false,
           "expr": "sum by (instance, device)(smartctl_device_media_errors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"smartctl\", instance=~\"$instance\"})",
           "instant": false,
-          "legendFormat": "{{instance}} - {{device}}",
+          "legendFormat": "{{device}}",
           "range": true,
           "refId": "NVme errors"
         }

@@ -217,25 +217,69 @@
         "type": "prometheus",
         "uid": "victoriametrics"
       },
-      "description": "Number of seconds each disk has been powered on",
+      "description": "Latest reported cumulative power-on time per physical disk, displayed as a duration. This is recorded powered-on time rather than remaining lifetime. Select hosts to narrow the table; sort by duration to compare disks.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "fixedColor": "text",
-            "mode": "fixed"
-          },
-          "decimals": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host"
+            },
+            "properties": [
               {
-                "color": "text"
+                "id": "custom.width",
+                "value": 150
               }
             ]
           },
-          "unit": "s"
-        },
-        "overrides": []
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Power-on time"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "text",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "custom.width",
+                "value": 115
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -245,17 +289,15 @@
       },
       "id": 7,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
+        "cellHeight": "md",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Power-on time",
+            "desc": true
+          }
+        ]
       },
       "targets": [
         {
@@ -269,11 +311,41 @@
           "instant": true,
           "legendFormat": "{{node}} / {{device}}",
           "range": false,
-          "refId": "On-time"
+          "refId": "On-time",
+          "format": "table"
         }
       ],
       "title": "Disk power-on time",
-      "type": "stat"
+      "type": "table",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "node",
+                "device",
+                "Value"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "node": 0,
+              "device": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "node": "Host",
+              "device": "Disk",
+              "Value": "Power-on time"
+            }
+          }
+        }
+      ]
     },
     {
       "datasource": {
@@ -810,24 +882,74 @@
         "type": "prometheus",
         "uid": "victoriametrics"
       },
-      "description": "Uncorrectable sectors. Any value > 0 indicates data loss or corruption risk",
+      "description": "Uncorrectable sectors. Any value > 0 indicates data loss or corruption risk. Latest reported raw value per physical disk; nonzero values are red. Missing ATA attributes remain absent.",
       "fieldConfig": {
         "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host"
+            },
+            "properties": [
               {
-                "color": "text"
-              },
-              {
-                "color": "red",
-                "value": 1
+                "id": "custom.width",
+                "value": 150
               }
             ]
           },
-          "unit": "short"
-        },
-        "overrides": []
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sectors"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text"
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 85
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -837,17 +959,15 @@
       },
       "id": 12,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
+        "cellHeight": "md",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Sectors",
+            "desc": true
+          }
+        ]
       },
       "targets": [
         {
@@ -858,38 +978,118 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",job=\"smartctl\", instance=~\"$instance\", attribute_name=\"Offline_Uncorrectable\", attribute_value_type=\"raw\"}",
-          "instant": false,
+          "instant": true,
           "legendFormat": "{{node}} / {{device}}",
-          "range": true,
-          "refId": "Offline sectors"
+          "range": false,
+          "refId": "Offline sectors",
+          "format": "table"
         }
       ],
       "title": "Offline uncorrectable sectors",
-      "type": "stat"
+      "type": "table",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "node",
+                "device",
+                "Value"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "node": 0,
+              "device": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "node": "Host",
+              "device": "Disk",
+              "Value": "Sectors"
+            }
+          }
+        }
+      ]
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "victoriametrics"
       },
-      "description": "Sectors waiting to be reallocated. Any value > 0 is concerning and may indicate imminent disk failure",
+      "description": "Sectors waiting to be reallocated. Any value > 0 is concerning and may indicate imminent disk failure. Latest reported raw value per physical disk; nonzero values are red. Missing ATA attributes remain absent.",
       "fieldConfig": {
         "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host"
+            },
+            "properties": [
               {
-                "color": "text"
-              },
-              {
-                "color": "red",
-                "value": 1
+                "id": "custom.width",
+                "value": 150
               }
             ]
           },
-          "unit": "short"
-        },
-        "overrides": []
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sectors"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text"
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 85
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -899,17 +1099,15 @@
       },
       "id": 11,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
+        "cellHeight": "md",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Sectors",
+            "desc": true
+          }
+        ]
       },
       "targets": [
         {
@@ -920,14 +1118,44 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "smartctl_device_attribute{k8s_cluster_name=~\"$k8s_cluster_name\",job=\"smartctl\", instance=~\"$instance\", attribute_name=\"Current_Pending_Sector\", attribute_value_type=\"raw\"}",
-          "instant": false,
+          "instant": true,
           "legendFormat": "{{node}} / {{device}}",
-          "range": true,
-          "refId": "Pending sectors"
+          "range": false,
+          "refId": "Pending sectors",
+          "format": "table"
         }
       ],
       "title": "Current pending sectors",
-      "type": "stat"
+      "type": "table",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "node",
+                "device",
+                "Value"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "node": 0,
+              "device": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "node": "Host",
+              "device": "Disk",
+              "Value": "Sectors"
+            }
+          }
+        }
+      ]
     },
     {
       "datasource": {

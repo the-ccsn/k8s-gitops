@@ -174,6 +174,10 @@ when metrics are absent, and failed-disk count handles all-failed inputs. The
 command-flags card is explicitly diagnostic, not a failed-health indicator.
 The decorative header is replaced by a native per-disk command-diagnostics
 table; the other panel positions, native metric names and units are retained.
+Power-on time and the two sector panels use native tables with separate host,
+disk and value columns instead of auto-sized Stat labels. These tables show the
+latest reported values, support sorting and pagination, and retain red nonzero
+sector thresholds. Power-on duration is cumulative recorded operating time.
 Command cards use the latest reading rather than a maximum over the dashboard
 time range. NVMe/wear panels without
 a matching producer remain empty. SAS errors are available through native

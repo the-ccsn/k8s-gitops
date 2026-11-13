@@ -168,7 +168,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_cpu_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_cpu_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "CPU",
@@ -178,7 +178,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_memory_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_memory_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "Mem",
@@ -188,7 +188,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_io_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_io_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "I/O",
@@ -198,7 +198,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_irq_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_irq_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "Irq",
@@ -281,7 +281,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])))",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -363,7 +363,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "scalar(node_load1{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) * 100 / count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu))",
+          "expr": "scalar(node_load1{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) * 100 / count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu))",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -435,7 +435,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "clamp_min((1 - (node_memory_MemAvailable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\"} / node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\"})) * 100, 0)",
+          "expr": "clamp_min((1 - (node_memory_MemAvailable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\"} / node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\"})) * 100, 0)",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -517,7 +517,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) / (node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} > 0)) * 100",
+          "expr": "((node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) / (node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} > 0)) * 100",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -598,7 +598,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  (node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
+          "expr": "(\n  (node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -677,7 +677,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu))",
+          "expr": "count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu))",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -758,7 +758,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -838,7 +838,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -918,7 +918,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",mountpoint=\"/\",fstype!=\"rootfs\"}",
+          "expr": "node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",mountpoint=\"/\",fstype!=\"rootfs\"}",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -999,7 +999,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_time_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_boot_time_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+          "expr": "node_time_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_boot_time_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -1181,7 +1181,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\", mode=\"system\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\", mode=\"system\"}[$__rate_interval]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "Busy System",
@@ -1190,7 +1190,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\", mode=\"user\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\", mode=\"user\"}[$__rate_interval]))",
           "format": "time_series",
           "legendFormat": "Busy User",
           "range": true,
@@ -1198,7 +1198,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\", mode=\"iowait\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\", mode=\"iowait\"}[$__rate_interval]))",
           "format": "time_series",
           "legendFormat": "Busy Iowait",
           "range": true,
@@ -1206,7 +1206,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(sum without(mode) (rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\", mode=~\".*irq\"}[$__rate_interval])))",
+          "expr": "avg(sum without(mode) (rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\", mode=~\".*irq\"}[$__rate_interval])))",
           "format": "time_series",
           "legendFormat": "Busy IRQs",
           "range": true,
@@ -1214,7 +1214,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(sum without (mode) (rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",  mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])))",
+          "expr": "avg(sum without (mode) (rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",  mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])))",
           "format": "time_series",
           "legendFormat": "Busy Other",
           "range": true,
@@ -1222,7 +1222,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\", mode=\"idle\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\", mode=\"idle\"}[$__rate_interval]))",
           "format": "time_series",
           "legendFormat": "Idle",
           "range": true,
@@ -1387,7 +1387,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
           "format": "time_series",
           "legendFormat": "Total",
           "range": true,
@@ -1395,7 +1395,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - (node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} + node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} + node_memory_SReclaimable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+          "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - (node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} + node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} + node_memory_SReclaimable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
           "format": "time_series",
           "legendFormat": "Used",
           "range": true,
@@ -1403,7 +1403,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} + node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} + node_memory_SReclaimable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} + node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} + node_memory_SReclaimable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
           "format": "time_series",
           "legendFormat": "Cache + Buffer",
           "range": true,
@@ -1411,7 +1411,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
           "format": "time_series",
           "legendFormat": "Free",
           "range": true,
@@ -1419,7 +1419,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "(node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+          "expr": "(node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
           "format": "time_series",
           "legendFormat": "Swap used",
           "range": true,
@@ -1523,7 +1523,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(node_network_receive_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+          "expr": "rate(node_network_receive_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
           "format": "time_series",
           "legendFormat": "Rx {{device}}",
           "range": true,
@@ -1531,7 +1531,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "rate(node_network_transmit_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+          "expr": "rate(node_network_transmit_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
           "format": "time_series",
           "legendFormat": "Tx {{device}}",
           "range": true,
@@ -1624,7 +1624,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "((node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\", fstype!~'rootfs'} - node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\", fstype!~'rootfs'}) / node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\", job=\"$job\", fstype!~'rootfs'}) * 100",
+          "expr": "((node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\", fstype!~'rootfs'} - node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\", fstype!~'rootfs'}) / node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\", job=\"$job\", fstype!~'rootfs'}) * 100",
           "format": "time_series",
           "legendFormat": "{{mountpoint}}",
           "range": true,
@@ -1883,7 +1883,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"system\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"system\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "System - Processes executing in kernel mode",
@@ -1892,7 +1892,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"user\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"user\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "User - Normal processes executing in user mode",
               "range": true,
@@ -1900,7 +1900,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"nice\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"nice\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Nice - Niced processes executing in user mode",
               "range": true,
@@ -1908,7 +1908,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"iowait\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"iowait\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Iowait - Waiting for I/O to complete",
               "range": true,
@@ -1916,7 +1916,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"irq\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"irq\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Irq - Servicing interrupts",
               "range": true,
@@ -1924,7 +1924,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"softirq\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"softirq\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Softirq - Servicing softirqs",
               "range": true,
@@ -1932,7 +1932,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"steal\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"steal\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Steal - Time spent in other operating systems when running in a virtualized environment",
               "range": true,
@@ -1940,7 +1940,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Idle - Waiting for something to happen",
               "range": true,
@@ -1948,7 +1948,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum by(instance) (rate(node_cpu_guest_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))) > 0",
+              "expr": "sum by(instance) (rate(node_cpu_guest_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))) > 0",
               "format": "time_series",
               "legendFormat": "Guest - Running virtual CPUs, included in User/Nice",
               "range": true,
@@ -2196,7 +2196,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_Slab_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_PageTables_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_SwapCached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_Slab_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_PageTables_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_SwapCached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Apps - Memory used by user-space applications",
               "range": true,
@@ -2204,7 +2204,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_PageTables_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_PageTables_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "PageTables - Memory used to map between virtual and physical memory addresses",
               "range": true,
@@ -2212,7 +2212,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_SwapCached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_SwapCached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "SwapCache - Memory that keeps track of pages that have been fetched from swap but not yet been modified",
               "range": true,
@@ -2220,7 +2220,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Slab_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Slab_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Slab - Memory used by the kernel to cache data structures for its own use (caches like inode, dentry, etc)",
               "range": true,
@@ -2228,7 +2228,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Cached_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Cache - Parked file data (file content) cache",
               "range": true,
@@ -2236,7 +2236,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Buffers_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Buffers - Block device (e.g. harddisk) cache",
               "range": true,
@@ -2244,7 +2244,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_MemFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Unused - Free memory unassigned",
               "range": true,
@@ -2252,7 +2252,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_memory_SwapTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "legendFormat": "Swap - Swap space used",
               "range": true,
@@ -2260,7 +2260,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HardwareCorrupted_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HardwareCorrupted_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working",
               "range": true,
@@ -2368,7 +2368,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+              "expr": "rate(node_network_receive_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -2376,7 +2376,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+              "expr": "rate(node_network_transmit_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -2484,7 +2484,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_receive_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_receive_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -2492,7 +2492,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_transmit_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_transmit_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -2600,14 +2600,14 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_reads_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_reads_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Read",
               "range": true,
               "refId": "A"
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_writes_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_writes_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Write",
               "range": true,
               "refId": "B"
@@ -2714,7 +2714,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_read_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_read_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -2722,7 +2722,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_written_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_written_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Write",
               "range": true,
@@ -2818,7 +2818,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "metric": "",
@@ -2827,7 +2827,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filesystem_free_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_free_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "hide": true,
               "legendFormat": "{{mountpoint}} - Free",
@@ -2836,7 +2836,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "hide": true,
               "legendFormat": "{{mountpoint}} - Size",
@@ -2933,7 +2933,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'} - node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_size_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'} - node_filesystem_avail_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "range": true,
@@ -3029,7 +3029,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_io_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"} [$__rate_interval])",
+              "expr": "rate(node_disk_io_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"} [$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{device}}",
@@ -3150,7 +3150,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_cpu_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_cpu_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "CPU - Some",
               "range": true,
@@ -3158,7 +3158,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_memory_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_memory_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Memory - Some",
               "range": true,
@@ -3166,7 +3166,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_memory_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_memory_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Memory - Full",
               "range": true,
@@ -3174,7 +3174,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_io_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_io_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "I/O - Some",
               "range": true,
@@ -3182,7 +3182,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_io_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_io_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "I/O - Full",
               "range": true,
@@ -3190,7 +3190,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_irq_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_irq_stalled_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IRQ - Full",
               "range": true,
@@ -3331,7 +3331,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Committed_AS_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Committed_AS_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Committed_AS – Memory promised to processes (not necessarily used)",
               "range": true,
@@ -3339,7 +3339,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_CommitLimit_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_CommitLimit_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "CommitLimit - Max allowable committed memory",
               "range": true,
@@ -3435,7 +3435,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Writeback_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Writeback_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Writeback – Memory currently being flushed to disk",
               "range": true,
@@ -3443,7 +3443,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_WritebackTmp_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_WritebackTmp_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "WritebackTmp – FUSE temporary writeback buffers",
               "range": true,
@@ -3451,7 +3451,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Dirty_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Dirty_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Dirty – Memory marked dirty (pending write to disk)",
               "range": true,
@@ -3459,7 +3459,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_NFS_Unstable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_NFS_Unstable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "NFS Unstable – Pages sent to NFS server, awaiting storage commit",
               "range": true,
@@ -3580,7 +3580,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_AnonPages_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_AnonPages_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "AnonPages – Anonymous memory (non-file-backed)",
               "range": true,
@@ -3588,7 +3588,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_AnonHugePages_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_AnonHugePages_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "AnonHugePages – Anonymous memory using HugePages",
               "range": true,
@@ -3734,7 +3734,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Mapped_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Mapped_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Mapped – Memory mapped from files (e.g., libraries, mmap)",
               "range": true,
@@ -3742,7 +3742,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Shmem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Shmem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Shmem – Shared memory used by processes and tmpfs",
               "range": true,
@@ -3750,7 +3750,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_ShmemHugePages_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_ShmemHugePages_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "ShmemHugePages – Shared memory (shmem/tmpfs) allocated with HugePages",
@@ -3759,7 +3759,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_ShmemPmdMapped_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_ShmemPmdMapped_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PMD Mapped – Shmem/tmpfs backed by Transparent HugePages (PMD)",
@@ -3888,7 +3888,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_Inactive_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) \n/ \n(node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_memory_Inactive_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) \n/ \n(node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "legendFormat": "Inactive – Less recently used memory, more likely to be reclaimed",
               "range": true,
@@ -3896,7 +3896,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_memory_Active_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) \n/ \n(node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})\n",
+              "expr": "(node_memory_Active_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) \n/ \n(node_memory_MemTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})\n",
               "format": "time_series",
               "legendFormat": "Active – Recently used memory, retained unless under pressure",
               "range": true,
@@ -3993,7 +3993,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Inactive_file_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Inactive_file_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Inactive_file - File-backed memory on inactive LRU list",
               "range": true,
@@ -4001,7 +4001,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Inactive_anon_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Inactive_anon_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Inactive_anon – Anonymous memory on inactive LRU (incl. tmpfs & swap cache)",
               "range": true,
@@ -4009,7 +4009,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Active_file_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Active_file_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Active_file - File-backed memory on active LRU list",
               "range": true,
@@ -4017,7 +4017,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Active_anon_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Active_anon_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Active_anon – Anonymous memory on active LRU (incl. tmpfs & swap cache)",
               "range": true,
@@ -4113,7 +4113,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_SUnreclaim_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_SUnreclaim_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "SUnreclaim – Non-reclaimable slab memory (kernel objects)",
               "range": true,
@@ -4121,7 +4121,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_SReclaimable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_SReclaimable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "SReclaimable – Potentially reclaimable slab memory (e.g., inode cache)",
               "range": true,
@@ -4247,7 +4247,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_VmallocChunk_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_VmallocChunk_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Vmalloc Free Chunk – Largest available block in vmalloc area",
               "range": true,
@@ -4255,7 +4255,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_VmallocTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_VmallocTotal_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Vmalloc Total – Total size of the vmalloc memory area",
               "range": true,
@@ -4263,7 +4263,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_VmallocUsed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_VmallocUsed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Vmalloc Used – Portion of vmalloc area currently in use",
               "range": true,
@@ -4360,7 +4360,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_KernelStack_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_KernelStack_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "KernelStack – Kernel stack memory (per-thread, non-reclaimable)",
               "range": true,
@@ -4368,7 +4368,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Percpu_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Percpu_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PerCPU – Dynamically allocated per-CPU memory (used by kernel modules)",
@@ -4469,7 +4469,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_DirectMap1G_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_DirectMap1G_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "DirectMap 1G – Memory mapped with 1GB pages",
               "range": true,
@@ -4477,7 +4477,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_DirectMap2M_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_DirectMap2M_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "DirectMap 2M – Memory mapped with 2MB pages",
@@ -4486,7 +4486,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_DirectMap4k_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_DirectMap4k_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "DirectMap 4K – Memory mapped with 4KB pages",
@@ -4609,7 +4609,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Unevictable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Unevictable_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Unevictable – Kernel-pinned memory (not swappable)",
               "range": true,
@@ -4617,7 +4617,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Mlocked_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Mlocked_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Mlocked – Application-locked memory via mlock()",
               "range": true,
@@ -4713,7 +4713,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_HugePages_Total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - node_memory_HugePages_Free{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "(node_memory_HugePages_Total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - node_memory_HugePages_Free{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "HugePages Used – Currently allocated",
               "range": true,
@@ -4721,7 +4721,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HugePages_Rsvd{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HugePages_Rsvd{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "HugePages Reserved – Promised but unused",
               "range": true,
@@ -4729,7 +4729,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HugePages_Surp{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HugePages_Surp{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "HugePages Surplus – Dynamic pool extension",
               "range": true,
@@ -4737,7 +4737,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HugePages_Total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HugePages_Total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "HugePages Total – Preallocated pool size",
               "range": true,
@@ -4858,7 +4858,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Zswapped_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Zswapped_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Zswapped – Original data size before compression",
               "range": true,
@@ -4866,7 +4866,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Zswap_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Zswap_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Zswap – Compressed pool size in RAM",
               "range": true,
@@ -4974,7 +4974,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgpgin{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) * 1024",
+              "expr": "rate(node_vmstat_pgpgin{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) * 1024",
               "format": "time_series",
               "legendFormat": "Pagesin - Data paged in",
               "range": true,
@@ -4982,7 +4982,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgpgout{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) * 1024",
+              "expr": "rate(node_vmstat_pgpgout{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) * 1024",
               "format": "time_series",
               "legendFormat": "Pagesout - Data paged out",
               "range": true,
@@ -5090,7 +5090,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pswpin{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pswpin{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pswpin - Pages swapped in",
               "range": true,
@@ -5098,7 +5098,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pswpout{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pswpout{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pswpout - Pages swapped out",
               "range": true,
@@ -5232,7 +5232,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pgfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pgfault - Page major and minor fault ops",
               "range": true,
@@ -5240,7 +5240,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgmajfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pgmajfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pgmajfault - Major page fault ops",
               "range": true,
@@ -5248,7 +5248,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])  - rate(node_vmstat_pgmajfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pgfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])  - rate(node_vmstat_pgmajfault{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pgminfault - Minor page fault ops",
               "range": true,
@@ -5360,7 +5360,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_oom_kill{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_oom_kill{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "OOM Kills",
@@ -5501,7 +5501,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_load1{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_load1{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Load 1m",
               "range": true,
@@ -5509,7 +5509,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_load5{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_load5{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Load 5m",
               "range": true,
@@ -5517,7 +5517,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_load15{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_load15{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Load 15m",
               "range": true,
@@ -5525,7 +5525,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}) by (cpu))",
+              "expr": "count(count(node_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}) by (cpu))",
               "format": "time_series",
               "legendFormat": "CPU Core Count",
               "range": true,
@@ -5625,7 +5625,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_procs_blocked{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_procs_blocked{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Blocked (I/O Wait)",
               "range": true,
@@ -5633,7 +5633,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_procs_running{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_procs_running{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Runnable (Ready for CPU)",
               "range": true,
@@ -5641,7 +5641,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "increase(node_kernel_hung_tasks_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_kernel_hung_tasks_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Hung Tasks Detected (D state > timeout)",
               "range": true,
@@ -5822,7 +5822,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_processes_state{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_state{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ state }}",
@@ -5919,7 +5919,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_forks_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_forks_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Process Forks per second",
               "range": true,
@@ -6045,7 +6045,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_processes_pids{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_pids{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Number of PIDs",
@@ -6054,7 +6054,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_processes_max_processes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_max_processes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PIDs limit",
@@ -6181,7 +6181,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_processes_threads{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_threads{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Allocated threads",
@@ -6190,7 +6190,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_processes_max_threads{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_max_threads{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Threads limit",
@@ -6317,7 +6317,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filefd_maximum{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_filefd_maximum{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Max open files",
               "range": true,
@@ -6325,7 +6325,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filefd_allocated{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_filefd_allocated{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Open files",
               "range": true,
@@ -6435,7 +6435,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_context_switches_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_context_switches_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Context switches",
               "range": true,
@@ -6443,7 +6443,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_intr_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_intr_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Interrupts",
               "range": true,
@@ -6542,7 +6542,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_running_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_schedstat_running_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -6552,7 +6552,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_schedstat_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -6562,7 +6562,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / ((rate(node_schedstat_running_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) + rate(node_schedstat_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) > 0)",
+              "expr": "rate(node_schedstat_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / ((rate(node_schedstat_running_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) + rate(node_schedstat_waiting_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}}",
@@ -6725,7 +6725,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_cpu_scaling_frequency_hertz{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_cpu_scaling_frequency_hertz{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{ cpu }}",
@@ -6734,7 +6734,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "avg(node_cpu_scaling_frequency_max_hertz{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+              "expr": "avg(node_cpu_scaling_frequency_max_hertz{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Max",
@@ -6743,7 +6743,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "avg(node_cpu_scaling_frequency_min_hertz{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"})",
+              "expr": "avg(node_cpu_scaling_frequency_min_hertz{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"})",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Min",
@@ -6839,7 +6839,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_timeslices_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_schedstat_timeslices_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{ cpu }}",
@@ -6936,7 +6936,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum without (cpu) (rate(node_interrupts_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "sum without (cpu) (rate(node_interrupts_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ type }} - {{ info }}",
@@ -7063,7 +7063,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_entropy_available_bits{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_entropy_available_bits{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Entropy available",
               "range": true,
@@ -7071,7 +7071,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_entropy_pool_size_bits{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_entropy_pool_size_bits{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "Entropy pool max",
               "range": true,
@@ -7219,7 +7219,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_hwmon_temp_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ chip_name }} {{ sensor }}",
@@ -7227,7 +7227,7 @@
               "refId": "A"
             },
             {
-              "expr": "node_hwmon_temp_crit_alarm_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_crit_alarm_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7236,7 +7236,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_hwmon_temp_crit_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_crit_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ chip_name }} {{ sensor }} Critical",
@@ -7244,7 +7244,7 @@
               "refId": "C"
             },
             {
-              "expr": "node_hwmon_temp_crit_hyst_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_crit_hyst_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7252,7 +7252,7 @@
               "refId": "D"
             },
             {
-              "expr": "node_hwmon_temp_max_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_max_celsius{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7348,7 +7348,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "100 * node_cooling_device_cur_state{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} / (node_cooling_device_max_state{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} > 0)",
+              "expr": "100 * node_cooling_device_cur_state{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} / (node_cooling_device_max_state{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{name}} - {{type}}",
@@ -7445,7 +7445,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_hwmon_fan_rpm{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_fan_rpm{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ chip_name }} {{ sensor }}",
@@ -7454,7 +7454,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_hwmon_fan_min_rpm{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_fan_min_rpm{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7579,7 +7579,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum by (package) (rate(node_cpu_core_throttles_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "sum by (package) (rate(node_cpu_core_throttles_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
               "format": "time_series",
               "legendFormat": "Core asserts/s (pkg {{package}})",
               "range": true,
@@ -7587,7 +7587,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum by (package) (rate(node_cpu_package_throttles_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "sum by (package) (rate(node_cpu_package_throttles_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
               "format": "time_series",
               "legendFormat": "Package asserts/s (pkg {{package}})",
               "range": true,
@@ -7682,7 +7682,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_timex_estimated_error_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_estimated_error_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Estimated error",
@@ -7691,7 +7691,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_offset_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_offset_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Offset local vs reference",
@@ -7700,7 +7700,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_maxerror_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_maxerror_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Maximum error",
@@ -7796,7 +7796,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_timex_loop_time_constant{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_loop_time_constant{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PLL Time Constant",
@@ -7892,7 +7892,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_timex_sync_status{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_sync_status{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Sync status (1 = ok)",
@@ -7901,7 +7901,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_frequency_adjustment_ratio{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_frequency_adjustment_ratio{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Frequency Adjustment",
@@ -7910,7 +7910,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_tick_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_tick_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7920,7 +7920,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_tai_offset_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_tai_offset_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -8053,7 +8053,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "increase(node_edac_correctable_errors_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_edac_correctable_errors_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{controller}} - Correctable",
@@ -8062,7 +8062,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "increase(node_edac_uncorrectable_errors_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_edac_uncorrectable_errors_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{controller}} - Uncorrectable",
@@ -8181,7 +8181,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_power_supply_online{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_power_supply_online{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{power_supply}} online",
@@ -8190,7 +8190,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_power_supply_present{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_power_supply_present{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{power_supply}} present",
@@ -8376,7 +8376,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",state=\"activating\"}",
+              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",state=\"activating\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Activating",
@@ -8385,7 +8385,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",state=\"active\"}",
+              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",state=\"active\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Active",
@@ -8394,7 +8394,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",state=\"deactivating\"}",
+              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",state=\"deactivating\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Deactivating",
@@ -8403,7 +8403,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",state=\"failed\"}",
+              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",state=\"failed\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Failed",
@@ -8412,7 +8412,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",state=\"inactive\"}",
+              "expr": "node_systemd_units{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",state=\"inactive\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Inactive",
@@ -8509,7 +8509,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_systemd_socket_current_connections{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_systemd_socket_current_connections{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ name }}",
@@ -8606,7 +8606,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_systemd_socket_accepted_connections_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_systemd_socket_accepted_connections_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ name }}",
@@ -8703,7 +8703,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_systemd_socket_refused_connections_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_systemd_socket_refused_connections_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ name }}",
@@ -8841,14 +8841,14 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_reads_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_reads_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Read",
               "range": true,
               "refId": "A"
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_writes_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_writes_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Write",
               "range": true,
               "refId": "B"
@@ -8970,7 +8970,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_read_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_read_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -8979,7 +8979,7 @@
             {
               "editorMode": "code",
               "exemplar": false,
-              "expr": "rate(node_disk_written_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_written_bytes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{device}} - Write",
@@ -9103,7 +9103,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_read_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_reads_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
+              "expr": "rate(node_disk_read_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_reads_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
               "interval": "",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -9111,7 +9111,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_write_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_writes_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
+              "expr": "rate(node_disk_write_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_writes_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
               "interval": "",
               "legendFormat": "{{device}} - Write",
               "range": true,
@@ -9223,7 +9223,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_io_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_io_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - General IO",
               "range": true,
@@ -9231,7 +9231,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discard_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discard_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Discard/TRIM",
               "range": true,
@@ -9239,7 +9239,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_flush_requests_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_flush_requests_time_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Flush (write cache)",
               "range": true,
@@ -9351,7 +9351,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_io_time_weighted_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_io_time_weighted_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}}",
               "range": true,
@@ -9463,7 +9463,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_disk_io_now{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_disk_io_now{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "{{device}}",
               "range": true,
@@ -9586,14 +9586,14 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_reads_merged_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_reads_merged_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Read",
               "range": true,
               "refId": "A"
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_writes_merged_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_writes_merged_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Write",
               "range": true,
               "refId": "B"
@@ -9703,7 +9703,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discards_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discards_completed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Discards completed",
               "range": true,
@@ -9711,7 +9711,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discards_merged_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discards_merged_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Discards merged",
               "range": true,
@@ -9719,7 +9719,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_flush_requests_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_flush_requests_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Flush",
               "range": true,
@@ -9830,7 +9830,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discarded_sectors_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discarded_sectors_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}}",
               "range": true,
@@ -9926,7 +9926,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_files_free{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_files_free{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "range": true,
@@ -10023,7 +10023,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_readonly{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_readonly{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}} - ReadOnly",
               "range": true,
@@ -10031,7 +10031,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filesystem_device_error{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs|tmpfs'}",
+              "expr": "node_filesystem_device_error{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs|tmpfs'}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{mountpoint}} - Device error",
@@ -10128,7 +10128,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_files{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_files{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "range": true,
@@ -10251,7 +10251,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_packets_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_packets_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{device}} - Rx in",
@@ -10260,7 +10260,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_packets_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_packets_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{device}} - Tx out",
@@ -10370,7 +10370,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_errs_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_errs_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10378,7 +10378,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_errs_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_errs_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10487,7 +10487,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_drop_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_drop_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10495,7 +10495,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_drop_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_drop_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10591,7 +10591,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_nohandler_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_nohandler_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10687,7 +10687,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_frame_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_frame_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10796,7 +10796,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_fifo_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_fifo_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10804,7 +10804,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_fifo_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_fifo_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10913,7 +10913,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_colls_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_colls_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -11022,7 +11022,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_carrier_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_carrier_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -11131,7 +11131,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_compressed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_compressed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -11139,7 +11139,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_compressed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_compressed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -11235,7 +11235,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_multicast_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_multicast_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -11331,7 +11331,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_arp_entries{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_arp_entries{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "{{ device }} ARP Table",
               "range": true,
@@ -11457,7 +11457,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_nf_conntrack_entries{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_nf_conntrack_entries{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "NF conntrack entries",
               "range": true,
@@ -11465,7 +11465,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_nf_conntrack_entries_limit{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_nf_conntrack_entries_limit{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "NF conntrack limit",
               "range": true,
@@ -11583,7 +11583,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "increase(node_network_carrier_down_changes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_network_carrier_down_changes_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Link flaps",
               "range": true,
@@ -11591,7 +11591,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_network_carrier{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} - 1",
+              "expr": "node_network_carrier{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} - 1",
               "format": "time_series",
               "legendFormat": "{{device}} - Down state",
               "range": true,
@@ -11664,7 +11664,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} * 8",
+              "expr": "node_network_speed_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} * 8",
               "format": "time_series",
               "legendFormat": "{{ device }}",
               "range": true,
@@ -11736,7 +11736,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_network_mtu_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_network_mtu_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "{{ device }}",
               "range": true,
@@ -11847,7 +11847,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_alloc{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_alloc{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 Allocated Sockets",
@@ -11856,7 +11856,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 In-Use Sockets",
@@ -11865,7 +11865,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_orphan{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_orphan{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 Orphaned Sockets",
@@ -11874,7 +11874,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_tw{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_tw{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 TIME_WAIT Sockets",
@@ -11883,7 +11883,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "IPv6 In-Use Sockets",
               "range": true,
@@ -11980,7 +11980,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDPLITE_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDPLITE_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDPLite - In-Use Sockets",
@@ -11989,7 +11989,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP - In-Use Sockets",
@@ -11998,7 +11998,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDPLITE6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDPLITE6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDPLite - In-Use Sockets",
               "range": true,
@@ -12006,7 +12006,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDP - In-Use Sockets",
               "range": true,
@@ -12103,7 +12103,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_sockets_used{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_sockets_used{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Total sockets",
@@ -12201,7 +12201,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_FRAG_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_FRAG_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 FRAG - In-Use Sockets",
@@ -12210,7 +12210,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_RAW_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_RAW_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 RAW - In-Use Sockets",
@@ -12219,7 +12219,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_FRAG6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_FRAG6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "IPv6 FRAG - In-Use Sockets",
               "range": true,
@@ -12227,7 +12227,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_RAW6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_RAW6_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "IPv6 RAW - In-Use Sockets",
               "range": true,
@@ -12324,7 +12324,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP",
@@ -12333,7 +12333,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "UDP",
@@ -12342,7 +12342,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_FRAG_memory{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_FRAG_memory{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "Fragmentation",
               "range": true,
@@ -12439,7 +12439,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} / (node_sockstat_TCP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} > 0)",
+              "expr": "node_sockstat_TCP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} / (node_sockstat_TCP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP",
@@ -12448,7 +12448,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} / (node_sockstat_UDP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"} > 0)",
+              "expr": "node_sockstat_UDP_mem_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} / (node_sockstat_UDP_inuse{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "UDP",
@@ -12546,7 +12546,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_mem{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_mem{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP",
@@ -12555,7 +12555,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_mem{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP_mem{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "UDP",
@@ -12665,7 +12665,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_processed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_processed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Processed",
@@ -12674,7 +12674,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_dropped_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_dropped_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Dropped",
@@ -12775,7 +12775,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_times_squeezed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_times_squeezed_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Times Squeezed",
@@ -12892,7 +12892,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_received_rps_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_received_rps_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - RPS Wakeups",
@@ -12901,7 +12901,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_flow_limit_count_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_flow_limit_count_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Dropped",
@@ -13025,7 +13025,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_IpExt_InOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_IpExt_InOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 Rx in",
@@ -13034,7 +13034,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_IpExt_OutOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_IpExt_OutOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv4 Tx out",
               "range": true,
@@ -13042,7 +13042,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Ip6_InOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Ip6_InOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 Rx in",
               "range": true,
@@ -13050,7 +13050,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Ip6_OutOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Ip6_OutOctets{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 Tx out",
               "range": true,
@@ -13162,7 +13162,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_InSegs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_InSegs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "instant": false,
               "interval": "",
@@ -13171,7 +13171,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_OutSegs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_OutSegs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP Tx out",
@@ -13280,7 +13280,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_InDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_InDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in",
@@ -13289,7 +13289,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_OutDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_OutDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Tx out",
@@ -13298,7 +13298,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_InDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_InDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in",
               "range": true,
@@ -13306,7 +13306,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_OutDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_OutDatagrams{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Tx out",
               "range": true,
@@ -13418,7 +13418,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp_InMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp_InMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 ICMP Rx in",
@@ -13427,7 +13427,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp_OutMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp_OutMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 ICMP Tx out",
@@ -13436,7 +13436,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp6_InMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp6_InMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 ICMP Rx in",
               "range": true,
@@ -13444,7 +13444,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp6_OutMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp6_OutMsgs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 ICMP Tx out",
               "range": true,
@@ -13540,7 +13540,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_ListenOverflows{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_ListenOverflows{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Listen Overflows",
@@ -13549,7 +13549,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_ListenDrops{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_ListenDrops{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Listen Drops",
@@ -13558,7 +13558,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPSynRetrans{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPSynRetrans{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Retransmits",
@@ -13567,7 +13567,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_RetransSegs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_RetransSegs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Segment Retransmits",
               "range": true,
@@ -13575,7 +13575,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_InErrs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_InErrs{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Receive Errors",
               "range": true,
@@ -13583,7 +13583,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_OutRsts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_OutRsts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "RST Sent",
               "range": true,
@@ -13591,7 +13591,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPRcvQDrop{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPRcvQDrop{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Receive Queue Drops",
               "range": true,
@@ -13599,7 +13599,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPOFOQueue{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPOFOQueue{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Out-of-order Queued",
               "range": true,
@@ -13607,7 +13607,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPTimeouts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPTimeouts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "TCP Timeouts",
               "range": true,
@@ -13706,7 +13706,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in Errors",
@@ -13715,7 +13715,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_NoPorts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_NoPorts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP No Listener",
@@ -13724,7 +13724,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_UdpLite_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_UdpLite_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "IPv4 UDPLite Rx in Errors",
               "range": true,
@@ -13732,7 +13732,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_RcvbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_RcvbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in Buffer Errors",
@@ -13741,7 +13741,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_SndbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_SndbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Tx out Buffer Errors",
@@ -13750,7 +13750,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in Errors",
               "range": true,
@@ -13758,7 +13758,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_NoPorts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_NoPorts{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP No Listener",
               "range": true,
@@ -13766,7 +13766,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_UdpLite6_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_UdpLite6_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDPLite Rx in Errors",
               "range": true,
@@ -13774,7 +13774,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_RcvbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_RcvbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in Buffer Errors",
               "range": true,
@@ -13782,7 +13782,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_SndbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_SndbufErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Tx out Buffer Errors",
               "range": true,
@@ -13877,7 +13877,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 ICMP Rx In",
@@ -13886,7 +13886,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp6_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp6_InErrors{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 ICMP Rx In",
               "range": true,
@@ -13997,7 +13997,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_SyncookiesFailed{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_SyncookiesFailed{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Cookies Failed",
@@ -14006,7 +14006,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_SyncookiesRecv{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_SyncookiesRecv{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Cookies Validated",
@@ -14015,7 +14015,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_SyncookiesSent{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_SyncookiesSent{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Cookies Sent",
@@ -14112,7 +14112,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_netstat_Tcp_CurrEstab{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_netstat_Tcp_CurrEstab{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Current Connections",
@@ -14208,7 +14208,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",ip=\"v4\",queue=\"rx\"}",
+              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",ip=\"v4\",queue=\"rx\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in Queue",
@@ -14217,7 +14217,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",ip=\"v4\",queue=\"tx\"}",
+              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",ip=\"v4\",queue=\"tx\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Tx out Queue",
@@ -14226,7 +14226,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",ip=\"v6\",queue=\"rx\"}",
+              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",ip=\"v6\",queue=\"rx\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in Queue",
               "range": true,
@@ -14234,7 +14234,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\",ip=\"v6\",queue=\"tx\"}",
+              "expr": "node_udp_queues{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\",ip=\"v6\",queue=\"tx\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Tx out Queue",
               "range": true,
@@ -14330,7 +14330,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_ActiveOpens{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_ActiveOpens{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Active Opens",
@@ -14339,7 +14339,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_PassiveOpens{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_PassiveOpens{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Passive Opens",
@@ -14437,7 +14437,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"established\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"established\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Established",
@@ -14446,7 +14446,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"fin_wait2\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"fin_wait2\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "FIN_WAIT2",
@@ -14455,7 +14455,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"listen\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"listen\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Listen",
@@ -14464,7 +14464,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"time_wait\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"time_wait\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TIME_WAIT",
@@ -14473,7 +14473,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"close_wait\", instance=\"$node\", job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"close_wait\", instance=\"$node\", job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CLOSE_WAIT",
@@ -14571,7 +14571,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"syn_sent\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"syn_sent\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "SYN_SENT",
               "range": true,
@@ -14579,7 +14579,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"syn_recv\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"syn_recv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "SYN_RECV",
               "range": true,
@@ -14587,7 +14587,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"fin_wait1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"fin_wait1\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "FIN_WAIT1",
               "range": true,
@@ -14595,7 +14595,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"close\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"close\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "CLOSE",
               "range": true,
@@ -14603,7 +14603,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"last_ack\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"last_ack\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "LAST_ACK",
               "range": true,
@@ -14611,7 +14611,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"closing\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"closing\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "CLOSING",
               "range": true,
@@ -14707,7 +14707,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"rx_queued_bytes\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"rx_queued_bytes\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "RX Queued (waiting to be read)",
               "range": true,
@@ -14715,7 +14715,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",state=\"tx_queued_bytes\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",state=\"tx_queued_bytes\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "legendFormat": "TX Queued (waiting to be sent)",
               "range": true,
@@ -14828,7 +14828,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_scrape_collector_duration_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_scrape_collector_duration_seconds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{collector}}",
@@ -14924,7 +14924,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(process_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(process_cpu_seconds_total{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Process CPU Usage",
@@ -15091,7 +15091,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "process_virtual_memory_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "process_virtual_memory_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "Virtual Memory",
               "range": true,
@@ -15099,7 +15099,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "process_virtual_memory_max_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "process_virtual_memory_max_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "Virtual Memory Limit",
               "range": true,
@@ -15107,7 +15107,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "process_resident_memory_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "process_resident_memory_bytes{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "Resident Memory (RSS)",
               "range": true,
@@ -15249,7 +15249,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "process_max_fds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "process_max_fds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "Maximum open file descriptors",
               "range": true,
@@ -15257,7 +15257,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "process_open_fds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "process_open_fds{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "interval": "",
               "legendFormat": "Open file descriptors",
               "range": true,
@@ -15335,7 +15335,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_scrape_collector_success{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_scrape_collector_success{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{collector}}",
@@ -15344,7 +15344,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "1 - node_textfile_scrape_error{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "1 - node_textfile_scrape_error{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "textfile",
@@ -15378,10 +15378,10 @@
           "uid": "victoriametrics"
         },
         "query": {
-          "query": "label_values(node_uname_info{job=\"node-exporter\",node=\"openmediavault-1\"}, k8s_cluster_name)",
+          "query": "label_values(node_uname_info{job=\"node-exporter\",node=\"omv\"}, k8s_cluster_name)",
           "refId": "cluster"
         },
-        "definition": "label_values(node_uname_info{job=\"node-exporter\",node=\"openmediavault-1\"}, k8s_cluster_name)",
+        "definition": "label_values(node_uname_info{job=\"node-exporter\",node=\"omv\"}, k8s_cluster_name)",
         "refresh": 1,
         "sort": 1,
         "multi": false,
@@ -15401,7 +15401,7 @@
         "name": "job",
         "options": [],
         "query": {
-          "query": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\"}, job)",
+          "query": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\"}, job)",
           "refId": "Prometheus-job-Variable-Query"
         },
         "refresh": 1,
@@ -15415,13 +15415,13 @@
           "type": "prometheus",
           "uid": "victoriametrics"
         },
-        "definition": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"$job\"}, nodename)",
+        "definition": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",job=\"$job\"}, nodename)",
         "includeAll": false,
         "label": "Nodename",
         "name": "nodename",
         "options": [],
         "query": {
-          "query": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"$job\"}, nodename)",
+          "query": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",job=\"$job\"}, nodename)",
           "refId": "Prometheus-nodename-Variable-Query"
         },
         "refresh": 1,
@@ -15435,13 +15435,13 @@
           "type": "prometheus",
           "uid": "victoriametrics"
         },
-        "definition": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"$job\", nodename=\"$nodename\"}, instance)",
+        "definition": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",job=\"$job\", nodename=\"$nodename\"}, instance)",
         "includeAll": false,
         "label": "Instance",
         "name": "node",
         "options": [],
         "query": {
-          "query": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"openmediavault-1\",job=\"$job\", nodename=\"$nodename\"}, instance)",
+          "query": "label_values(node_uname_info{k8s_cluster_name=~\"$k8s_cluster_name\",node=\"omv\",job=\"$job\", nodename=\"$nodename\"}, instance)",
           "refId": "Prometheus-node-Variable-Query"
         },
         "refresh": 1,

@@ -11,7 +11,7 @@ spec:
     - name: omv-smart-health
       rules:
         - alert: OMVSMARTMetricsMissing
-          expr: absent(up{job="smartctl",node="openmediavault-1"})
+          expr: absent(up{job="smartctl",node="omv"})
           for: 10m
           labels:
             severity: critical
@@ -23,12 +23,12 @@ spec:
           expr: >-
             (
               (count by (k8s_cluster_name, job, node, instance)
-                (smartctl_device_smart_status{job="smartctl",node="openmediavault-1"})
+                (smartctl_device_smart_status{job="smartctl",node="omv"})
                 or on (k8s_cluster_name, job, node, instance)
-                (0 * up{job="smartctl",node="openmediavault-1"})) < 7
+                (0 * up{job="smartctl",node="omv"})) < 7
             )
             and on (k8s_cluster_name, job, node, instance)
-            (up{job="smartctl",node="openmediavault-1"} == 1)
+            (up{job="smartctl",node="omv"} == 1)
           for: 15m
           labels:
             severity: warning

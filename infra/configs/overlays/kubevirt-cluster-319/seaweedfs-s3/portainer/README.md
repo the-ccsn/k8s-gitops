@@ -60,7 +60,7 @@ current maintenance Stack:
    Confirm the native host metrics describe OMV and its real filesystems, and
    that port 9100 cannot be reached off-host.
 4. Only then publish the host ScrapeConfig using `job="node-exporter"` and
-   `node="openmediavault-1"`, with the existing native node alerts and the
+   `node="omv"`, with the existing native node alerts and the
    **OMV / Node Exporter Full** dashboard. The Kubernetes node dashboard is not
    an OMV host view. Include target-absence coverage for this known external
    host; the other three exporters must not hide its loss.

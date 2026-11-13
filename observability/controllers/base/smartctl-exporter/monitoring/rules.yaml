@@ -1,0 +1,41 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: smartctl-exporter
+  labels:
+    application: smartctl-exporter
+    component: host
+spec:
+  groups:
+    - name: smartctl-exporter-coverage
+      rules:
+        - alert: SMARTNodeMetricsMissing
+          expr: >-
+            max by (k8s_cluster_name, node)
+              (kube_node_labels{label_observability_ccsn_dev_smartctl_exporter="true"})
+            unless on (k8s_cluster_name, node)
+            count by (k8s_cluster_name, node) (up{job="smartctl"})
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'SMART target is missing for opted-in node {{ $labels.node }}'
+            description: Check the node label, DaemonSet scheduling, Pod readiness and PodMonitor discovery. An existing failed target is covered by ScrapeTargetDown.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/smartctl-exporter/README.md
+        - alert: SMARTNodeDeviceCoverageIncomplete
+          expr: >-
+            ((count by (k8s_cluster_name, job, node, instance)
+              (smartctl_device_smart_status{job="smartctl",application="smartctl-exporter"})
+            or on (k8s_cluster_name, job, node, instance)
+              (0 * smartctl_devices{job="smartctl",application="smartctl-exporter"}))
+            < on (k8s_cluster_name, job, node, instance)
+              clamp_min(smartctl_devices{job="smartctl",application="smartctl-exporter"}, 1))
+            and on (k8s_cluster_name, job, node, instance)
+              (up{job="smartctl",application="smartctl-exporter"} == 1)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'SMART readings are incomplete on {{ $labels.node }}'
+            description: The exporter is reachable but has no physical disks or fewer health readings than selected devices. Inspect raw-device permissions, native smartctl output and the physical-device filter. This does not prove the inventory of disks hidden from scanning.
+            runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/observability/controllers/base/smartctl-exporter/README.md

@@ -5,6 +5,7 @@ resources:
   - ../../../base/prometheus-alertmanager/
   - ../../../base/blackbox-exporter/
   - ../../../base/headlamp-metrics/
+  - ../../../base/smartctl-exporter/
 
 components:
   - ../../../../components/flux-event-tracing/

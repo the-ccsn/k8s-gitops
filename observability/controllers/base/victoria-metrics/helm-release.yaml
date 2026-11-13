@@ -185,7 +185,7 @@ spec:
                     - metadata
                     - creationTimestamp
       metricLabelsAllowlist:
-        - nodes=[topology.kubernetes.io/zone]
+        - nodes=[topology.kubernetes.io/zone,observability.ccsn.dev/smartctl-exporter]
       podLabels:
         istio.io/dataplane-mode: ambient
       resources:

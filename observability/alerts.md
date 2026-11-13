@@ -110,11 +110,19 @@ adds native node-exporter metrics over the existing mTLS frontend, alongside
 SeaweedFS metrics and transport probing. It reuses node resource/storage rules
 and explicitly checks for disappearance of the external host. The separate
 [OMV SMART addition](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart)
-prepares authenticated collection and nine rules for seven verified physical
-ATA/SAS disks: health, temperature, standard sector counters, SAS media errors
-and coverage. It requires the documented external exporter acceptance before
+provides authenticated collection for seven verified physical ATA/SAS disks.
+Seven shared `SMART*` rules cover health, temperature, standard sector counters,
+SAS media errors and prefailure thresholds on every `job="smartctl"` host. Two
+`OMVSMART*` rules retain OMV's discovery and seven-disk expectations. New hosts
+use the [shared target contract](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#additional-smart-hosts)
+and their own inventory expectations; seven disks is not a global requirement.
+New collectors require their documented exporter acceptance before
 publishing Kubernetes resources. Cached last-good readings have no native
 freshness timestamp; SMART does not establish controller/battery health.
+The [node SMART DaemonSet](controllers/base/smartctl-exporter/README.md) uses the
+same native job and health rules for labeled Kubernetes nodes, including the
+verified PERC member disks. Its two coverage rules detect absent node targets
+and missing readings from selected devices without a manual host list.
 Timex is disabled on OMV, so the clock
 rules do not cover that host. Empty hardware selectors cannot fill these gaps;
 device visibility must be confirmed before claiming coverage.

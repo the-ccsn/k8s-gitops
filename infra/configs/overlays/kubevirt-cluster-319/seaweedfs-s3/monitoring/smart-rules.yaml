@@ -4,7 +4,7 @@ metadata:
   name: omv-smart-health
   namespace: monitoring
   labels:
-    application: openmediavault
+    application: smartctl
     component: rules
 spec:
   groups:
@@ -36,79 +36,81 @@ spec:
             summary: Fewer than seven OMV physical disks report SMART health
             description: Seven unique physical disks were verified. Check device discovery, raw-I/O permissions, standby state and exporter logs. Update the expected count only after an intentional hardware change; cached SMART data does not prove fresh reads.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTHealthFailed
-          expr: smartctl_device_smart_status{job="smartctl",node="openmediavault-1"} == 0
+    - name: smart-health
+      rules:
+        - alert: SMARTHealthFailed
+          expr: smartctl_device_smart_status{job="smartctl"} == 0
           for: 5m
           labels:
             severity: critical
           annotations:
-            summary: 'OMV disk reports failed SMART health: {{ $labels.device }}'
-            description: Inspect this physical disk through its stable by-id path. Confirm the affected filesystem and SeaweedFS volumes before planning replacement; do not alter ongoing EC maintenance automatically.
+            summary: 'Disk reports failed SMART health: {{ $labels.node }} / {{ $labels.device }}'
+            description: Inspect this physical disk through its stable by-id path. Confirm the owning host, filesystem and workload before planning replacement; do not alter storage automatically.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTTemperatureHigh
+        - alert: SMARTTemperatureHigh
           expr: >-
-            (smartctl_device_temperature{job="smartctl",node="openmediavault-1",temperature_type="current"}
+            (smartctl_device_temperature{job="smartctl",temperature_type="current"}
               >= on (k8s_cluster_name, job, node, instance, device)
-              (smartctl_device_temperature{job="smartctl",node="openmediavault-1",temperature_type="drive_trip"} - 5))
+              (smartctl_device_temperature{job="smartctl",temperature_type="drive_trip"} - 5))
             or
-            ((smartctl_device_temperature{job="smartctl",node="openmediavault-1",temperature_type="current"} >= 55)
+            ((smartctl_device_temperature{job="smartctl",temperature_type="current"} >= 55)
               unless on (k8s_cluster_name, job, node, instance, device)
-              smartctl_device_temperature{job="smartctl",node="openmediavault-1",temperature_type="drive_trip"})
+              smartctl_device_temperature{job="smartctl",temperature_type="drive_trip"})
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: 'OMV physical disk temperature is high: {{ $labels.device }}'
+            summary: 'Physical disk temperature is high: {{ $labels.node }} / {{ $labels.device }}'
             description: The temperature is within 5 C of the disk-reported trip threshold, or at least 55 C when no threshold is reported. Check airflow and workload; vendor operating limits remain authoritative.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTTemperatureHigh
+        - alert: SMARTTemperatureHigh
           expr: >-
-            smartctl_device_temperature{job="smartctl",node="openmediavault-1",temperature_type="current"}
+            smartctl_device_temperature{job="smartctl",temperature_type="current"}
               >= on (k8s_cluster_name, job, node, instance, device)
-              smartctl_device_temperature{job="smartctl",node="openmediavault-1",temperature_type="drive_trip"}
+              smartctl_device_temperature{job="smartctl",temperature_type="drive_trip"}
           for: 5m
           labels:
             severity: critical
           annotations:
-            summary: 'OMV disk reached its reported temperature limit: {{ $labels.device }}'
+            summary: 'Disk reached its reported temperature limit: {{ $labels.node }} / {{ $labels.device }}'
             description: The current temperature reached the native drive_trip threshold. Inspect cooling immediately; this rule has no invented critical threshold for disks without one.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTPendingOrUncorrectableSectors
-          expr: smartctl_device_attribute{job="smartctl",node="openmediavault-1",attribute_value_type="raw",attribute_id=~"197|198"} > 0
+        - alert: SMARTPendingOrUncorrectableSectors
+          expr: smartctl_device_attribute{job="smartctl",attribute_value_type="raw",attribute_id=~"197|198"} > 0
           for: 5m
           labels:
             severity: warning
           annotations:
-            summary: 'OMV disk has pending or uncorrectable sectors: {{ $labels.device }}'
+            summary: 'Disk has pending or uncorrectable sectors: {{ $labels.node }} / {{ $labels.device }}'
             description: Native ATA attribute 197 or 198 is nonzero. Inspect the disk and its backups before scheduling a self-test or replacement; this rule never starts a test.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTReallocatedSectorsIncreasing
-          expr: delta(smartctl_device_attribute{job="smartctl",node="openmediavault-1",attribute_value_type="raw",attribute_id="5",attribute_name="Reallocated_Sector_Ct"}[1h]) > 0
+        - alert: SMARTReallocatedSectorsIncreasing
+          expr: delta(smartctl_device_attribute{job="smartctl",attribute_value_type="raw",attribute_id="5",attribute_name="Reallocated_Sector_Ct"}[1h]) > 0
           for: 5m
           labels:
             severity: warning
           annotations:
-            summary: 'OMV disk reallocated-sector count is increasing: {{ $labels.device }}'
+            summary: 'Disk reallocated-sector count is increasing: {{ $labels.node }} / {{ $labels.device }}'
             description: The native ATA reallocated-sector gauge increased over one hour. Historical nonzero counts alone do not trigger this alert; vendor-specific raw attributes are not substituted.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTSASMediaErrorsIncreasing
+        - alert: SMARTSASMediaErrorsIncreasing
           expr: >-
-            (delta(smartctl_scsi_grown_defect_list{job="smartctl",node="openmediavault-1"}[1h]) > 0)
-            or (delta(smartctl_read_total_uncorrected_errors{job="smartctl",node="openmediavault-1"}[1h]) > 0)
-            or (delta(smartctl_write_total_uncorrected_errors{job="smartctl",node="openmediavault-1"}[1h]) > 0)
+            (delta(smartctl_scsi_grown_defect_list{job="smartctl"}[1h]) > 0)
+            or (delta(smartctl_read_total_uncorrected_errors{job="smartctl"}[1h]) > 0)
+            or (delta(smartctl_write_total_uncorrected_errors{job="smartctl"}[1h]) > 0)
           for: 5m
           labels:
             severity: warning
           annotations:
-            summary: 'OMV SAS disk media errors are increasing: {{ $labels.device }}'
+            summary: 'SAS disk media errors are increasing: {{ $labels.node }} / {{ $labels.device }}'
             description: A native grown-defect or uncorrected read/write gauge increased over one hour. Inspect which metric triggered and correlate disk I/O; corrected ECC totals are not treated as media failures.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart
-        - alert: OMVSMARTPrefailureThreshold
-          expr: floor(smartctl_device_smartctl_exit_status{job="smartctl",node="openmediavault-1"} / 16) % 2 == 1
+        - alert: SMARTPrefailureThreshold
+          expr: floor(smartctl_device_smartctl_exit_status{job="smartctl"} / 16) % 2 == 1
           for: 5m
           labels:
             severity: warning
           annotations:
-            summary: 'OMV disk reports an active prefailure threshold: {{ $labels.device }}'
+            summary: 'Disk reports an active prefailure threshold: {{ $labels.node }} / {{ $labels.device }}'
             description: smartctl exit-status bit 4 is set. An unsupported optional command or an old error-log entry alone does not trigger this alert; inspect native attributes and health before taking action.
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-physical-disk-smart

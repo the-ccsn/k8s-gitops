@@ -16,6 +16,7 @@ resources:
   - ../../../controllers/base/tempo/monitoring/
   - ../../../controllers/base/prometheus-operator/monitoring/
   - ../../../controllers/base/blackbox-exporter/monitoring/
+  - ../../../controllers/base/smartctl-exporter/monitoring/
   - ../../base/victoria-metrics/
   - ../../base/grafana/
   - ../../base/waypoint/

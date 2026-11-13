@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: smartctl-exporter
+  labels:
+    app.kubernetes.io/name: smartctl-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: smartctl-exporter
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: smartctl-exporter
+        application: smartctl-exporter
+        component: host
+        istio.io/dataplane-mode: ambient
+    spec:
+      serviceAccountName: smartctl-exporter
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+        observability.ccsn.dev/smartctl-exporter: "true"
+      tolerations:
+        - operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: smartctl-exporter
+          # Use the same verified ATA/SAS producer as the external OMV exporter.
+          image: quay.io/prometheuscommunity/smartctl-exporter:v0.14.0@sha256:cfe22c36d7d2fac48ebf619707305acb65eb0fb670656eb80f356e606d782bc1
+          args:
+            - --web.listen-address=:9633
+            - --smartctl.scan-device-type=by-id
+            # ATA IDs, physical NAA-5 SCSI IDs, and native MegaRAID members.
+            # Exclude Longhorn iSCSI devices and duplicate RAID logical volumes.
+            - '--smartctl.device-include=^(ata-.+|scsi-35[0-9a-f]{15}|bus_[0-9]+_(sat\+)?megaraid_[0-9]+)$'
+            - --smartctl.interval=60s
+            - --smartctl.rescan=10m
+            - --smartctl.powermode-check=standby
+          ports:
+            - name: metrics
+              containerPort: 9633
+          readinessProbe:
+            httpGet:
+              path: /
+              port: metrics
+          livenessProbe:
+            httpGet:
+              path: /
+              port: metrics
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          securityContext:
+            # Raw block devices and MegaRAID ioctls require host device access.
+            privileged: true
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: devices
+              mountPath: /dev
+              readOnly: true
+      volumes:
+        - name: devices
+          hostPath:
+            path: /dev
+            type: Directory

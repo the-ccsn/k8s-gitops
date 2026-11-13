@@ -32,7 +32,7 @@ configMapGenerator:
       disableNameSuffixHash: true
       annotations:
         kustomize.toolkit.fluxcd.io/substitute: disabled
-  - name: omv-smart-dashboard
+  - name: smart-disks-dashboard
     namespace: grafana
     files:
       - smart-dashboard.json

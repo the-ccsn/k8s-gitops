@@ -126,12 +126,26 @@ are raw pending/uncorrectable counts; ID 5 additionally requires the standard
 Native SAS gauges use `delta`, not counter `rate`; corrected ECC totals alone
 are not treated as failures. Historical nonzero error logs do not page forever.
 
-The command exit status is a bitmask, not a Boolean health result. Bit 4 denotes
+The command exit status is a bitmask, not a Boolean health result. Mask 16 denotes
 an active prefailure threshold. An unsupported optional error-log command can
 produce status 4 while health and attributes remain valid, as observed on this
-host's SATA SSD; that value alone is not a failed disk. Inspect the original
-flags and attributes before scheduling tests or replacement. No alert performs
+host's SATA SSD and the verified DL160/DL380 SSDs; that value alone is not a
+failed disk. Inspect the original flags and attributes before scheduling tests
+or replacement. No alert performs
 recovery, disk writes or self-tests.
+
+The pinned official exporter always includes `--log=error` in its native
+[read command](https://github.com/prometheus-community/smartctl_exporter/blob/ef5c03de02cb793e6a1540bef943fe6a167de635/readjson.go#L67).
+It has no native per-device option to omit that request. Keep the official
+image and original exit flags rather than rewriting results or adding a command
+wrapper. The diagnostic table identifies each affected host/disk and displays
+the numeric mask with single-bit meanings. Value 4 remains a command/checksum
+warning; only the original device output establishes an unsupported error log.
+Combined masks remain numeric and must be interpreted bit by bit. The table
+shows current nonzero readings; an empty table alone does not establish healthy
+collection. The summary card counts disks with nonzero flags per host instead
+of taking the numeric maximum of bitmasks. Health and sector alerts remain
+independent.
 
 Native exporter limits matter: failed reads can leave cached last-good results
 with no per-disk freshness timestamp. Startup missing-health and rescan removal
@@ -151,16 +165,25 @@ Upstream SHA-256:
 proposal, not a released official mixin. Only its dashboard is imported;
 upstream generic alerts are not installed.
 
-Local bindings use UID `omv-smart`, datasource `victoriametrics`, and collection
+Local bindings use UID `smart-disks`, GrafanaDashboard `smart-disks`, ConfigMap
+`smart-disks-dashboard`, tags `smartctl`, `storage`, `hardware`, datasource
+`victoriametrics`, and collection
 cluster/instance matchers on every native selector. Two query
 corrections preserve no-data behavior: command flags no longer invent success
 when metrics are absent, and failed-disk count handles all-failed inputs. The
 command-flags card is explicitly diagnostic, not a failed-health indicator.
-The layout, native metric names and units are retained. NVMe/wear panels without
+The decorative header is replaced by a native per-disk command-diagnostics
+table; the other panel positions, native metric names and units are retained.
+Command cards use the latest reading rather than a maximum over the dashboard
+time range. NVMe/wear panels without
 a matching producer remain empty. SAS errors are available through native
 Explore queries and alerts; the inherited overview has no dedicated SAS error
 panel. The host dashboard remains the capacity/I/O view. Neither dashboard
 provides Grafana user-access isolation.
+
+The new address is `/d/smart-disks`. Flux owns the resource rename and the
+Grafana Operator's native finalizer removes the old dashboard by its stored UID.
+No old UID alias or duplicate dashboard is retained.
 
 ### Additional SMART hosts
 

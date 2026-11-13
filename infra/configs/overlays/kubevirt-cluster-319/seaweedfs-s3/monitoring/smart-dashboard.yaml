@@ -1,7 +1,7 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: omv-smart
+  name: smart-disks
   namespace: grafana
   annotations:
     kustomize.toolkit.fluxcd.io/substitute: disabled
@@ -14,5 +14,5 @@ spec:
       dashboards: grafana
   folderUID: infrastructure
   configMapRef:
-    name: omv-smart-dashboard
+    name: smart-disks-dashboard
     key: smart-dashboard.json

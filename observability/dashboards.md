@@ -29,6 +29,11 @@ dashboards are managed by their own charts and are outside this count.
 | Physical disks | SMART / Physical Disks (multiple hosts) | [Pinned community smartctl mixin and native ATA/SAS coverage](../infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#additional-smart-hosts) |
 | Installation-specific | Application Logs, Ingress Requests, Observability Platform | [Log investigation](controllers/base/loki/README.md), [ingress correlation](../infra/configs/base/istio/monitoring/README.md), [metrics runtime](controllers/base/victoria-metrics/README.md) |
 
+The shared physical-disk dashboard uses UID `smart-disks` (`/d/smart-disks`) and
+tags `smartctl`, `storage`, `hardware`. Its command-diagnostics table shows
+nonzero native exit flags per host/disk; these flags are distinct from failed
+SMART health and pending-sector alerts.
+
 ## Follow an ingress request
 
 Open **Ingress Requests**, select the cluster, time range and entrypoint, then

@@ -1,6 +1,79 @@
 {
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoriametrics"
+      },
+      "description": "Current nonzero command exit masks per physical disk. Value 4 is a command/checksum warning; some SSDs reject the optional error-log request. Confirm the original smartctl output. Failed health and sector alerts are independent. Combined masks stay numeric. Empty results can also mean missing metrics: check collection and health panels.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Exit flags"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "index": 0,
+                        "text": "0: Command OK"
+                      },
+                      "1": {
+                        "index": 1,
+                        "text": "1: Command syntax error"
+                      },
+                      "2": {
+                        "index": 2,
+                        "text": "2: Device unavailable / standby"
+                      },
+                      "4": {
+                        "index": 3,
+                        "text": "4: Command / checksum issue"
+                      },
+                      "8": {
+                        "index": 4,
+                        "text": "8: SMART health failed"
+                      },
+                      "16": {
+                        "index": 5,
+                        "text": "16: Prefailure threshold"
+                      },
+                      "32": {
+                        "index": 6,
+                        "text": "32: Past threshold violation"
+                      },
+                      "64": {
+                        "index": 7,
+                        "text": "64: Device error-log entries"
+                      },
+                      "128": {
+                        "index": 8,
+                        "text": "128: Self-test error-log entries"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "gridPos": {
         "h": 4,
         "w": 24,
@@ -8,12 +81,50 @@
         "y": 0
       },
       "id": 31,
+      "type": "table",
+      "title": "SMART query issues by disk",
       "options": {
-        "content": "<div style=\"background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 60%, #0f172a 100%); padding: 18px 28px; display: flex; align-items: center; gap: 22px; border-radius: 6px; border-left: 4px solid #3b82f6;\">\n  <div>\n    <div style=\"color: #e2e8f0; margin: 0; font-size: 26px; font-weight: 700;\">S.M.A.R.T. Disk Health Monitoring</div>\n    <div style=\"color: #64748b; margin: 5px 0 0; font-size: 13px;\">Self-Monitoring, Analysis and Reporting Technology &mdash; real-time disk diagnostics &amp; predictive failure analysis</div>\n  </div>\n</div>",
-        "mode": "html"
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true
       },
-      "transparent": true,
-      "type": "text"
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoriametrics"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max by (node, instance, device) (smartctl_device_smartctl_exit_status{k8s_cluster_name=~\"$k8s_cluster_name\",job=\"smartctl\",instance=~\"$instance\"} != 0)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "Command flags"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "instance": true
+            },
+            "indexByName": {
+              "node": 0,
+              "device": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "node": "Host",
+              "device": "Disk",
+              "Value": "Exit flags"
+            }
+          }
+        }
+      ]
     },
     {
       "collapsed": false,
@@ -33,7 +144,7 @@
         "type": "prometheus",
         "uid": "victoriametrics"
       },
-      "description": "Native smartctl bitmask. Nonzero can mean an unsupported optional command or historical errors, not failed disk health. Check the health panel and per-disk flags; cached results do not prove a fresh read.",
+      "description": "Number of disks per host whose latest native smartctl exit mask is nonzero. The table above shows devices and original numeric flags. An unsupported optional command may set flags while health and attributes remain valid. This count is separate from failed SMART health; absent metrics do not become zero.",
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -41,21 +152,10 @@
               "options": {
                 "0": {
                   "index": 0,
-                  "text": "Running"
+                  "text": "No query flags"
                 }
               },
               "type": "value"
-            },
-            {
-              "options": {
-                "from": 1,
-                "result": {
-                  "index": 1,
-                  "text": "smartctl errors"
-                },
-                "to": null
-              },
-              "type": "range"
             }
           ],
           "thresholds": {
@@ -86,7 +186,7 @@
         "graphMode": "none",
         "reduceOptions": {
           "calcs": [
-            "max"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -102,14 +202,14 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max by (node, instance) (smartctl_device_smartctl_exit_status{k8s_cluster_name=~\"$k8s_cluster_name\",job=\"smartctl\",instance=~\"$instance\"})",
-          "instant": false,
+          "expr": "count by (node, instance) (smartctl_device_smartctl_exit_status{k8s_cluster_name=~\"$k8s_cluster_name\",job=\"smartctl\",instance=~\"$instance\"} != 0) or 0 * count by (node, instance) (smartctl_device_smartctl_exit_status{k8s_cluster_name=~\"$k8s_cluster_name\",job=\"smartctl\",instance=~\"$instance\"})",
+          "instant": true,
           "legendFormat": "{{node}}",
-          "range": true,
-          "refId": "Probe status"
+          "range": false,
+          "refId": "Disks with query flags"
         }
       ],
-      "title": "SMART command exit flags",
+      "title": "Disks with SMART query flags",
       "type": "stat"
     },
     {
@@ -1180,9 +1280,9 @@
   "refresh": "60s",
   "schemaVersion": 39,
   "tags": [
-    "omv",
     "smartctl",
-    "storage"
+    "storage",
+    "hardware"
   ],
   "templating": {
     "list": [
@@ -1245,7 +1345,7 @@
   },
   "timezone": "browser",
   "title": "SMART / Physical Disks",
-  "uid": "omv-smart",
+  "uid": "smart-disks",
   "version": 1,
   "id": null,
   "editable": false,

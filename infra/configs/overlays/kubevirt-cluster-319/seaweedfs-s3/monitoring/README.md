@@ -60,7 +60,7 @@ host/component bindings, and validate active queries and bucket deduplication.
 `host-scrape-config.yaml` collects the official node-exporter through
 `https://openmediavault.local:9443/node/metrics`, using the existing mTLS client
 Secret and hostname verification. It retains native `node_*` metrics with
-`job="node-exporter"`, `node="openmediavault-1"` and the collecting cluster's
+`job="node-exporter"`, `node="omv"` and the collecting cluster's
 `k8s_cluster_name`. OMV is not a Kubernetes node. The exporter and frontend must
 pass the [Stack acceptance steps](../portainer/README.md#host-telemetry-addition)
 before publishing this target. Collection runs every 30 seconds with a
@@ -99,7 +99,7 @@ queries and do not provide Grafana user-access isolation.
 `smart-scrape-config.yaml` adds native smartctl-exporter metrics through
 `https://openmediavault.local:9443/smart/metrics`, using the existing mTLS client
 and hostname verification. Its native job is `smartctl`, host label is
-`node="openmediavault-1"`, and `k8s_cluster_name` identifies the collecting cluster.
+`node="omv"`, and `k8s_cluster_name` identifies the collecting cluster.
 It runs every 60 seconds with a ten-second timeout and a 5,000-sample limit.
 Publish these resources only after the
 [external Stack acceptance barrier](../portainer/README.md#physical-disk-smart-addition).

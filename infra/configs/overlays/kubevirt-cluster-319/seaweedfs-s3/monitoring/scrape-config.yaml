@@ -81,7 +81,7 @@ spec:
       replacement: seaweedfs
     - action: replace
       targetLabel: node
-      replacement: openmediavault-1
+      replacement: omv
     - action: replace
       targetLabel: application
       replacement: seaweedfs

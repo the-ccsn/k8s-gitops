@@ -34,7 +34,7 @@ spec:
       replacement: smartctl
     - action: replace
       targetLabel: node
-      replacement: openmediavault-1
+      replacement: omv
     - action: replace
       targetLabel: application
       replacement: openmediavault

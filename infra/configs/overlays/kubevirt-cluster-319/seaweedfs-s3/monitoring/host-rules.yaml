@@ -11,7 +11,7 @@ spec:
     - name: omv-host-health
       rules:
         - alert: OMVHostMetricsMissing
-          expr: absent(up{job="node-exporter",node="openmediavault-1"})
+          expr: absent(up{job="node-exporter",node="omv"})
           for: 10m
           labels:
             severity: critical
@@ -21,9 +21,9 @@ spec:
             runbook_url: https://github.com/the-ccsn/k8s-gitops/blob/main/infra/configs/overlays/kubevirt-cluster-319/seaweedfs-s3/monitoring/README.md#omv-host-metrics
         - alert: OMVHostCollectorFailed
           expr: >-
-            (node_scrape_collector_success{job="node-exporter",node="openmediavault-1",collector=~"cpu|diskstats|filesystem|meminfo|netdev|pressure"} == 0)
+            (node_scrape_collector_success{job="node-exporter",node="omv",collector=~"cpu|diskstats|filesystem|meminfo|netdev|pressure"} == 0)
             and on (k8s_cluster_name, job, node, instance)
-            (up{job="node-exporter",node="openmediavault-1"} == 1)
+            (up{job="node-exporter",node="omv"} == 1)
           for: 10m
           labels:
             severity: warning

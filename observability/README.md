@@ -92,10 +92,10 @@ enrolled namespace. The native `service.namespace` identifies the subscribing
 Alert's namespace; the emitting controller's `k8s.namespace.name` remains
 independent. See the [enrollment and query guide](../infra/configs/base/flux/monitoring/README.md#native-event-tracing).
 
-VMAgent adds `k8s_cluster_name`, `deployment_environment_name`, `ccsn_site_name`
-and custom `ccsn_platform_name` to its scraped metrics. For external scrape
-targets, the cluster label identifies the collecting Kubernetes cluster, not
-Kubernetes membership of the target. Tempo's metrics generator
+VMAgent adds `k8s_cluster_name`, `deployment_environment_name` and `ccsn_site_name`
+to its scraped metrics. For external scrape targets, the cluster label identifies
+the collecting Kubernetes cluster, not Kubernetes membership of the target.
+Tempo's metrics generator
 uses the same Kubernetes-cluster and environment keys for its direct remote
 write. The Collector supplies the dotted cluster, environment and site resource
 attributes to logs and traces as defaults, preserving explicit producer values.

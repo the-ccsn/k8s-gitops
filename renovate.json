@@ -2,7 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:best-practices"],
   "timezone": "Asia/Shanghai",
-  "dependencyDashboard": true,
+  "dependencyDashboard": {
+    "enabled": true
+  },
   "flux": {
     "managerFilePatterns": ["/\\.ya?ml$/"]
   },
@@ -51,7 +53,9 @@
     },
     {
       "description": "Update the generated proxy image together with the build-ID-guarded native Server-Timing module",
-      "matchFileNames": ["infra/controllers/networking/base/istio/server-timing-values.yaml"],
+      "matchFileNames": [
+        "infra/controllers/networking/base/istio/server-timing-values.yaml"
+      ],
       "matchDatasources": ["docker"],
       "enabled": false
     }

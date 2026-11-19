@@ -233,7 +233,7 @@ spec:
                   - until pg_isready -U cloudreve -d cloudreve -h cloudreve-pg-cluster-rw; do
                     sleep 5; done
                 - name: cloudreve-system-redis-wait
-                  image: docker.io/bitnamisecure/valkey:latest@sha256:3ab4091a7e3cb5f12184a3009cad1aefef50f424c0860d580a41675e38392ba5
+                  image: docker.io/bitnamisecure/valkey:latest@sha256:dc39ba054b5d4192d3ebff4ac6643f155e656fc7809c1b2e8df86e2c0a39f204
                   command:
                   - /bin/sh
                   - -ec
